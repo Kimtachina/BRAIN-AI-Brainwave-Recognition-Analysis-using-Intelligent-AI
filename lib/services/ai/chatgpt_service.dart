@@ -9,7 +9,6 @@ import '../supabase_service.dart';
 /// ทำหน้าที่เป็นสมองส่วนปัญญาประดิษฐ์ของแอปพลิเคชัน ในการตอบคำถามผู้ใช้งานเรื่องสุขภาพจิตและคลื่นสมอง
 /// โดยรองรับการพ่วง RAG Context ข้อมูลความรู้และประวัติสุขภาพสมองย้อนหลังของผู้ใช้เข้าไปในคำถามอัตโนมัติ
 class ChatGPTService {
-
   // ดึงรหัส API Key ของ OpenAI จากไฟล์สภาพแวดล้อม (.env)
   static String get _apiKey => dotenv.env['OPENAI_API_KEY'] ?? '';
   static const String _baseUrl = 'https://api.openai.com/v1/chat/completions';
@@ -48,89 +47,9 @@ class ChatGPTService {
    - อ้างอิงข้อมูลจากฐานความรู้เพื่อเพิ่มความน่าเชื่อถือ
 ''';
 
-  static const String _systemPrompt = _baseSystemPrompt;
-
-  static Future<Map<String, dynamic>> sendMessage({
-    required String message,
-    List<Map<String, dynamic>>? chatHistory,
-  }) async {
-
-    if (_apiKey == 'YOUR_OPENAI_API_KEY' || _apiKey.isEmpty) {
-      return {
-        'success': false,
-        'message': 'กรุณาตั้งค่า OpenAI API Key ใน chatgpt_service.dart',
-      };
-    }
-
-    try {
-
-      final messages = <Map<String, dynamic>>[
-        {'role': 'system', 'content': _systemPrompt},
-      ];
-
-      if (chatHistory != null && chatHistory.isNotEmpty) {
-
-        final recentHistory = chatHistory.length > 10
-            ? chatHistory.sublist(chatHistory.length - 10)
-            : chatHistory;
-
-        for (final msg in recentHistory) {
-          messages.add({
-            'role': msg['is_bot'] == true ? 'assistant' : 'user',
-            'content': msg['message'] ?? '',
-          });
-        }
-      }
-
-      messages.add({'role': 'user', 'content': message});
-
-      final response = await http.post(
-        Uri.parse(_baseUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_apiKey',
-        },
-        body: json.encode({
-          'model': _model,
-          'messages': messages,
-          'max_tokens': 500,
-          'temperature': 0.7,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final botResponse = data['choices'][0]['message']['content'];
-
-        return {
-          'success': true,
-          'bot_response': botResponse,
-          'usage': data['usage'],
-        };
-      } else {
-        final errorData = json.decode(response.body);
-        return {
-          'success': false,
-          'message': 'API Error: ${errorData['error']['message'] ?? response.statusCode}',
-        };
-      }
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'เครือข่ายมีปัญหา: $e',
-      };
-    }
-  }
-
   static void setUserId(int? userId) {
     _currentUserId = userId;
   }
-
-  static void toggleRAG(bool enabled) {
-    _useRAG = enabled;
-  }
-
-  static bool get isRAGEnabled => _useRAG;
 
   static Future<Map<String, dynamic>> sendMessageWithRAG({
     required String message,
@@ -263,39 +182,6 @@ $ragContext''';
       };
     }
   }
-
-  static Future<Map<String, dynamic>> sendMessageWithBrainwaveContext({
-    required String message,
-    required Map<String, double> brainwaveData,
-    List<Map<String, dynamic>>? chatHistory,
-  }) async {
-
-    final brainwaveContext = '''
-=== ข้อมูลคลื่นสมองปัจจุบัน ===
-🧠 Alpha: ${brainwaveData['alpha']?.toStringAsFixed(1) ?? 'N/A'}%
-🧠 Beta: ${brainwaveData['beta']?.toStringAsFixed(1) ?? 'N/A'}%
-🧠 Theta: ${brainwaveData['theta']?.toStringAsFixed(1) ?? 'N/A'}%
-🧠 Delta: ${brainwaveData['delta']?.toStringAsFixed(1) ?? 'N/A'}%
-🧠 Gamma: ${brainwaveData['gamma']?.toStringAsFixed(1) ?? 'N/A'}%
-📊 Attention Score: ${brainwaveData['attention']?.toStringAsFixed(1) ?? 'N/A'}
-📊 Meditation Score: ${brainwaveData['meditation']?.toStringAsFixed(1) ?? 'N/A'}
-=== จบข้อมูลคลื่นสมอง ===
-''';
-
-    final enhancedMessage = '''$brainwaveContext
-
-คำถามผู้ใช้: $message
-
-กรุณาให้คำแนะนำโดยอ้างอิงจากข้อมูลคลื่นสมองข้างต้น''';
-
-    return await sendMessageWithRAG(
-      message: enhancedMessage,
-      chatHistory: chatHistory,
-    );
-  }
-
-  static bool get isConfigured =>
-      _apiKey != 'YOUR_OPENAI_API_KEY' && _apiKey.isNotEmpty;
 
   static Future<Map<String, dynamic>> generateWeeklyReport({
     required String promptContent,

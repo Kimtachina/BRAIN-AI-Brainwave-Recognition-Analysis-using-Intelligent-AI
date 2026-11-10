@@ -60,27 +60,6 @@ class MuseService extends ChangeNotifier {
   int _packetCount = 0;
   DateTime? _lastFFTTime;
 
-  // === Per-Channel Signal Quality ===
-  // ติดตาม SQI แยกแต่ละช่อง เพื่อ Weighted Averaging
-  Map<String, double> _channelSQI = {
-    'TP9': 0, 'AF7': 0, 'AF8': 0, 'TP10': 0,
-  };
-  Map<String, double> get channelSQI => Map.unmodifiable(_channelSQI);
-
-  // === Horseshoe (Telemetry) ===
-  // 1 = Good, 2 = Medium, 4 = Bad
-  final Map<String, int> _horseshoe = {
-    'TP9': 4, 'AF7': 4, 'AF8': 4, 'TP10': 4,
-  };
-  Map<String, int> get horseshoe => Map.unmodifiable(_horseshoe);
-
-  // === Frontal Alpha Asymmetry (FAA) ===
-  // FAA = ln(Alpha_AF8) - ln(Alpha_AF7)
-  // Positive = Left-dominant = Approach/Happy (Davidson, 1992)
-  // Negative = Right-dominant = Withdrawal/Sad
-  double _frontalAlphaAsymmetry = 0;
-  double get frontalAlphaAsymmetry => _frontalAlphaAsymmetry;
-
   // Powerline interference filter configuration (50 Hz or 60 Hz)
   double _notchFrequency = 50.0;
   double get notchFrequency => _notchFrequency;
@@ -452,14 +431,9 @@ class MuseService extends ChangeNotifier {
      try {
        String lowerUuid = uuid.toLowerCase();
 
+       // แพ็กเก็ต telemetry ไม่ใช่ข้อมูล EEG จึงข้ามไป
        if (lowerUuid.contains('273e000b') || lowerUuid.contains('273e0002')) {
-         if (rawData.length >= 10) {
-           _horseshoe['TP9'] = rawData[5];
-           _horseshoe['AF7'] = rawData[6];
-           _horseshoe['AF8'] = rawData[7];
-           _horseshoe['TP10'] = rawData[8];
-         }
-         return; // Do not parse as EEG
+         return;
        }
 
        List<double> samples = _parseMuseEEGPacket(rawData);

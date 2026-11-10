@@ -2,7 +2,6 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 
 class FFTCalculator {
-
   /// Compute FFT magnitudes with Hanning window and DC removal
   static List<double> computeMagnitudes(List<double> input) {
     int n = input.length;
@@ -244,11 +243,6 @@ class FFTCalculator {
       y2[i] = a0 * y[i] + a1 * y[i+1] + a2 * y[i+2] - b1 * y2[i+1] - b2 * y2[i+2];
     }
     return y2;
-  }
-
-  /// Notch Filter 50 Hz — กรอง power line interference ของไทย (Backward compatible)
-  static List<double> notchFilter50Hz(List<double> input, int samplingRate) {
-    return notchFilter(input, samplingRate, notchFrequency: 50.0);
   }
 
   // =========================================================

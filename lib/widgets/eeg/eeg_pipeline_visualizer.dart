@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../eeg_research/preprocessing/eeg_preprocessor.dart';
+import '../../services/eeg/eeg_preprocessor.dart';
 import '../../services/muse/muse_service.dart';
 
 /// EegPipelineVisualizer เป็น Widget แสดงสถานะขั้นตอนการประมวลผลและการคัดกรองสัญญาณคลื่นสมอง (Preprocessing Pipeline Visualizer)

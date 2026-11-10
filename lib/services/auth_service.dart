@@ -212,58 +212,9 @@ class AuthService {
   //  การส่งอีเมลยืนยันซ้ำ
   // ═══════════════════════════════════════════
 
-  /// ส่งอีเมลยืนยันตัวตนซ้ำ (กรณีผู้ใช้ยังไม่ได้กดยืนยัน)
-  static Future<Map<String, dynamic>> resendVerificationEmail(String email) async {
-    try {
-      final client = SupabaseService.client;
-      await client.auth.resend(
-        type: OtpType.signup,
-        email: email,
-      );
-
-      return {
-        'success': true,
-        'message': 'ส่งอีเมลยืนยันตัวตนซ้ำไปที่ $email แล้ว',
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถส่งอีเมลยืนยันซ้ำได้: $e'};
-    }
-  }
-
   // ═══════════════════════════════════════════
   //  ยืนยัน OTP สำหรับสมัครสมาชิก
   // ═══════════════════════════════════════════
-
-  /// ยืนยัน OTP 6 หลักจากอีเมลสำหรับการสมัครสมาชิก
-  /// Supabase จะส่งรหัสยืนยัน (Token) ไปพร้อมกับอีเมลยืนยันตัวตน
-  static Future<Map<String, dynamic>> verifySignUpOTP({
-    required String email,
-    required String token,
-  }) async {
-    try {
-      final client = SupabaseService.client;
-      final response = await client.auth.verifyOTP(
-        type: OtpType.signup,
-        email: email,
-        token: token,
-      );
-
-      if (response.user != null) {
-        // ออกจากระบบหลังยืนยันสำเร็จ เพื่อให้ผู้ใช้ล็อกอินด้วย email/password อย่างเป็นทางการ
-        await client.auth.signOut();
-        return {
-          'success': true,
-          'message': 'ยืนยันอีเมลสำเร็จ',
-        };
-      }
-      return {'success': false, 'message': 'รหัสยืนยันไม่ถูกต้อง กรุณาลองใหม่'};
-    } on AuthException catch (e) {
-      return {'success': false, 'message': _translateAuthError(e.message)};
-    } catch (e) {
-      debugPrint('❌ Verify OTP Error: $e');
-      return {'success': false, 'message': 'เกิดข้อผิดพลาดในการยืนยัน: $e'};
-    }
-  }
 
   // ═══════════════════════════════════════════
   //  การออกจากระบบ

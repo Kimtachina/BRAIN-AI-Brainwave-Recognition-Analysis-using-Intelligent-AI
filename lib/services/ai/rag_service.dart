@@ -9,7 +9,6 @@ import '../supabase_service.dart';
 /// ค้นหาฐานความรู้ใน Supabase Database ทั้งแบบ Vector Similarity Search และ Keyword Search
 /// เพื่อใช้ป้อนเป็นบริบทข้อมูลที่เกี่ยวข้อง (Context) ไปให้กับ AI Chatbot ในการตอบคำถามผู้ใช้งาน
 class RAGService {
-
   static String get _openaiApiKey => dotenv.env['OPENAI_API_KEY'] ?? '';
   static const String _embeddingModel = 'text-embedding-3-small';
   static const String _embeddingUrl = 'https://api.openai.com/v1/embeddings';
@@ -322,48 +321,6 @@ class RAGService {
     }
   }
 
-  static Future<Map<String, dynamic>> addKnowledge({
-    required String title,
-    required String content,
-    String category = 'general',
-    List<String>? tags,
-    Map<String, dynamic>? metadata,
-  }) async {
-    try {
-
-      final embedding = await createEmbedding('$title $content');
-
-      final insertData = {
-        'title': title,
-        'content': content,
-        'category': category,
-        'tags': tags ?? [],
-        'metadata': metadata ?? {},
-      };
-
-      if (embedding != null) {
-        insertData['embedding'] = embedding.toString();
-      }
-
-      final response = await SupabaseService.client
-          .from('knowledge_base')
-          .insert(insertData)
-          .select()
-          .single();
-
-      return {
-        'success': true,
-        'message': 'เพิ่มความรู้สำเร็จ',
-        'id': response['id'],
-      };
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'ไม่สามารถเพิ่มความรู้ได้: $e',
-      };
-    }
-  }
-
   static Future<Map<String, dynamic>> updateEmbeddings() async {
     try {
 
@@ -408,49 +365,6 @@ class RAGService {
         'success': false,
         'message': 'ไม่สามารถอัปเดต embeddings ได้: $e',
       };
-    }
-  }
-
-  static Future<List<Map<String, dynamic>>> getAllKnowledge({
-    String? category,
-    int limit = 50,
-  }) async {
-    try {
-      var query = SupabaseService.client
-          .from('knowledge_base')
-          .select('id, title, content, category, tags, created_at');
-
-      if (category != null) {
-        query = query.eq('category', category);
-      }
-
-      final response = await query
-          .order('created_at', ascending: false)
-          .limit(limit);
-
-      return (response as List).map((e) => e as Map<String, dynamic>).toList();
-    } catch (e) {
-      print('RAG Get All Knowledge Error: $e');
-      return [];
-    }
-  }
-
-  static Future<List<String>> getCategories() async {
-    try {
-      final response = await SupabaseService.client
-          .from('knowledge_base')
-          .select('category')
-          .order('category');
-
-      final categories = (response as List)
-          .map((e) => e['category'] as String)
-          .toSet()
-          .toList();
-
-      return categories;
-    } catch (e) {
-      print('RAG Get Categories Error: $e');
-      return [];
     }
   }
 }

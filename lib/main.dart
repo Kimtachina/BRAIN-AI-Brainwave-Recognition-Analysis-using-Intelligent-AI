@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'providers/brain_provider.dart';
 import 'screens/auth/welcome_screen.dart';
 import 'theme/app_theme.dart';
 import 'services/supabase_service.dart';
@@ -47,24 +45,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ลงทะเบียนการจัดการระดับรัฐหลัก (State Management) ของคลื่นสมอง (BrainProvider) ให้ใช้งานได้ทั่วทั้งแอป
-    return ChangeNotifierProvider(
-      create: (_) => BrainProvider(),
-      child: MaterialApp(
-        title: 'Smart Brain',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme, // ใช้ชุดรูปแบบธีมสะอาดทางการแพทย์ CGH Hospital
-        builder: (context, child) {
-          final scale = ResponsiveHelper.getResponsiveTextScale(context, 1.0);
-          return MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              textScaler: TextScaler.linear(scale),
-            ),
-            child: child!,
-          );
-        },
-        home: const WelcomeScreen(), // เปิดแอปที่หน้าจอเข้ายินดีต้อนรับ (WelcomeScreen)
-      ),
+    return MaterialApp(
+      title: 'Smart Brain',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.lightTheme, // ใช้ชุดรูปแบบธีมสะอาดทางการแพทย์ CGH Hospital
+      builder: (context, child) {
+        final scale = ResponsiveHelper.getResponsiveTextScale(context, 1.0);
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(scale),
+          ),
+          child: child!,
+        );
+      },
+      home: const WelcomeScreen(), // เปิดแอปที่หน้าจอเข้ายินดีต้อนรับ (WelcomeScreen)
     );
   }
 }
