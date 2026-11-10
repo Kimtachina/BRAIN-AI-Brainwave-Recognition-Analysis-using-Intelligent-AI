@@ -3,13 +3,13 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
 import '../../models/user.dart';
 import '../../services/api_service.dart';
-import '../../services/tts_service.dart';
-import '../../services/stt_service.dart';
-import 'settings_screen.dart';
-import 'mini_games_screen.dart';
-import 'test_screen.dart';
+import '../../services/speech/tts_service.dart';
+import '../../services/speech/stt_service.dart';
+import '../profile/settings_screen.dart';
+import '../games/mini_games_screen.dart';
+import '../assessment/test_screen.dart';
 import 'nutrition_screen.dart';
-import 'weekly_report_screen.dart';
+import '../reports/weekly_report_screen.dart';
 
 /// RecommendationScreen เป็นหน้าจอให้คำปรึกษา แชทบอท และข้อเสนอแนะอัจฉริยะ (สมาร์ทเบรน AI)
 /// รองรับการพูดโต้ตอบด้วยเสียง (Speech-to-Text & Text-to-Speech)

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../models/user.dart';
+import '../models/user.dart';
 
 /// Class UserProvider สำหรับเก็บข้อมูลผู้ใช้งานปัจจุบัน (User Session)
 /// ใช้ในการจัดการสถานะการล็อกอินและซิงค์ข้อมูลผู้ใช้ระหว่างหน้าจอต่างๆ

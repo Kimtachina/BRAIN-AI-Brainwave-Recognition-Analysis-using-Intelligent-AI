@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'supabase_service.dart';
+import '../supabase_service.dart';
 
 /// RAGService จัดการระบบ Retrieval-Augmented Generation (RAG) ของแอปพลิเคชัน
 /// ทำหน้าที่สกัดคำค้นหาหลัก (Keywords) สร้างเวกเตอร์คำค้นหาผ่านบริการของ OpenAI Embeddings API

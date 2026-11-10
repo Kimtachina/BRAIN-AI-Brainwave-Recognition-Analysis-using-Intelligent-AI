@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import '../services/muse_service.dart';
+import '../services/muse/muse_service.dart';
 import 'stream/muse2_eeg_stream.dart';
 import 'preprocessing/eeg_preprocessor.dart';
 import 'spectral/eeg_fft_engine.dart';

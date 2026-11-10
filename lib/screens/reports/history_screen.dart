@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../models/user.dart';
 import '../../services/api_service.dart';
-import 'settings_screen.dart';
+import '../profile/settings_screen.dart';
 
 /// HistoryScreen เป็นหน้าต่างแสดงผลประวัติการทำแบบทดสอบคัดกรองความเครียดและซึมเศร้าย้อนหลัง
 /// ดึงสถิติของคะแนนแบบทดสอบทั้งหมดของผู้ป่วยหรือคนไข้จาก API มาพล็อตรุ่นประวัติ

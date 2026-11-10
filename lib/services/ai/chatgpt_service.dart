@@ -3,7 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'rag_service.dart';
-import 'supabase_service.dart';
+import '../supabase_service.dart';
 
 /// ChatGPTService จัดการการส่งคำถามไปยัง OpenAI ChatGPT API (gpt-4o-mini)
 /// ทำหน้าที่เป็นสมองส่วนปัญญาประดิษฐ์ของแอปพลิเคชัน ในการตอบคำถามผู้ใช้งานเรื่องสุขภาพจิตและคลื่นสมอง

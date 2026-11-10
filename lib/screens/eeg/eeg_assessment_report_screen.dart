@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/user.dart';
-import '../../widgets/eeg_assessment_report_view.dart';
+import '../../widgets/eeg/eeg_assessment_report_view.dart';
 import 'eeg_report_history_screen.dart';
 
 import '../../theme/app_theme.dart';

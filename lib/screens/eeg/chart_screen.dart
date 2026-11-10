@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
 import '../../models/user.dart';
 import '../../services/api_service.dart';
-import 'settings_screen.dart';
+import '../profile/settings_screen.dart';
 
 /// ChartScreen เป็นหน้าจอสำหรับแสดงแนวโน้มสถิติกราฟรายงานระดับความเครียดสะสมของผู้ใช้
 /// ดึงสถิติย้อนหลังจากแบบทดสอบ PHQ-9 ล่าสุด 4 ครั้งมาแปลงเป็นเปอร์เซ็นต์และแสดงผลกราฟแท่ง (Bar Chart)

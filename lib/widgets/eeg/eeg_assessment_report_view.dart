@@ -3,14 +3,14 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../models/user.dart';
-import '../services/eeg_assessment_service.dart';
-import '../services/eeg_pdf_service.dart';
-import '../emotion_detection/services/emotion_detection_service.dart';
-import '../emotion_detection/models/emotion_type.dart';
+import '../../models/user.dart';
+import '../../services/eeg/eeg_assessment_service.dart';
+import '../../services/eeg/eeg_pdf_service.dart';
+import '../../emotion_detection/services/emotion_detection_service.dart';
+import '../../emotion_detection/models/emotion_type.dart';
 import 'eeg_risk_gauge.dart';
 import 'eeg_topographic_map.dart';
-import '../theme/app_theme.dart';
+import '../../theme/app_theme.dart';
 
 /// EegAssessmentReportView เป็น Widget หน้าต่าง/การ์ดแสดงผลใบประเมินและสรุปผลคลื่นสมอง qEEG แบบพรีเมียม
 /// รวบรวมข้อมูลผู้ใช้งาน การแสดงผลเกจระดับความเครียด/ความเสี่ยง แผนภูมิสมอง Topographic และคำแนะนำการดูแลสุขภาพจิต

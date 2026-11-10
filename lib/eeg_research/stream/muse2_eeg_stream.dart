@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import '../models/eeg_sample.dart';
-import '../../services/muse_service.dart';
+import '../../services/muse/muse_service.dart';
 
 /// Enhanced Muse 2 EEG Stream — wrapper รอบ MuseService เดิม
 ///

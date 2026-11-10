@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'supabase_service.dart';
-import 'chatgpt_service.dart';
+import 'ai/chatgpt_service.dart';
 import 'auth_service.dart';
 
 /// ApiService เป็น Facade Class สำหรับรวบรวมฟังก์ชันการเรียกใช้งาน API ทั้งหมดในจุดเดียว

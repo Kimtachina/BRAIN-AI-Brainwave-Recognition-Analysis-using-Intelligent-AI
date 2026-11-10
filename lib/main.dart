@@ -5,7 +5,7 @@ import 'providers/brain_provider.dart';
 import 'screens/auth/welcome_screen.dart';
 import 'theme/app_theme.dart';
 import 'services/supabase_service.dart';
-import 'services/rag_service.dart';
+import 'services/ai/rag_service.dart';
 import 'utils/responsive_helper.dart';
 
 /// จุดเริ่มต้นการทำทำงานหลักของแอปพลิเคชัน (Main Entry Point)

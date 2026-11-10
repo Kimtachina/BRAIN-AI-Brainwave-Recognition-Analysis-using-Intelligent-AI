@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../models/user.dart';
 import '../../services/api_service.dart';
-import 'settings_screen.dart';
+import '../profile/settings_screen.dart';
 
 /// TestScreen คือหน้าจอทำแบบทดสอบคัดกรองภาวะความเครียดและซึมเศร้ามาตรฐานสากล (PHQ-9)
 /// แสดงผลแบบสอบถามทีละข้อจำนวน 9 ข้อ คำนวณคะแนนรวม แปลความหมายระดับผลลัพธ์ และบันทึกลง API

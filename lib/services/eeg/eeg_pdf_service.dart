@@ -3,7 +3,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:flutter/services.dart';
 import 'dart:typed_data';
-import '../models/user.dart';
+import '../../models/user.dart';
 import 'eeg_assessment_service.dart';
 
 /// EegPdfService จัดการสร้างรายงานสรุปผลการวิเคราะห์คลื่นสมอง (qEEG Report) ในรูปแบบไฟล์ PDF

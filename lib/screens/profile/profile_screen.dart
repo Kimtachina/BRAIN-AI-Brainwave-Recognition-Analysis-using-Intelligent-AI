@@ -7,7 +7,7 @@ import '../auth/welcome_screen.dart';
 import 'edit_profile_screen.dart';
 import 'help_screen.dart';
 import 'settings_screen.dart';
-import 'weekly_report_screen.dart';
+import '../reports/weekly_report_screen.dart';
 
 /// ProfileScreen คือหน้าจอโปรไฟล์ผู้ใช้งานสำหรับการแสดงระเบียนและข้อมูลส่วนบุคคล
 /// ดึงข้อมูลโปรไฟล์แบบเรียลไทม์ผ่าน API และลิงก์ไปยังการตั้งค่า แก้ไขข้อมูล รายงาน AI และการออกจากระบบ

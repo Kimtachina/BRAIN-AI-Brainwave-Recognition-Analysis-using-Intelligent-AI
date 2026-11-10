@@ -1,10 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../models/user.dart';
-import 'dashboard/home_screen.dart';
-import 'dashboard/phq9_tab_screen.dart';
-import 'dashboard/recommendation_screen.dart';
-import 'dashboard/profile_screen.dart';
+import 'home/home_screen.dart';
+import 'assessment/phq9_tab_screen.dart';
+import 'wellness/recommendation_screen.dart';
+import 'profile/profile_screen.dart';
 // ลบ ActivitiesDashboardScreen ออกตามความต้องการของผู้ใช้ที่ให้เอาหน้ากิจกรรมออก
 import '../theme/app_theme.dart';
 

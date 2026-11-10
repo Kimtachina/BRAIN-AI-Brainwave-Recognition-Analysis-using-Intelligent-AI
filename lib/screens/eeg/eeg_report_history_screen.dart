@@ -3,8 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
 import '../../models/user.dart';
 import '../../services/api_service.dart';
-import '../../services/eeg_assessment_service.dart';
-import '../../services/eeg_pdf_service.dart';
+import '../../services/eeg/eeg_assessment_service.dart';
+import '../../services/eeg/eeg_pdf_service.dart';
 import 'eeg_assessment_report_screen.dart';
 
 /// EegReportHistoryScreen คือหน้าแสดงประวัติผลการประเมินวิเคราะห์คลื่นสมอง qEEG ทั้งหมดของคนไข้

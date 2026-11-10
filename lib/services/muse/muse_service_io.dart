@@ -4,7 +4,7 @@ import 'dart:math' show Random, cos, log, max, min, pi, sqrt, tan;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'fft_calculator.dart';
+import '../eeg/fft_calculator.dart';
 import 'muse_types.dart';
 
 /// MuseService จัดการการสื่อสารกับหน้ากาก/อุปกรณ์วัดคลื่นสมอง Muse (รองรับ Bluetooth Low Energy: BLE)
