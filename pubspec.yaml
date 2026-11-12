@@ -31,13 +31,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
-  
-  # State Management
-  provider: ^6.1.2
-  
   # Charts
   fl_chart: ^0.70.2
   
@@ -57,9 +50,6 @@ dependencies:
   # Text-to-Speech
   flutter_tts: ^4.2.0
   
-  # Speech-to-Text (Voice Input)
-  speech_to_text: ^7.0.0
-  
   # Supabase
   supabase_flutter: ^2.8.3
   record: ^6.2.0
@@ -67,24 +57,17 @@ dependencies:
   
   # Image Picker (เลือกรูปจากแกลเลอรี่/กล้อง)
   image_picker: ^1.1.2
-  flutter_dotenv: ^5.1.0
   
   # TFLite (Emotion Detection on-device)
   tflite_flutter: ^0.11.0
   pdf: ^3.12.0
   printing: ^5.14.3
-  model_viewer_plus: ^1.10.0
-  webview_flutter: ^4.13.1
-  video_player: ^2.9.3
   
   # Authentication — Google Sign-In สำหรับเข้าสู่ระบบด้วยบัญชี Google
   google_sign_in: ^6.2.2
   
   # จดจำข้อมูลล็อกอินในเครื่อง (Remember Me)
   shared_preferences: ^2.3.4
-  
-  # Hash รหัสผ่านฝั่ง Client (SHA-256 สำหรับเปรียบเทียบ)
-  crypto: ^3.0.6
 
 dev_dependencies:
   flutter_test:
@@ -121,8 +104,6 @@ flutter:
   assets:
     - assets/images/
     - assets/models/
-    - assets/videos/
-    - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

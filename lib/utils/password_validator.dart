@@ -82,9 +82,6 @@ class PasswordChecks {
     if (hasSpecialChar) count++;
     return count;
   }
-
-  /// ตรวจว่าผ่านเกณฑ์ครบทุกข้อหรือไม่
-  bool get allPassed => passedCount == 5;
 }
 
 /// คลาสหลักสำหรับประเมินความแข็งแรงของรหัสผ่าน

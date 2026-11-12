@@ -5,11 +5,23 @@ import subprocess
 import json
 import urllib.request
 import urllib.error
+import urllib.parse
 import argparse
 
 # Default settings
 DEFAULT_MODEL = "gemini-2.5-flash"
 REVIEW_FILE = "GEMINI_CODE_REVIEW.md"
+
+# สคริปต์นี้เรียกได้เฉพาะ API เหล่านี้ผ่าน https เท่านั้น
+ALLOWED_API_HOSTS = {"api.github.com", "generativelanguage.googleapis.com"}
+
+def open_api_request(req):
+    """Opens req only if it is https to a host in ALLOWED_API_HOSTS (blocks file:// and other schemes)."""
+    parsed = urllib.parse.urlparse(req.full_url)
+    if parsed.scheme != "https" or parsed.hostname not in ALLOWED_API_HOSTS:
+        raise ValueError(f"ไม่อนุญาตให้เรียก URL นี้: {parsed.scheme}://{parsed.hostname}")
+    # scheme และ host ถูกตรวจด้านบนแล้ว จึงเปิดไฟล์ในเครื่องหรือเรียก host อื่นไม่ได้
+    return urllib.request.urlopen(req)  # nosemgrep
 
 def get_git_diff(staged=False, branch=None):
     """Retrieves the git diff content from the repository."""
@@ -38,21 +50,30 @@ def get_git_diff(staged=False, branch=None):
         print(f"❌ เกิดข้อผิดพลาดในการดึง Git Diff: {e.stderr}", file=sys.stderr)
         return None
 
+def _find_key_in_env_file(path, key_name="GEMINI_API_KEY"):
+    """Returns the value of key_name in one .env file, or None if it is not there."""
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, val = line.split("=", 1)
+            if key.strip() == key_name:
+                return val.strip().strip('"').strip("'")
+    return None
+
 def load_api_key_from_env_file():
     """Tries to find and load GEMINI_API_KEY from .env files in the current folder."""
-    env_paths = [".env", "../.env"]
-    for path in env_paths:
-        if os.path.exists(path):
-            try:
-                with open(path, "r", encoding="utf-8") as f:
-                    for line in f:
-                        line = line.strip()
-                        if line and not line.startswith("#") and "=" in line:
-                            key, val = line.split("=", 1)
-                            if key.strip() == "GEMINI_API_KEY":
-                                return val.strip().strip('"').strip("'")
-            except Exception as e:
-                print(f"⚠️ ไม่สามารถเปิดไฟล์ {path} ได้: {e}", file=sys.stderr)
+    for path in (".env", "../.env"):
+        if not os.path.exists(path):
+            continue
+        try:
+            api_key = _find_key_in_env_file(path)
+        except Exception as e:
+            print(f"⚠️ ไม่สามารถเปิดไฟล์ {path} ได้: {e}", file=sys.stderr)
+            continue
+        if api_key is not None:
+            return api_key
     return None
 
 def get_api_key():
@@ -79,13 +100,9 @@ def get_api_key():
 
     return None
 
-def review_code_with_gemini(diff_content, api_key, model=DEFAULT_MODEL):
-    """Sends the diff to the Gemini API and returns the review markdown."""
-    print(f"🤖 กำลังส่งโค้ดไปรีวิวด้วยโมเดล {model} ...")
-    
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
-    
-    prompt = (
+def build_review_prompt(diff_content):
+    """Builds the Thai code-review prompt sent to Gemini for a git diff."""
+    return (
         "คุณคือผู้เชี่ยวชาญด้านการรีวิวโค้ด (Senior Software Engineer/Code Reviewer) "
         "โปรดตรวจสอบการเปลี่ยนแปลงของโค้ด (Git Diff) ต่อไปนี้อย่างละเอียด และจัดทำรายงานการรีวิวเป็นภาษาไทย "
         "โดยเน้นในประเด็นต่างๆ ดังนี้:\n"
@@ -98,6 +115,13 @@ def review_code_with_gemini(diff_content, api_key, model=DEFAULT_MODEL):
         "นี่คือโค้ดที่มีการเปลี่ยนแปลง (Git Diff):\n"
         f"```diff\n{diff_content}\n```"
     )
+
+def review_code_with_gemini(diff_content, api_key, model=DEFAULT_MODEL):
+    """Sends the diff to the Gemini API and returns the review markdown."""
+    print(f"🤖 กำลังส่งโค้ดไปรีวิวด้วยโมเดล {model} ...")
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+    prompt = build_review_prompt(diff_content)
 
     payload = {
         "contents": [
@@ -119,7 +143,7 @@ def review_code_with_gemini(diff_content, api_key, model=DEFAULT_MODEL):
     )
 
     try:
-        with urllib.request.urlopen(req) as response:
+        with open_api_request(req) as response:
             res_data = json.loads(response.read().decode("utf-8"))
             
             # Extract content from response structure
@@ -151,7 +175,7 @@ def get_github_pr_diff(repo, pr_number, token):
     req.add_header("Authorization", f"Bearer {token}")
     req.add_header("User-Agent", "gemini-code-reviewer-action")
     try:
-        with urllib.request.urlopen(req) as response:
+        with open_api_request(req) as response:
             return response.read().decode("utf-8", errors="replace")
     except Exception as e:
         print(f"❌ ไม่สามารถดึง PR Diff จาก GitHub API ได้: {e}", file=sys.stderr)
@@ -173,7 +197,7 @@ def post_github_comment(repo, pr_number, comment, token):
         method="POST"
     )
     try:
-        with urllib.request.urlopen(req) as response:
+        with open_api_request(req):
             print("🎉 โพสต์ผลการรีวิวลงใน GitHub Pull Request เรียบร้อยแล้ว!")
             return True
     except Exception as e:
@@ -188,7 +212,7 @@ def get_github_commit_diff(repo, commit_sha, token):
     req.add_header("Authorization", f"Bearer {token}")
     req.add_header("User-Agent", "gemini-code-reviewer-action")
     try:
-        with urllib.request.urlopen(req) as response:
+        with open_api_request(req) as response:
             return response.read().decode("utf-8", errors="replace")
     except Exception as e:
         print(f"❌ ไม่สามารถดึง Commit Diff จาก GitHub API ได้: {e}", file=sys.stderr)
@@ -210,12 +234,45 @@ def post_github_commit_comment(repo, commit_sha, comment, token):
         method="POST"
     )
     try:
-        with urllib.request.urlopen(req) as response:
+        with open_api_request(req):
             print(f"🎉 โพสต์ผลการรีวิวลงใน GitHub Commit ({commit_sha}) เรียบร้อยแล้ว!")
             return True
     except Exception as e:
         print(f"❌ ไม่สามารถโพสต์ผลการรีวิลงใน GitHub Commit ได้: {e}", file=sys.stderr)
         return False
+
+def _require_env(name):
+    """Returns an environment variable, or exits when it is missing."""
+    value = os.environ.get(name)
+    if not value:
+        print(f"❌ ข้อผิดพลาด: ไม่พบ {name} ใน Environment", file=sys.stderr)
+        sys.exit(1)
+    return value
+
+def _read_github_event(event_path):
+    """Loads the GitHub Actions event JSON, or exits when it cannot be read."""
+    try:
+        with open(event_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"❌ ไม่สามารถอ่าน GitHub Event file: {e}", file=sys.stderr)
+        sys.exit(1)
+
+def _review_and_post(diff_content, api_key, model, empty_message, post):
+    """Reviews a diff with Gemini and hands the result to post(); exits if the review fails."""
+    if not diff_content or not diff_content.strip():
+        print(empty_message)
+        return
+
+    diff_lines = diff_content.count("\n")
+    print(f"📝 ขนาด Git Diff: ประมาณ {diff_lines} บรรทัด")
+
+    review_result = review_code_with_gemini(diff_content, api_key, model=model)
+    if not review_result:
+        print("❌ การรีวิวโค้ดด้วย Gemini ล้มเหลว")
+        sys.exit(1)
+
+    post(review_result)
 
 def handle_github_actions(model):
     """Handles the code review execution when running inside GitHub Actions."""
@@ -227,69 +284,32 @@ def handle_github_actions(model):
     if not event_path or not repo:
         print("❌ ข้อผิดพลาด: ไม่พบตัวแปรสภาพแวดล้อมที่จำเป็นสำหรับ GitHub Actions", file=sys.stderr)
         sys.exit(1)
-        
-    github_token = os.environ.get("GITHUB_TOKEN")
-    if not github_token:
-        print("❌ ข้อผิดพลาด: ไม่พบ GITHUB_TOKEN ใน Environment", file=sys.stderr)
-        sys.exit(1)
 
-    gemini_api_key = os.environ.get("GEMINI_API_KEY")
-    if not gemini_api_key:
-        print("❌ ข้อผิดพลาด: ไม่พบ GEMINI_API_KEY ใน Environment", file=sys.stderr)
-        sys.exit(1)
-
-    try:
-        with open(event_path, "r", encoding="utf-8") as f:
-            event_data = json.load(f)
-    except Exception as e:
-        print(f"❌ ไม่สามารถอ่าน GitHub Event file: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    pr_number = event_data.get("number")
+    github_token = _require_env("GITHUB_TOKEN")
+    gemini_api_key = _require_env("GEMINI_API_KEY")
+    pr_number = _read_github_event(event_path).get("number")
 
     # กรณีเป็น Event Pull Request
     if event_name == "pull_request" or pr_number is not None:
         print(f"📦 ตรวจพบ Pull Request #{pr_number} สำหรับ Repository: {repo}")
-        
-        # 1. Get PR Diff
-        diff_content = get_github_pr_diff(repo, pr_number, github_token)
-        if not diff_content or not diff_content.strip():
-            print("ℹ️ ดึงข้อมูล Git Diff สำเร็จ แต่อาจไม่มีการเปลี่ยนแปลงของโค้ด")
-            return
-
-        diff_lines = diff_content.count("\n")
-        print(f"📝 ขนาด Git Diff: ประมาณ {diff_lines} บรรทัด")
-
-        # 2. Get Code Review from Gemini
-        review_result = review_code_with_gemini(diff_content, gemini_api_key, model=model)
-        if not review_result:
-            print("❌ การรีวิวโค้ดด้วย Gemini ล้มเหลว")
-            sys.exit(1)
-
-        # 3. Post comment to GitHub PR
-        post_github_comment(repo, pr_number, review_result, github_token)
+        _review_and_post(
+            get_github_pr_diff(repo, pr_number, github_token),
+            gemini_api_key,
+            model,
+            "ℹ️ ดึงข้อมูล Git Diff สำเร็จ แต่อาจไม่มีการเปลี่ยนแปลงของโค้ด",
+            lambda review: post_github_comment(repo, pr_number, review, github_token),
+        )
 
     # กรณีเป็น Event Push (เช่น commit โดยตรงลงใน branchหลัก)
     elif event_name == "push" or commit_sha is not None:
         print(f"📦 ตรวจพบ Push Event สำหรับ Commit: {commit_sha} ใน Repository: {repo}")
-
-        # 1. Get Commit Diff
-        diff_content = get_github_commit_diff(repo, commit_sha, github_token)
-        if not diff_content or not diff_content.strip():
-            print("ℹ️ ดึงข้อมูล Git Diff สำเร็จ แต่อาจไม่มีการเปลี่ยนแปลงของโค้ดสำหรับ Commit นี้")
-            return
-
-        diff_lines = diff_content.count("\n")
-        print(f"📝 ขนาด Git Diff: ประมาณ {diff_lines} บรรทัด")
-
-        # 2. Get Code Review from Gemini
-        review_result = review_code_with_gemini(diff_content, gemini_api_key, model=model)
-        if not review_result:
-            print("❌ การรีวิวโค้ดด้วย Gemini ล้มเหลว")
-            sys.exit(1)
-
-        # 3. Post comment to GitHub Commit
-        post_github_commit_comment(repo, commit_sha, review_result, github_token)
+        _review_and_post(
+            get_github_commit_diff(repo, commit_sha, github_token),
+            gemini_api_key,
+            model,
+            "ℹ️ ดึงข้อมูล Git Diff สำเร็จ แต่อาจไม่มีการเปลี่ยนแปลงของโค้ดสำหรับ Commit นี้",
+            lambda review: post_github_commit_comment(repo, commit_sha, review, github_token),
+        )
     else:
         print(f"❌ ข้อผิดพลาด: ไม่รองรับการทำงานกับ Event: {event_name}", file=sys.stderr)
         sys.exit(1)

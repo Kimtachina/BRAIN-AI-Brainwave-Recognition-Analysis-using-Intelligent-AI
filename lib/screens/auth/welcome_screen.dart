@@ -102,7 +102,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
         (route) => false,
       );
     } else {
-      if (result['message'] != 'ยกเลิกการเข้าสู่ระบบด้วย Google') {
+      if (result['redirecting'] != true &&
+          result['message'] != 'ยกเลิกการเข้าสู่ระบบด้วย Google') {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(result['message'] ?? 'เกิดข้อผิดพลาด'),

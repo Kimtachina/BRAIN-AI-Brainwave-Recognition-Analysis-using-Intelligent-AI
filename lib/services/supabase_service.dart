@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:image_picker/image_picker.dart' show XFile;
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -9,12 +9,20 @@ class SupabaseService {
   // ไคลเอนต์หลักสำหรับเชื่อมโยงฐานข้อมูล Supabase
   static SupabaseClient? _client;
 
-  // URL และ Anon Key ของโครงการ Supabase
-  static const String supabaseUrl = 'https://ifsvthnxydchqnigvmuw.supabase.co';
-  static const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlmc3Z0aG54eWRjaHFuaWd2bXV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwNjQ2NDIsImV4cCI6MjA4NDY0MDY0Mn0.HWVTbQ7SwY93EZqdKCljnPCT8rCliJAMMxI1QC5JsR0';
+  // URL และ Anon Key ของโครงการ Supabase ส่งเข้ามาตอน build ด้วย
+  // --dart-define-from-file=env/supabase.json (ดู env/supabase.example.json และ README)
+  // ไม่เก็บ key ไว้ในซอร์สโค้ด
+  static const String supabaseUrl = String.fromEnvironment('SUPABASE_URL');
+  static const String supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
 
   /// เริ่มต้นการตั้งค่าและเตรียมเชื่อมต่อกับฐานข้อมูล Supabase (เรียกที่ main.dart ตอนเปิดแอป)
   static Future<void> initialize() async {
+    if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
+      throw StateError(
+        'ไม่พบ SUPABASE_URL / SUPABASE_ANON_KEY: '
+        'รันหรือ build ด้วย --dart-define-from-file=env/supabase.json',
+      );
+    }
     await Supabase.initialize(
       url: supabaseUrl,
       anonKey: supabaseAnonKey,
@@ -28,85 +36,6 @@ class SupabaseService {
       throw Exception('Supabase client not initialized. Call SupabaseService.initialize() first.');
     }
     return _client!;
-  }
-
-  /// ตรวจสอบว่าระบบฐานข้อมูลได้รับการตั้งค่าเริ่มต้นเรียบร้อยหรือยัง
-  static bool get isInitialized => _client != null;
-
-  static Future<Map<String, dynamic>> login(String username, String password) async {
-    try {
-
-      final response = await client
-          .from('users')
-          .select()
-          .eq('username', username)
-          .maybeSingle();
-
-      if (response == null) {
-        return {'success': false, 'message': 'ไม่พบชื่อผู้ใช้'};
-      }
-
-      if (response['password'] != password) {
-        return {'success': false, 'message': 'รหัสผ่านไม่ถูกต้อง'};
-      }
-
-      return {
-        'success': true,
-        'message': 'เข้าสู่ระบบสำเร็จ',
-        'user': response,
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'เกิดข้อผิดพลาด: $e'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> register({
-    required String username,
-    required String password,
-    String? fullName,
-    String? phone,
-    String? email,
-    String? birthDate,
-  }) async {
-    try {
-
-      final existing = await client
-          .from('users')
-          .select('id')
-          .eq('username', username)
-          .maybeSingle();
-
-      if (existing != null) {
-        return {'success': false, 'message': 'ชื่อผู้ใช้นี้ถูกใช้แล้ว'};
-      }
-
-      final response = await client
-          .from('users')
-          .insert({
-            'username': username,
-            'password': password,
-            'full_name': fullName,
-            'phone': phone,
-            'email': email,
-            'birth_date': birthDate,
-          })
-          .select()
-          .single();
-
-      await client
-          .from('user_settings')
-          .insert({
-            'user_id': response['id'],
-          });
-
-      return {
-        'success': true,
-        'message': 'สมัครสมาชิกสำเร็จ',
-        'user': response,
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'เกิดข้อผิดพลาด: $e'};
-    }
   }
 
   static Future<Map<String, dynamic>> getProfile(int userId) async {
@@ -161,11 +90,14 @@ class SupabaseService {
 
   static Future<Map<String, dynamic>> uploadAvatar({
     required int userId,
-    required File imageFile,
+    required XFile imageFile,
   }) async {
     try {
 
-      final fileExt = imageFile.path.split('.').last.toLowerCase();
+      // ใช้ name แทน path เพราะบนเว็บ path เป็น blob URL ที่ไม่มีนามสกุลไฟล์
+      final fileExt = imageFile.name.contains('.')
+          ? imageFile.name.split('.').last.toLowerCase()
+          : 'jpg';
       final fileName = 'user_${userId}_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
       final filePath = 'profiles/$fileName';
 
@@ -209,49 +141,30 @@ class SupabaseService {
     }
   }
 
-  static Future<void> deleteOldAvatar(String? oldAvatarUrl) async {
-    if (oldAvatarUrl == null || oldAvatarUrl.isEmpty) return;
-    try {
-
-      final uri = Uri.parse(oldAvatarUrl);
-      final pathSegments = uri.pathSegments;
-
-      final avatarIdx = pathSegments.indexOf('avatars');
-      if (avatarIdx >= 0 && avatarIdx < pathSegments.length - 1) {
-        final storagePath = pathSegments.sublist(avatarIdx + 1).join('/');
-        await client.storage.from('avatars').remove([storagePath]);
-        debugPrint('Deleted old avatar: $storagePath');
-      }
-    } catch (e) {
-      debugPrint('Delete old avatar error: $e');
-    }
-  }
-
   static Future<Map<String, dynamic>> changePassword({
     required int userId,
     String? currentPassword,
     required String newPassword,
   }) async {
-    try {
+    // รหัสผ่านอยู่ใน Supabase Auth (เก็บแบบ hash) ไม่ได้อยู่ในตาราง users
+    final email = client.auth.currentUser?.email;
+    if (email == null) {
+      return {'success': false, 'message': 'กรุณาเข้าสู่ระบบใหม่ก่อนเปลี่ยนรหัสผ่าน'};
+    }
 
-      if (currentPassword != null) {
-        final user = await client
-            .from('users')
-            .select('password')
-            .eq('id', userId)
-            .single();
-
-        if (user['password'] != currentPassword) {
-          return {'success': false, 'message': 'รหัสผ่านปัจจุบันไม่ถูกต้อง'};
-        }
+    if (currentPassword != null) {
+      try {
+        await client.auth.signInWithPassword(email: email, password: currentPassword);
+      } on AuthException {
+        return {'success': false, 'message': 'รหัสผ่านปัจจุบันไม่ถูกต้อง'};
       }
+    }
 
-      await client
-          .from('users')
-          .update({'password': newPassword})
-          .eq('id', userId);
-
+    try {
+      await client.auth.updateUser(UserAttributes(password: newPassword));
       return {'success': true, 'message': 'เปลี่ยนรหัสผ่านสำเร็จ'};
+    } on AuthException catch (e) {
+      return {'success': false, 'message': 'ไม่สามารถเปลี่ยนรหัสผ่านได้: ${e.message}'};
     } catch (e) {
       return {'success': false, 'message': 'ไม่สามารถเปลี่ยนรหัสผ่านได้'};
     }
@@ -299,52 +212,6 @@ class SupabaseService {
       };
     } catch (e) {
       return {'success': false, 'message': 'ไม่สามารถโหลดผลทดสอบได้'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> saveBrainwaveData({
-    required int userId,
-    required double alphaWave,
-    required double betaWave,
-    required double thetaWave,
-    required double deltaWave,
-    double gammaWave = 0,
-    double attentionScore = 0,
-    double meditationScore = 0,
-    String deviceName = 'Muse S',
-    String? emotionLabel,
-    String? activityType,
-    String? sessionPhase,
-  }) async {
-    try {
-      final insertData = <String, dynamic>{
-        'user_id': userId,
-        'alpha_wave': alphaWave,
-        'beta_wave': betaWave,
-        'theta_wave': thetaWave,
-        'delta_wave': deltaWave,
-        'gamma_wave': gammaWave,
-        'attention_score': attentionScore,
-        'meditation_score': meditationScore,
-        'device_name': deviceName,
-      };
-      if (emotionLabel != null) insertData['emotion_label'] = emotionLabel;
-      if (activityType != null) insertData['activity_type'] = activityType;
-      if (sessionPhase != null) insertData['session_phase'] = sessionPhase;
-
-      final response = await client
-          .from('brainwave_data')
-          .insert(insertData)
-          .select()
-          .single();
-
-      return {
-        'success': true,
-        'message': 'บันทึกข้อมูลคลื่นสมองสำเร็จ',
-        'id': response['id'],
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถบันทึกข้อมูลคลื่นสมองได้'};
     }
   }
 
@@ -400,41 +267,6 @@ class SupabaseService {
     }
   }
 
-  static Future<Map<String, dynamic>> getEmotionSessions(int userId, {int limit = 20}) async {
-    try {
-      final response = await client
-          .from('emotion_sessions')
-          .select()
-          .eq('user_id', userId)
-          .order('started_at', ascending: false)
-          .limit(limit);
-
-      return {
-        'success': true,
-        'sessions': response,
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถโหลด session ได้'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> getBrainwaveData(int userId) async {
-    try {
-      final response = await client
-          .from('brainwave_data')
-          .select()
-          .eq('user_id', userId)
-          .order('recorded_at', ascending: false);
-
-      return {
-        'success': true,
-        'data': response,
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถโหลดข้อมูลคลื่นสมองได้'};
-    }
-  }
-
   static Future<Map<String, dynamic>> saveActivity({
     required int userId,
     required String activityType,
@@ -462,105 +294,6 @@ class SupabaseService {
       };
     } catch (e) {
       return {'success': false, 'message': 'ไม่สามารถบันทึกกิจกรรมได้'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> getActivities(int userId) async {
-    try {
-      final response = await client
-          .from('activities')
-          .select()
-          .eq('user_id', userId)
-          .order('completed_at', ascending: false);
-
-      return {
-        'success': true,
-        'activities': response,
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถโหลดกิจกรรมได้'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> getSchedules(int userId) async {
-    try {
-      final response = await client
-          .from('schedules')
-          .select()
-          .eq('user_id', userId)
-          .order('time', ascending: true);
-
-      return {
-        'success': true,
-        'schedules': response,
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถโหลดตารางเวลาได้'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> addSchedule({
-    required int userId,
-    required String title,
-    required String description,
-    required String time,
-    String iconName = 'event',
-    String color = 'purple',
-  }) async {
-    try {
-      final response = await client
-          .from('schedules')
-          .insert({
-            'user_id': userId,
-            'title': title,
-            'description': description,
-            'time': time,
-            'icon_name': iconName,
-            'color': color,
-          })
-          .select()
-          .single();
-
-      return {
-        'success': true,
-        'message': 'เพิ่มตารางเวลาสำเร็จ',
-        'id': response['id'],
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถเพิ่มตารางเวลาได้'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> updateScheduleCompletion({
-    required int scheduleId,
-    required bool isCompleted,
-  }) async {
-    try {
-      await client
-          .from('schedules')
-          .update({'is_completed': isCompleted})
-          .eq('id', scheduleId);
-
-      return {'success': true, 'message': 'อัปเดตสถานะสำเร็จ'};
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถอัปเดตสถานะได้'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> deleteSchedule({
-    required int scheduleId,
-    required int userId,
-  }) async {
-    try {
-      await client
-          .from('schedules')
-          .delete()
-          .eq('id', scheduleId)
-          .eq('user_id', userId);
-
-      return {'success': true, 'message': 'ลบตารางเวลาสำเร็จ'};
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถลบตารางเวลาได้'};
     }
   }
 
@@ -699,383 +432,6 @@ class SupabaseService {
     }
   }
 
-  static Future<Map<String, dynamic>> getEmergencyContacts(int userId) async {
-    try {
-      final response = await client
-          .from('emergency_contacts')
-          .select()
-          .eq('user_id', userId)
-          .order('is_primary', ascending: false);
-
-      return {
-        'success': true,
-        'contacts': response,
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถโหลดผู้ติดต่อฉุกเฉินได้'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> addEmergencyContact({
-    required int userId,
-    required String contactName,
-    required String phoneNumber,
-    String? relationship,
-    String? email,
-    bool isPrimary = false,
-    bool notifyOnEmergency = true,
-    bool notifyOnHighStress = false,
-    String? notes,
-  }) async {
-    try {
-
-      if (isPrimary) {
-        await client
-            .from('emergency_contacts')
-            .update({'is_primary': false})
-            .eq('user_id', userId);
-      }
-
-      final response = await client
-          .from('emergency_contacts')
-          .insert({
-            'user_id': userId,
-            'contact_name': contactName,
-            'phone_number': phoneNumber,
-            'relationship': relationship,
-            'email': email,
-            'is_primary': isPrimary,
-            'notify_on_emergency': notifyOnEmergency,
-            'notify_on_high_stress': notifyOnHighStress,
-            'notes': notes,
-          })
-          .select()
-          .single();
-
-      return {
-        'success': true,
-        'message': 'เพิ่มผู้ติดต่อฉุกเฉินสำเร็จ',
-        'contact_id': response['contact_id'],
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถเพิ่มผู้ติดต่อฉุกเฉินได้: $e'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> updateEmergencyContact({
-    required int contactId,
-    String? contactName,
-    String? phoneNumber,
-    String? relationship,
-    String? email,
-    bool? isPrimary,
-    bool? notifyOnEmergency,
-    bool? notifyOnHighStress,
-    String? notes,
-  }) async {
-    try {
-      final updateData = <String, dynamic>{};
-      if (contactName != null) updateData['contact_name'] = contactName;
-      if (phoneNumber != null) updateData['phone_number'] = phoneNumber;
-      if (relationship != null) updateData['relationship'] = relationship;
-      if (email != null) updateData['email'] = email;
-      if (isPrimary != null) updateData['is_primary'] = isPrimary;
-      if (notifyOnEmergency != null) updateData['notify_on_emergency'] = notifyOnEmergency;
-      if (notifyOnHighStress != null) updateData['notify_on_high_stress'] = notifyOnHighStress;
-      if (notes != null) updateData['notes'] = notes;
-
-      await client
-          .from('emergency_contacts')
-          .update(updateData)
-          .eq('contact_id', contactId);
-
-      return {'success': true, 'message': 'อัปเดตผู้ติดต่อฉุกเฉินสำเร็จ'};
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถอัปเดตผู้ติดต่อฉุกเฉินได้'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> deleteEmergencyContact(int contactId) async {
-    try {
-      await client
-          .from('emergency_contacts')
-          .delete()
-          .eq('contact_id', contactId);
-
-      return {'success': true, 'message': 'ลบผู้ติดต่อฉุกเฉินสำเร็จ'};
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถลบผู้ติดต่อฉุกเฉินได้'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> getElderlyProfile(int userId) async {
-    try {
-      final response = await client
-          .from('elderly_profiles')
-          .select()
-          .eq('user_id', userId)
-          .maybeSingle();
-
-      return {
-        'success': true,
-        'profile': response,
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถโหลดข้อมูลสุขภาพได้'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> saveElderlyProfile({
-    required int userId,
-    String? firstName,
-    String? lastName,
-    String? dateOfBirth,
-    String? gender,
-    String? bloodType,
-    double? heightCm,
-    double? weightKg,
-    List<String>? medicalConditions,
-    List<String>? allergies,
-    List<String>? currentMedications,
-    String? mobilityStatus,
-    String? cognitiveStatus,
-    String? doctorName,
-    String? doctorPhone,
-    String? hospitalName,
-    String? insuranceInfo,
-    String? specialNeeds,
-  }) async {
-    try {
-      final data = <String, dynamic>{
-        'user_id': userId,
-      };
-
-      if (firstName != null) data['first_name'] = firstName;
-      if (lastName != null) data['last_name'] = lastName;
-      if (dateOfBirth != null) data['date_of_birth'] = dateOfBirth;
-      if (gender != null) data['gender'] = gender;
-      if (bloodType != null) data['blood_type'] = bloodType;
-      if (heightCm != null) data['height_cm'] = heightCm;
-      if (weightKg != null) data['weight_kg'] = weightKg;
-      if (medicalConditions != null) data['medical_conditions'] = medicalConditions;
-      if (allergies != null) data['allergies'] = allergies;
-      if (currentMedications != null) data['current_medications'] = currentMedications;
-      if (mobilityStatus != null) data['mobility_status'] = mobilityStatus;
-      if (cognitiveStatus != null) data['cognitive_status'] = cognitiveStatus;
-      if (doctorName != null) data['doctor_name'] = doctorName;
-      if (doctorPhone != null) data['doctor_phone'] = doctorPhone;
-      if (hospitalName != null) data['hospital_name'] = hospitalName;
-      if (insuranceInfo != null) data['insurance_info'] = insuranceInfo;
-      if (specialNeeds != null) data['special_needs'] = specialNeeds;
-
-      await client
-          .from('elderly_profiles')
-          .upsert(data, onConflict: 'user_id');
-
-      return {'success': true, 'message': 'บันทึกข้อมูลสุขภาพสำเร็จ'};
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถบันทึกข้อมูลสุขภาพได้: $e'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> saveVoiceMetadata({
-    int? messageId,
-    String? detectedLanguage,
-    double? durationSeconds,
-    String? audioFileUrl,
-    String? contentText,
-    String senderType = 'user',
-    double? sentimentScore,
-    double? stressIndex,
-    double? pitchAvg,
-    double? volumeAvg,
-    double? speechRate,
-  }) async {
-    try {
-      final response = await client
-          .from('voice_metadata')
-          .insert({
-            'message_id': messageId,
-            'detected_language': detectedLanguage ?? 'th',
-            'duration_seconds': durationSeconds ?? 0,
-            'audio_file_url': audioFileUrl,
-            'content_text': contentText,
-            'sender_type': senderType,
-            'sentiment_score': sentimentScore ?? 0,
-            'stress_index': stressIndex ?? 0,
-            'pitch_avg': pitchAvg,
-            'volume_avg': volumeAvg,
-            'speech_rate': speechRate,
-          })
-          .select()
-          .single();
-
-      return {
-        'success': true,
-        'voice_id': response['voice_id'],
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถบันทึกข้อมูลเสียงได้: $e'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> getVoiceMetadata(int messageId) async {
-    try {
-      final response = await client
-          .from('voice_metadata')
-          .select()
-          .eq('message_id', messageId)
-          .maybeSingle();
-
-      return {
-        'success': true,
-        'metadata': response,
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถโหลดข้อมูลเสียงได้'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> registerEEGDevice({
-    required int userId,
-    required String deviceName,
-    String? modelName,
-    String? serialNumber,
-    String? macAddress,
-    String? firmwareVersion,
-  }) async {
-    try {
-      final response = await client
-          .from('eeg_devices')
-          .insert({
-            'user_id': userId,
-            'device_name': deviceName,
-            'model_name': modelName,
-            'serial_number': serialNumber,
-            'mac_address': macAddress,
-            'firmware_version': firmwareVersion,
-            'status': 'active',
-          })
-          .select()
-          .single();
-
-      return {
-        'success': true,
-        'device_id': response['device_id'],
-        'message': 'ลงทะเบียนอุปกรณ์สำเร็จ',
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถลงทะเบียนอุปกรณ์ได้: $e'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> getEEGDevices(int userId) async {
-    try {
-      final response = await client
-          .from('eeg_devices')
-          .select()
-          .eq('user_id', userId)
-          .order('last_connected_at', ascending: false);
-
-      return {
-        'success': true,
-        'devices': response,
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถโหลดรายการอุปกรณ์ได้'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> updateDeviceStatus({
-    required int deviceId,
-    String? status,
-    int? batteryLevel,
-    bool updateLastConnected = false,
-  }) async {
-    try {
-      final updateData = <String, dynamic>{};
-      if (status != null) updateData['status'] = status;
-      if (batteryLevel != null) updateData['battery_level'] = batteryLevel;
-      if (updateLastConnected) updateData['last_connected_at'] = DateTime.now().toIso8601String();
-
-      await client
-          .from('eeg_devices')
-          .update(updateData)
-          .eq('device_id', deviceId);
-
-      return {'success': true, 'message': 'อัปเดตสถานะอุปกรณ์สำเร็จ'};
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถอัปเดตสถานะอุปกรณ์ได้'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> startEEGSession({
-    required int userId,
-    int? deviceId,
-    String sessionType = 'general',
-    String? notes,
-  }) async {
-    try {
-      final response = await client
-          .from('eeg_sessions')
-          .insert({
-            'user_id': userId,
-            'device_id': deviceId,
-            'session_type': sessionType,
-            'notes': notes,
-          })
-          .select()
-          .single();
-
-      return {
-        'success': true,
-        'session_id': response['session_id'],
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถเริ่ม session ได้: $e'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> endEEGSession({
-    required int sessionId,
-    double? avgAttentionScore,
-    double? avgRelaxationScore,
-    double? avgStressScore,
-    String? dataQualityGrade,
-  }) async {
-    try {
-      final startedSession = await client
-          .from('eeg_sessions')
-          .select('started_at')
-          .eq('session_id', sessionId)
-          .single();
-
-      final startedAt = DateTime.parse(startedSession['started_at']);
-      final endedAt = DateTime.now();
-      final durationSeconds = endedAt.difference(startedAt).inSeconds;
-
-      await client
-          .from('eeg_sessions')
-          .update({
-            'ended_at': endedAt.toIso8601String(),
-            'duration_seconds': durationSeconds,
-            'avg_attention_score': avgAttentionScore,
-            'avg_relaxation_score': avgRelaxationScore,
-            'avg_stress_score': avgStressScore,
-            'data_quality_grade': dataQualityGrade,
-          })
-          .eq('session_id', sessionId);
-
-      return {
-        'success': true,
-        'duration_seconds': durationSeconds,
-        'message': 'จบ session สำเร็จ',
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถจบ session ได้: $e'};
-    }
-  }
-
   static Future<Map<String, dynamic>> getEEGSessions(int userId, {int limit = 20}) async {
     try {
       final response = await client
@@ -1091,68 +447,6 @@ class SupabaseService {
       };
     } catch (e) {
       return {'success': false, 'message': 'ไม่สามารถโหลด sessions ได้'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> startConversation(int userId) async {
-    try {
-      final response = await client
-          .from('conversations')
-          .insert({
-            'user_id': userId,
-            'is_active': true,
-          })
-          .select()
-          .single();
-
-      return {
-        'success': true,
-        'conversation_id': response['conversation_id'],
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถเริ่มการสนทนาได้: $e'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> endConversation({
-    required int conversationId,
-    String? topicSummary,
-    double? sentimentAvg,
-  }) async {
-    try {
-      await client
-          .from('conversations')
-          .update({
-            'ended_at': DateTime.now().toIso8601String(),
-            'is_active': false,
-            'topic_summary': topicSummary,
-            'sentiment_avg': sentimentAvg,
-          })
-          .eq('conversation_id', conversationId);
-
-      return {'success': true, 'message': 'จบการสนทนาสำเร็จ'};
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถจบการสนทนาได้'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> getActiveConversation(int userId) async {
-    try {
-      final response = await client
-          .from('conversations')
-          .select()
-          .eq('user_id', userId)
-          .eq('is_active', true)
-          .order('started_at', ascending: false)
-          .limit(1)
-          .maybeSingle();
-
-      return {
-        'success': true,
-        'conversation': response,
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถโหลดการสนทนาได้'};
     }
   }
 
@@ -1181,55 +475,6 @@ class SupabaseService {
       };
     } catch (e) {
       return {'success': false, 'message': 'ไม่สามารถบันทึกอารมณ์ได้: $e'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> getEmotionLogs(int userId, {int limit = 50}) async {
-    try {
-      final response = await client
-          .from('emotion_logs')
-          .select()
-          .eq('user_id', userId)
-          .order('created_at', ascending: false)
-          .limit(limit);
-
-      return {
-        'success': true,
-        'emotion_logs': response,
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถโหลดบันทึกอารมณ์ได้'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> getEmotionLogsByType(int userId, String emotionType) async {
-    try {
-      final response = await client
-          .from('emotion_logs')
-          .select()
-          .eq('user_id', userId)
-          .eq('emotion_type', emotionType)
-          .order('created_at', ascending: false);
-
-      return {
-        'success': true,
-        'emotion_logs': response,
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถโหลดบันทึกอารมณ์ได้'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> deleteEmotionLog(int logId) async {
-    try {
-      await client
-          .from('emotion_logs')
-          .delete()
-          .eq('log_id', logId);
-
-      return {'success': true, 'message': 'ลบบันทึกอารมณ์สำเร็จ'};
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถลบบันทึกอารมณ์ได้'};
     }
   }
 
@@ -1274,11 +519,6 @@ class SupabaseService {
 
       await client.from('activities').delete().eq('user_id', userId);
 
-      try {
-        await client.from('schedules').delete().eq('user_id', userId);
-      } catch (_) {}
-
-
       final chatMessages = await client
           .from('chat_messages')
           .select('id')
@@ -1288,8 +528,6 @@ class SupabaseService {
       }
 
       await client.from('chat_messages').delete().eq('user_id', userId);
-
-      await client.from('brainwave_data').delete().eq('user_id', userId);
 
       await client.from('test_results').delete().eq('user_id', userId);
 
@@ -1396,78 +634,5 @@ class SupabaseService {
         'message': 'ไม่สามารถโหลดประวัติใบสรุปได้: $e',
       };
     }
-  }
-
-  static Future<Map<String, dynamic>> getEegAssessmentReport(int reportId) async {
-    try {
-      final response = await client
-          .from('eeg_assessment_reports')
-          .select()
-          .eq('id', reportId)
-          .single();
-
-      return {
-        'success': true,
-        'report': {
-          'id': response['id'],
-          'user_id': response['user_id'],
-          'eeg_index': response['eeg_index'],
-          'risk_level': response['risk_level'],
-          'risk_level_en': response['risk_level_en'],
-          'samples_collected': response['samples_collected'],
-          'duration_seconds': response['duration_seconds'],
-          'recorded_at': response['recorded_at'],
-          'report_data': response['report_data'],
-        },
-      };
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'ไม่พบใบสรุป: $e',
-      };
-    }
-  }
-
-  /// แปลงข้อมูลรายงานเป็นข้อความ JSON string เพื่อจัดเก็บในคอลัมน์ 'notes'
-  static String _encodeReportJson(Map<String, dynamic> data) {
-    try {
-      // ลบค่าที่ไม่สามารถจัดเก็บเป็น JSON ได้
-      final clean = Map<String, dynamic>.from(data);
-      clean.remove('riskColor');
-      return clean.entries.map((e) => '${e.key}=${e.value}').join('|');
-    } catch (_) {
-      return '';
-    }
-  }
-
-  /// แปลงข้อมูลรายงานที่ได้จากคอลัมน์ 'notes' กลับมาเป็นแผนผังออบเจ็กต์ Map
-  static Map<String, dynamic> _decodeReportJson(String? notes) {
-    if (notes == null || notes.isEmpty) return {};
-    try {
-      final map = <String, dynamic>{};
-      for (final part in notes.split('|')) {
-        final idx = part.indexOf('=');
-        if (idx > 0) {
-          final key = part.substring(0, idx);
-          final val = part.substring(idx + 1);
-          // พยายามแปลงค่ากลับมาเป็นตัวเลข
-          final numVal = double.tryParse(val);
-          map[key] = numVal ?? val;
-        }
-      }
-      return map;
-    } catch (_) {
-      return {};
-    }
-  }
-
-  /// จับคู่ระดับความเสี่ยงเพื่อย่อให้เหมาะสมกับขนาดความยาวฟิลด์ฐานข้อมูล (ไม่เกิน 10 ตัวอักษร)
-  static String _riskCode(String? riskLevelEn) {
-    if (riskLevelEn == null) return 'unknown';
-    final lower = riskLevelEn.toLowerCase();
-    if (lower.contains('high')) return 'high';
-    if (lower.contains('moderate')) return 'moderate';
-    if (lower.contains('low')) return 'low';
-    return 'unknown';
   }
 }

@@ -18,13 +18,21 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# เปิดใช้งาน CORS Middleware เพื่ออนุญาตการเชื่อมต่อ API จากต้นทาง (Origin) ต่างๆ เช่น หน้าเว็บหรือแอป Flutter
+# ต้นทาง (Origin) ที่อนุญาตให้เรียก API จากเบราว์เซอร์ เช่น เว็บ Flutter
+# กำหนดด้วย env CORS_ALLOW_ORIGINS คั่นด้วยจุลภาค เช่น "https://app.example.com,https://admin.example.com"
+# ถ้าไม่กำหนด อนุญาตเฉพาะ localhost / 127.0.0.1 ทุกพอร์ต สำหรับ flutter run -d chrome ตอนพัฒนา
+# แอปมือถือไม่ผ่าน CORS จึงไม่ได้รับผลกระทบ
+CORS_ALLOW_ORIGINS = [o.strip() for o in os.environ.get("CORS_ALLOW_ORIGINS", "").split(",") if o.strip()]
+LOCALHOST_ORIGIN_REGEX = r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$"
+
+# API นี้ไม่ใช้ cookie หรือ session จึงไม่ต้องเปิด allow_credentials
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=CORS_ALLOW_ORIGINS,
+    allow_origin_regex=None if CORS_ALLOW_ORIGINS else LOCALHOST_ORIGIN_REGEX,
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
 )
 
 # ประกาศตัวแปร Global เพื่อใช้เก็บโมเดล, ตัวแปลงสเกลข้อมูล และตัวถอดรหัส Label
@@ -55,7 +63,7 @@ EMOTION_LABELS = {
 }
 
 # พจนานุกรมแปลภาษาอารมณ์จากอังกฤษเป็นภาษาไทย
-EMOTION_LABELS_TH = {
+EMOTION_LABELS_TH: Dict[str, str] = {
     "neutral": "ปกติ",
     "happy": "มีความสุข",
     "sad": "เศร้า",
@@ -69,7 +77,7 @@ EMOTION_LABELS_TH = {
 }
 
 # ไอคอน Emoji ที่สอดคล้องกับแต่ละอารมณ์
-EMOTION_EMOJIS = {
+EMOTION_EMOJIS: Dict[str, str] = {
     "neutral": "😐",
     "happy": "😊",
     "sad": "😢",
@@ -174,77 +182,97 @@ async def health_check():
 async def health():
     return await health_check()
 
+# ขนาดของมิติใน input_shape ของโมเดล (None = ไม่ได้กำหนดตายตัว ให้ใช้ค่า default แทน)
+def _dim(value: int | None, default: int) -> int:
+    return value if value is not None else default
+
+
+# แปลงโครงสร้างข้อมูล (Reshape) ให้ตรงกับ input shape ของโมเดลเครือข่ายประสาท
+def _reshape_for_model(scaled_features: np.ndarray, input_shape: tuple) -> np.ndarray:
+    n_features = scaled_features.shape[1]
+
+    # (batch, time_steps, features): ทำซ้ำเวกเตอร์ฟีเจอร์เดียวกันในทุก time step
+    if len(input_shape) == 3:
+        time_steps = _dim(input_shape[1], 1)
+        features = _dim(input_shape[2], n_features)
+        width = min(features, n_features)
+        model_input = np.zeros((1, time_steps, features))
+        model_input[0, :, :width] = scaled_features[0, :width]
+        return model_input
+
+    # (batch, channels, time_steps, features): วางฟีเจอร์ลงแกนเวลาของทุก channel
+    if len(input_shape) == 4:
+        channels = _dim(input_shape[1], 1)
+        time_steps = _dim(input_shape[2], n_features)
+        features = _dim(input_shape[3], 1)
+        steps = min(time_steps, n_features)
+        model_input = np.zeros((1, channels, time_steps, features))
+        model_input[0, :, :steps, 0] = scaled_features[0, :steps]
+        return model_input
+
+    return scaled_features
+
+
+# คืนรายชื่อคลาสจาก Label Encoder หรือ None ถ้าไม่มี
+def _encoder_classes():
+    if label_encoder is not None and hasattr(label_encoder, "classes_"):
+        return label_encoder.classes_
+    return None
+
+
+# แปลงผลลัพธ์แบบหลายคลาส (Multi-class) เป็น (อารมณ์, ความมั่นใจ, คะแนนทุกอารมณ์)
+def _decode_multiclass(probs: np.ndarray) -> tuple:
+    predicted_class = int(np.argmax(probs))
+    confidence = float(np.max(probs))
+    classes = _encoder_classes()
+
+    if classes is None:
+        all_scores = {EMOTION_LABELS.get(i, f"class_{i}"): float(p) for i, p in enumerate(probs)}
+        return EMOTION_LABELS.get(predicted_class, "neutral"), confidence, all_scores
+
+    all_scores = {str(cls): float(probs[i]) for i, cls in enumerate(classes) if i < len(probs)}
+    emotion_type = str(classes[predicted_class]) if predicted_class < len(classes) else "neutral"
+    return emotion_type, confidence, all_scores
+
+
+# แปลงผลลัพธ์แบบ Binary classification หรือสัญกรณ์มิติเดียว
+def _decode_binary(predictions: np.ndarray) -> tuple:
+    confidence = float(predictions[0][0])
+    predicted_class = int(round(confidence))
+    classes = _encoder_classes()
+
+    if classes is None:
+        emotion_type = EMOTION_LABELS.get(predicted_class, "neutral")
+    else:
+        emotion_type = str(classes[min(predicted_class, len(classes) - 1)])
+    return emotion_type, confidence, {emotion_type: confidence}
+
+
 # ฟังก์ชันทำนายอารมณ์โดยใช้ Deep Learning Model (TSception) ที่โหลดไว้
 def predict_with_model(eeg_features: np.ndarray) -> dict:
-    global model, scaler, label_encoder
-
     try:
-        # ปรับสเกลข้อมูล EEG Feature ให้อยู่ในช่วงที่เหมาะสมกับโมเดล
-        if scaler is not None:
-            scaled_features = scaler.transform(eeg_features.reshape(1, -1))
-        else:
-            scaled_features = eeg_features.reshape(1, -1)
-
-        if model is not None:
-            input_shape = model.input_shape
-
-            # แปลงโครงสร้างข้อมูล (Reshape) ให้ตรงกับ input shape ของโมเดลเครือข่ายประสาท
-            if len(input_shape) == 3:
-                time_steps = input_shape[1] if input_shape[1] is not None else 1
-                features = input_shape[2] if input_shape[2] is not None else scaled_features.shape[1]
-                model_input = np.zeros((1, time_steps, features))
-                for t in range(time_steps):
-                    model_input[0, t, :min(features, scaled_features.shape[1])] = \
-                        scaled_features[0, :min(features, scaled_features.shape[1])]
-            elif len(input_shape) == 4:
-                ch = input_shape[1] if input_shape[1] is not None else 1
-                ts = input_shape[2] if input_shape[2] is not None else scaled_features.shape[1]
-                feat = input_shape[3] if input_shape[3] is not None else 1
-                model_input = np.zeros((1, ch, ts, feat))
-                for c in range(ch):
-                    for t in range(min(ts, scaled_features.shape[1])):
-                        model_input[0, c, t, 0] = scaled_features[0, t]
-            else:
-                model_input = scaled_features
-
-            # ทำนายผลโดยใช้ TSception Model
-            predictions = model.predict(model_input, verbose=0)
-
-            # ตรวจสอบและดึงผลลัพธ์ความน่าจะเป็นของอารมณ์ประเภทต่างๆ (Multi-class)
-            if predictions.ndim > 1 and predictions.shape[1] > 1:
-                predicted_class = int(np.argmax(predictions[0]))
-                confidence = float(np.max(predictions[0]))
-                all_scores = {}
-
-                # ดึงคะแนนผลตอบรับของแต่ละอารมณ์
-                if label_encoder is not None and hasattr(label_encoder, 'classes_'):
-                    for i, cls in enumerate(label_encoder.classes_):
-                        if i < len(predictions[0]):
-                            all_scores[str(cls)] = float(predictions[0][i])
-                    emotion_type = str(label_encoder.classes_[predicted_class]) if predicted_class < len(label_encoder.classes_) else "neutral"
-                else:
-                    for i in range(len(predictions[0])):
-                        emotion_name = EMOTION_LABELS.get(i, f"class_{i}")
-                        all_scores[emotion_name] = float(predictions[0][i])
-                    emotion_type = EMOTION_LABELS.get(predicted_class, "neutral")
-            else:
-                # กรณีผลลัพธ์เป็นแบบ Binary classification หรือสัญกรณ์มิติเดียว
-                predicted_class = int(round(float(predictions[0][0])))
-                confidence = float(predictions[0][0])
-                if label_encoder is not None and hasattr(label_encoder, 'classes_'):
-                    emotion_type = str(label_encoder.classes_[min(predicted_class, len(label_encoder.classes_) - 1)])
-                else:
-                    emotion_type = EMOTION_LABELS.get(predicted_class, "neutral")
-                all_scores = {emotion_type: confidence}
-
-            return {
-                "emotion_type": emotion_type,
-                "confidence": confidence,
-                "all_scores": all_scores,
-                "method": "tsception_model",
-            }
-        else:
+        if model is None:
             raise Exception("Model not loaded")
+
+        # ปรับสเกลข้อมูล EEG Feature ให้อยู่ในช่วงที่เหมาะสมกับโมเดล
+        features_2d = eeg_features.reshape(1, -1)
+        scaled_features = scaler.transform(features_2d) if scaler is not None else features_2d
+
+        # ทำนายผลโดยใช้ TSception Model
+        model_input = _reshape_for_model(scaled_features, model.input_shape)
+        predictions = model.predict(model_input, verbose=0)
+
+        if predictions.ndim > 1 and predictions.shape[1] > 1:
+            emotion_type, confidence, all_scores = _decode_multiclass(predictions[0])
+        else:
+            emotion_type, confidence, all_scores = _decode_binary(predictions)
+
+        return {
+            "emotion_type": emotion_type,
+            "confidence": confidence,
+            "all_scores": all_scores,
+            "method": "tsception_model",
+        }
 
     except Exception as e:
         logger.error(f"Model prediction error: {e}")
@@ -302,7 +330,7 @@ def predict_with_rules(eeg_data: EEGData) -> dict:
     if max_score > 0:
         scores = {k: round(v / max_score, 4) for k, v in scores.items()}
 
-    emotion_type = max(scores, key=scores.get)
+    emotion_type = max(scores, key=lambda k: scores[k])
     confidence = scores[emotion_type]
 
     return {
@@ -312,27 +340,30 @@ def predict_with_rules(eeg_data: EEGData) -> dict:
         "method": "rule_based",
     }
 
+# เรียงค่าคลื่นสมองเป็นเวกเตอร์ฟีเจอร์ตามลำดับที่โมเดลต้องการ
+def _eeg_to_features(eeg: EEGData) -> np.ndarray:
+    return np.array([
+        eeg.alpha,
+        eeg.beta,
+        eeg.theta,
+        eeg.delta,
+        eeg.gamma,
+        eeg.attention or 0,
+        eeg.meditation or 0,
+    ])
+
 # Endpoint หลักสำหรับการทำนายอารมณ์ด้วยข้อมูลคลื่นสมอง EEG แบบวินาทีเดียว
 @app.post("/predict", response_model=EmotionResponse)
 async def predict_emotion(eeg_data: EEGData):
     try:
         # หากโหลดโมเดลปัญญาประดิษฐ์สำเร็จ จะใช้วิธี Deep learning ในการทำนาย
         if model is not None:
-            features = np.array([
-                eeg_data.alpha,
-                eeg_data.beta,
-                eeg_data.theta,
-                eeg_data.delta,
-                eeg_data.gamma,
-                eeg_data.attention or 0,
-                eeg_data.meditation or 0,
-            ])
-            result = predict_with_model(features)
+            result = predict_with_model(_eeg_to_features(eeg_data))
         else:
             # หากไม่มีไฟล์โมเดล จะประเมินด้วยตรรกะแบบเงื่อนไขคลื่นสมองเบื้องต้นแทน
             result = predict_with_rules(eeg_data)
 
-        emotion_type = result["emotion_type"]
+        emotion_type = str(result["emotion_type"])
 
         return EmotionResponse(
             success=True,
@@ -349,7 +380,7 @@ async def predict_emotion(eeg_data: EEGData):
         # กรณีเกิดความผิดพลาดใดๆ ให้รันระบบ Rule-Based เป็นตัวสำรองฉุกเฉิน (Fallback)
         try:
             result = predict_with_rules(eeg_data)
-            emotion_type = result["emotion_type"]
+            emotion_type = str(result["emotion_type"])
             return EmotionResponse(
                 success=True,
                 emotion_type=emotion_type,
@@ -360,7 +391,27 @@ async def predict_emotion(eeg_data: EEGData):
                 method="rule_based_fallback",
             )
         except Exception as e2:
-            raise HTTPException(status_code=500, detail=str(e2))
+            raise HTTPException(status_code=500, detail=str(e2)) from e2
+
+# ทำนายอารมณ์ของข้อมูลหนึ่งวินาที: ใช้โมเดลถ้ามี ถ้าไม่มีหรือโมเดลล้มเหลวให้ใช้ rule-based
+def _predict_single(eeg: EEGData) -> dict:
+    try:
+        if model is not None:
+            return predict_with_model(_eeg_to_features(eeg))
+        return predict_with_rules(eeg)
+    except Exception:
+        return predict_with_rules(eeg)
+
+
+# เฉลี่ยคะแนนความน่าจะเป็นของแต่ละอารมณ์จากผลลัพธ์ทั้งหมด
+def _average_scores(results: list[dict]) -> dict[str, float]:
+    totals: dict[str, float] = {}
+    for r in results:
+        for k, v in r["all_scores"].items():
+            totals[k] = totals.get(k, 0) + v
+    n = len(results)
+    return {k: round(v / n, 4) for k, v in totals.items()}
+
 
 # Endpoint สำหรับวิเคราะห์ข้อมูลคลื่นสมองแบบกลุ่ม (Batch) เพื่อเฉลี่ยแนวโน้มอารมณ์จากช่วงเวลาที่กว้างขึ้น
 @app.post("/predict/batch", response_model=EmotionResponse)
@@ -368,34 +419,12 @@ async def predict_emotion_batch(batch: EEGBatchData):
     if not batch.data:
         raise HTTPException(status_code=400, detail="No EEG data provided")
 
-    all_results = []
     # ประมวลผลและทำนายข้อมูลคลื่นสมองของแต่ละวินาทีในชุดข้อมูล
-    for eeg in batch.data:
-        try:
-            if model is not None:
-                features = np.array([
-                    eeg.alpha, eeg.beta, eeg.theta,
-                    eeg.delta, eeg.gamma,
-                    eeg.attention or 0, eeg.meditation or 0,
-                ])
-                result = predict_with_model(features)
-            else:
-                result = predict_with_rules(eeg)
-            all_results.append(result)
-        except Exception:
-            all_results.append(predict_with_rules(eeg))
-
-    # นำค่าคะแนนความน่าจะเป็นของอารมณ์ทั้งหมดมาเฉลี่ยรวม
-    combined_scores: Dict[str, float] = {}
-    for r in all_results:
-        for k, v in r["all_scores"].items():
-            combined_scores[k] = combined_scores.get(k, 0) + v
-
-    n = len(all_results)
-    combined_scores = {k: round(v / n, 4) for k, v in combined_scores.items()}
+    all_results = [_predict_single(eeg) for eeg in batch.data]
+    combined_scores = _average_scores(all_results)
 
     # หาอารมณ์ที่มีคะแนนเฉลี่ยสูงสุดในกลุ่มข้อมูลทั้งหมด
-    emotion_type = max(combined_scores, key=combined_scores.get)
+    emotion_type = max(combined_scores, key=lambda k: combined_scores[k])
     confidence = combined_scores[emotion_type]
 
     return EmotionResponse(

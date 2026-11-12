@@ -68,23 +68,6 @@ class User {
     };
   }
 
-  static Future<bool> login(String username, String password) async {
-
-    throw UnimplementedError('Use SupabaseService.login() instead');
-  }
-
-  static Future<void> register() async {
-    throw UnimplementedError('Use SupabaseService.register() instead');
-  }
-
-  Future<void> getProfile() async {
-    throw UnimplementedError('Use SupabaseService.getProfile() instead');
-  }
-
-  Future<void> updateProfile() async {
-    throw UnimplementedError('Use SupabaseService.updateProfile() instead');
-  }
-
   String get displayName {
     if (fullName != null && fullName!.isNotEmpty) return fullName!;
     if (firstName != null || lastName != null) {

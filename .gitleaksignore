@@ -1,0 +1,6 @@
+# ผลที่ gitleaks แจ้งผิด (ไม่ใช่ข้อมูลลับ)
+# Podfile.lock: ค่าใต้หัวข้อ SPEC CHECKSUMS เป็น SHA-1 ของไฟล์ podspec ที่ CocoaPods สร้างเอง
+ios/Podfile.lock:generic-api-key:176
+ios/Podfile.lock:generic-api-key:186
+macos/Podfile.lock:generic-api-key:147
+macos/Podfile.lock:generic-api-key:158

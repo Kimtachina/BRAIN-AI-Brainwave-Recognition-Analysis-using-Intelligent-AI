@@ -44,3 +44,14 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Python test environment and coverage output
+.venv/
+.pytest_cache/
+__pycache__/
+.coverage
+coverage.xml
+
+# ค่าตั้งค่า Supabase ของเครื่องนี้ (ใช้กับ --dart-define-from-file) ห้าม commit
+env/*.json
+!env/*.example.json

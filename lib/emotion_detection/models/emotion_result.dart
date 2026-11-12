@@ -24,15 +24,6 @@ class EmotionResult {
     );
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'emotion_type': emotionType,
-      'confidence': confidence,
-      'timestamp': timestamp.toIso8601String(),
-      'all_scores': allScores,
-    };
-  }
-
   @override
   String toString() {
     return 'EmotionResult(type: $emotionType, confidence: ${(confidence * 100).toStringAsFixed(1)}%)';

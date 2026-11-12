@@ -25,7 +25,6 @@ import json
 import argparse
 import numpy as np
 import pandas as pd
-from pathlib import Path
 
 # ===========================================================================
 # Configuration
@@ -35,6 +34,7 @@ OUTPUT_TFLITE = os.path.join(MODELS_DIR, "depression_model.tflite")
 OUTPUT_KERAS = os.path.join(MODELS_DIR, "depression_model.keras")
 OUTPUT_SCALER = os.path.join(MODELS_DIR, "depression_scaler.json")
 OUTPUT_LABELS = os.path.join(MODELS_DIR, "depression_labels.json")
+SAMPLE_CSV = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sample_depression_data.csv")
 
 # Feature columns ที่โมเดลต้องการ (5 ย่านความถี่หลักของ EEG)
 FEATURE_COLUMNS = ["delta", "theta", "alpha", "beta", "gamma"]
@@ -44,6 +44,65 @@ OPTIONAL_FEATURES = ["attention", "meditation"]
 
 # Label column
 LABEL_COLUMN = "label"  # 0 = Normal, 1 = Depression (MDD)
+
+
+# ชื่ออื่นที่อาจใช้เป็นคอลัมน์ label ใน Dataset
+LABEL_CANDIDATES = ["label", "target", "class", "emotion", "state",
+                    "depression", "mdd", "diagnosis", "Label", "Target"]
+
+
+def _ensure_feature_columns(df: pd.DataFrame) -> None:
+    """ตรวจสอบคอลัมน์ฟีเจอร์ที่จำเป็น ถ้าชื่อต่างกันแค่ตัวพิมพ์เล็ก/ใหญ่จะเปลี่ยนชื่อให้ ถ้าไม่พบจะหยุดโปรแกรม"""
+    missing_cols = [c for c in FEATURE_COLUMNS if c not in df.columns]
+    col_map = {c.lower(): c for c in df.columns}
+    for mc in missing_cols:
+        if mc.lower() not in col_map:
+            print(f"❌ ไม่พบคอลัมน์ '{mc}' ใน Dataset!")
+            print(f"   คอลัมน์ที่มี: {list(df.columns)}")
+            sys.exit(1)
+        df.rename(columns={col_map[mc.lower()]: mc}, inplace=True)
+
+
+def _ensure_label_column(df: pd.DataFrame) -> None:
+    """หาคอลัมน์ label (รวมชื่อทางเลือก) แล้วเปลี่ยนชื่อเป็น LABEL_COLUMN ถ้าไม่พบจะหยุดโปรแกรม"""
+    if LABEL_COLUMN in df.columns:
+        return
+    found = next((lc for lc in LABEL_CANDIDATES if lc in df.columns), None)
+    if found is None:
+        print("❌ ไม่พบคอลัมน์ label ใน Dataset!")
+        print(f"   คอลัมน์ที่มี: {list(df.columns)}")
+        print(f"   กรุณาตั้งชื่อคอลัมน์ label เป็น '{LABEL_COLUMN}'")
+        sys.exit(1)
+    df.rename(columns={found: LABEL_COLUMN}, inplace=True)
+
+
+def _select_features(df: pd.DataFrame) -> list:
+    """ฟีเจอร์หลักทั้งหมด บวกฟีเจอร์เสริมที่มีใน Dataset"""
+    use_features = FEATURE_COLUMNS.copy()
+    for opt in OPTIONAL_FEATURES:
+        if opt in df.columns:
+            use_features.append(opt)
+            print(f"   ✅ พบฟีเจอร์เสริม: {opt}")
+    return use_features
+
+
+def _to_binary_labels(y: np.ndarray) -> np.ndarray:
+    """ถ้า label มีมากกว่า 2 ค่า ให้แปลงเป็น binary (ค่าที่สูงกว่ามัธยฐาน = ซึมเศร้า)"""
+    unique_labels = np.unique(y)
+    print(f"   Labels: {unique_labels}")
+    if len(unique_labels) <= 2:
+        return y
+    print("   ⚠️ พบ label มากกว่า 2 ค่า → แปลงเป็น binary (0=ปกติ, 1=ซึมเศร้า)")
+    threshold = np.median(unique_labels)
+    return (y > threshold).astype(np.float32)
+
+
+def _print_class_balance(y: np.ndarray) -> None:
+    n_normal = int(np.sum(y == 0))
+    n_depression = int(np.sum(y == 1))
+    print("\n📊 สัดส่วนข้อมูล:")
+    print(f"   ปกติ (0):      {n_normal} ราย ({n_normal / len(y) * 100:.1f}%)")
+    print(f"   ซึมเศร้า (1):  {n_depression} ราย ({n_depression / len(y) * 100:.1f}%)")
 
 
 def load_and_prepare_data(csv_path: str):
@@ -56,60 +115,13 @@ def load_and_prepare_data(csv_path: str):
     print(f"   จำนวนแถว: {len(df)}")
     print(f"   คอลัมน์ทั้งหมด: {list(df.columns)}")
 
-    # ตรวจสอบคอลัมน์ที่จำเป็น
-    missing_cols = [c for c in FEATURE_COLUMNS if c not in df.columns]
-    if missing_cols:
-        # ลองหาชื่อคอลัมน์ที่คล้ายกัน (case-insensitive)
-        col_map = {c.lower(): c for c in df.columns}
-        for mc in missing_cols:
-            if mc.lower() in col_map:
-                df.rename(columns={col_map[mc.lower()]: mc}, inplace=True)
-            else:
-                print(f"❌ ไม่พบคอลัมน์ '{mc}' ใน Dataset!")
-                print(f"   คอลัมน์ที่มี: {list(df.columns)}")
-                sys.exit(1)
-
-    # ตรวจสอบ label column
-    if LABEL_COLUMN not in df.columns:
-        # ลองหาชื่ออื่นที่อาจเป็น label
-        label_candidates = ["label", "target", "class", "emotion", "state",
-                            "depression", "mdd", "diagnosis", "Label", "Target"]
-        found = False
-        for lc in label_candidates:
-            if lc in df.columns:
-                df.rename(columns={lc: LABEL_COLUMN}, inplace=True)
-                found = True
-                break
-        if not found:
-            print(f"❌ ไม่พบคอลัมน์ label ใน Dataset!")
-            print(f"   คอลัมน์ที่มี: {list(df.columns)}")
-            print(f"   กรุณาตั้งชื่อคอลัมน์ label เป็น '{LABEL_COLUMN}'")
-            sys.exit(1)
-
-    # เลือกฟีเจอร์ที่จะใช้
-    use_features = FEATURE_COLUMNS.copy()
-    for opt in OPTIONAL_FEATURES:
-        if opt in df.columns:
-            use_features.append(opt)
-            print(f"   ✅ พบฟีเจอร์เสริม: {opt}")
+    _ensure_feature_columns(df)
+    _ensure_label_column(df)
+    use_features = _select_features(df)
 
     X = df[use_features].values.astype(np.float32)
-    y = df[LABEL_COLUMN].values.astype(np.float32)
-
-    # ถ้า label มีมากกว่า 2 ค่า ให้แปลงเป็น binary
-    unique_labels = np.unique(y)
-    print(f"   Labels: {unique_labels}")
-    if len(unique_labels) > 2:
-        print("   ⚠️ พบ label มากกว่า 2 ค่า → แปลงเป็น binary (0=ปกติ, 1=ซึมเศร้า)")
-        # สมมติว่าค่าที่สูงกว่ากลาง = ซึมเศร้า
-        threshold = np.median(unique_labels)
-        y = (y > threshold).astype(np.float32)
-
-    n_normal = int(np.sum(y == 0))
-    n_depression = int(np.sum(y == 1))
-    print(f"\n📊 สัดส่วนข้อมูล:")
-    print(f"   ปกติ (0):      {n_normal} ราย ({n_normal / len(y) * 100:.1f}%)")
-    print(f"   ซึมเศร้า (1):  {n_depression} ราย ({n_depression / len(y) * 100:.1f}%)")
+    y = _to_binary_labels(df[LABEL_COLUMN].values.astype(np.float32))
+    _print_class_balance(y)
 
     return X, y, use_features
 
@@ -131,7 +143,7 @@ def build_model(n_features: int):
     import tensorflow as tf
 
     model = tf.keras.Sequential([
-        tf.keras.layers.InputLayer(input_shape=(n_features,)),
+        tf.keras.Input(shape=(n_features,)),
 
         # Hidden layer 1
         tf.keras.layers.Dense(64, activation="relu"),
@@ -161,6 +173,39 @@ def build_model(n_features: int):
     return model
 
 
+def compute_class_weight(y_train):
+    """น้ำหนักของแต่ละคลาสแบบ balanced: total / (2 × จำนวนในคลาส) ถ้าคลาสว่างให้ 1.0"""
+    n_normal = int(np.sum(y_train == 0))
+    n_depression = int(np.sum(y_train == 1))
+    total = n_normal + n_depression
+    return {
+        0: total / (2 * n_normal) if n_normal > 0 else 1.0,
+        1: total / (2 * n_depression) if n_depression > 0 else 1.0,
+    }
+
+
+def risk_level(score: float) -> str:
+    """ระดับความเสี่ยงจากคะแนน 0-100 (ตรงกับ risk_levels ใน depression_labels.json)"""
+    if score <= 28:
+        return "ต่ำ"
+    if score <= 48:
+        return "ปานกลาง"
+    return "สูง"
+
+
+def _print_sample_predictions(model, X_test_scaled, y_test, n=10):
+    """แสดงตัวอย่างค่า probability ของ n ตัวแรกใน Test Set"""
+    predictions = model.predict(X_test_scaled[:n], verbose=0)
+    print(f"\n📋 ตัวอย่างค่า Probability ({n} ตัวแรก):")
+    print(f"   {'Probability':>12} | {'Score (×100)':>12} | {'Actual':>8} | {'Risk Level'}")
+    print(f"   {'-' * 55}")
+    for pred, actual in zip(predictions[:n], y_test[:n], strict=True):
+        prob = float(pred[0])
+        score = prob * 100
+        label = "ซึมเศร้า" if actual == 1 else "ปกติ"
+        print(f"   {prob:>12.4f} | {score:>10.1f}  | {label:>8} | {risk_level(score)}")
+
+
 def train_model(X, y, use_features):
     """เทรนโมเดลและบันทึกผลลัพธ์"""
     import tensorflow as tf
@@ -183,16 +228,10 @@ def train_model(X, y, use_features):
     model = build_model(n_features=X_train_scaled.shape[1])
 
     # Class weight เพื่อชดเชยกรณีข้อมูลไม่สมดุล
-    n_normal = int(np.sum(y_train == 0))
-    n_depression = int(np.sum(y_train == 1))
-    total = n_normal + n_depression
-    class_weight = {
-        0: total / (2 * n_normal) if n_normal > 0 else 1.0,
-        1: total / (2 * n_depression) if n_depression > 0 else 1.0,
-    }
+    class_weight = compute_class_weight(y_train)
     print(f"   Class weights: {class_weight}")
 
-    history = model.fit(
+    model.fit(
         X_train_scaled, y_train,
         epochs=100,
         batch_size=32,
@@ -218,17 +257,7 @@ def train_model(X, y, use_features):
     print(f"   Test Accuracy: {test_acc * 100:.2f}%")
     print(f"   Test Loss:     {test_loss:.4f}")
 
-    # แสดงตัวอย่างค่า probability
-    predictions = model.predict(X_test_scaled[:10], verbose=0)
-    print(f"\n📋 ตัวอย่างค่า Probability (10 ตัวแรก):")
-    print(f"   {'Probability':>12} | {'Score (×100)':>12} | {'Actual':>8} | {'Risk Level'}")
-    print(f"   {'-' * 55}")
-    for i, (pred, actual) in enumerate(zip(predictions[:10], y_test[:10])):
-        prob = float(pred[0])
-        score = prob * 100
-        risk = "ต่ำ" if score <= 28 else ("ปานกลาง" if score <= 48 else "สูง")
-        label = "ซึมเศร้า" if actual == 1 else "ปกติ"
-        print(f"   {prob:>12.4f} | {score:>10.1f}  | {label:>8} | {risk}")
+    _print_sample_predictions(model, X_test_scaled, y_test)
 
     return model, mean, std, use_features, test_acc
 
@@ -245,10 +274,13 @@ def convert_to_tflite(model):
     model.save(OUTPUT_KERAS)
     print(f"   ✅ บันทึก Keras model: {OUTPUT_KERAS}")
 
-    # แปลงเป็น TFLite
-    converter = tf.lite.TFLiteConverter.from_keras_model(model)
-    converter.optimizations = [tf.lite.Optimize.DEFAULT]
-    tflite_model = converter.convert()
+    # แปลงเป็น TFLite (ผ่าน SavedModel เพื่อให้ใช้กับ Keras 3 ได้)
+    from tflite_utils import convert_keras_to_tflite
+
+    def configure(converter):
+        converter.optimizations = [tf.lite.Optimize.DEFAULT]
+
+    tflite_model = convert_keras_to_tflite(tf, model, configure)
 
     os.makedirs(os.path.dirname(OUTPUT_TFLITE), exist_ok=True)
     with open(OUTPUT_TFLITE, "wb") as f:
@@ -263,10 +295,10 @@ def convert_to_tflite(model):
     interpreter.allocate_tensors()
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
-    print(f"\n📋 TFLite Model Details:")
+    print("\n📋 TFLite Model Details:")
     print(f"   Input:  shape={input_details[0]['shape']} dtype={input_details[0]['dtype']}")
     print(f"   Output: shape={output_details[0]['shape']} dtype={output_details[0]['dtype']}")
-    print(f"   ⭐ Output จะเป็นค่า Probability (0.0-1.0) → คูณ 100 = คะแนน 0-100")
+    print("   ⭐ Output จะเป็นค่า Probability (0.0-1.0) → คูณ 100 = คะแนน 0-100")
 
 
 def save_scaler_params(mean, std, feature_names):
@@ -317,7 +349,7 @@ def save_label_info():
 
 def create_sample_dataset():
     """สร้าง Dataset ตัวอย่างสำหรับทดสอบ (ถ้าไม่มี CSV จริง)"""
-    sample_csv = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sample_depression_data.csv")
+    sample_csv = SAMPLE_CSV
 
     print("\n" + "=" * 60)
     print("📝 สร้าง Sample Dataset สำหรับทดสอบ...")
@@ -369,7 +401,7 @@ def create_sample_dataset():
     return sample_csv
 
 
-def main():
+def _parse_args():
     parser = argparse.ArgumentParser(
         description="🧠 เทรนโมเดลตรวจจับโรคซึมเศร้าจากคลื่นสมอง EEG"
     )
@@ -385,33 +417,55 @@ def main():
         "--epochs", type=int, default=100,
         help="จำนวน epochs สำหรับเทรน (default: 100)"
     )
+    return parser.parse_args()
 
-    args = parser.parse_args()
+
+def _resolve_csv_path(args) -> str:
+    """ใช้ CSV ที่ระบุ ถ้าไม่ได้ระบุให้สร้าง sample dataset"""
+    if args.csv:
+        return args.csv
+    if not args.sample:
+        print("\n⚠️ ไม่ได้ระบุ CSV file!")
+        print("   ใช้ --csv path/to/data.csv  สำหรับ dataset จริง")
+        print("   ใช้ --sample               สำหรับ dataset ตัวอย่าง (ทดสอบ)")
+        print("\n📝 สร้าง sample dataset อัตโนมัติ...\n")
+    return create_sample_dataset()
+
+
+def _print_summary(accuracy) -> None:
+    print("\n" + "=" * 60)
+    print("🎉 เทรนเสร็จสมบูรณ์!")
+    print("=" * 60)
+    print(f"   📁 ไฟล์ output ทั้งหมดอยู่ใน: {MODELS_DIR}")
+    print("   📄 depression_model.tflite   - โมเดลสำหรับ Flutter")
+    print("   📄 depression_model.keras    - โมเดล Keras (backup)")
+    print("   📄 depression_scaler.json    - Scaler parameters")
+    print("   📄 depression_labels.json    - Label & risk level info")
+    print(f"   🎯 Test Accuracy: {accuracy * 100:.2f}%")
+    print("\n   📱 วิธีใช้ในแอป Flutter:")
+    print("      1. คัดลอกไฟล์ .tflite ไปที่ assets/models/")
+    print("      2. ส่งค่า EEG (delta, theta, alpha, beta, gamma) เข้าโมเดล")
+    print("      3. โมเดลคืนค่า probability (0.0-1.0)")
+    print("      4. นำค่ามาคูณ 100 = คะแนนความเสี่ยงซึมเศร้า 0-100")
+    print("      5. 0-28 = เสี่ยงต่ำ (เขียว)")
+    print("         29-48 = ปานกลาง (ส้ม)")
+    print("         49-100 = เสี่ยงสูง (แดง)")
+
+
+def main():
+    args = _parse_args()
 
     print("=" * 60)
     print("🧠 Depression Detection Model Training")
     print("   Output: Probability (0.0-1.0) → ×100 = คะแนน 0-100")
     print("=" * 60)
 
-    # เลือก dataset
-    if args.csv:
-        csv_path = args.csv
-    elif args.sample:
-        csv_path = create_sample_dataset()
-    else:
-        print("\n⚠️ ไม่ได้ระบุ CSV file!")
-        print("   ใช้ --csv path/to/data.csv  สำหรับ dataset จริง")
-        print("   ใช้ --sample               สำหรับ dataset ตัวอย่าง (ทดสอบ)")
-        print("\n📝 สร้าง sample dataset อัตโนมัติ...\n")
-        csv_path = create_sample_dataset()
-
-    # โหลดและเตรียมข้อมูล
+    # เลือก dataset แล้วโหลดและเตรียมข้อมูล
+    csv_path = _resolve_csv_path(args)
     X, y, use_features = load_and_prepare_data(csv_path)
 
-    # เทรนโมเดล
+    # เทรนโมเดล แล้วแปลงเป็น TFLite
     model, mean, std, features, accuracy = train_model(X, y, use_features)
-
-    # แปลงเป็น TFLite
     convert_to_tflite(model)
 
     # บันทึก metadata
@@ -421,24 +475,7 @@ def main():
     save_scaler_params(mean, std, features)
     save_label_info()
 
-    # สรุปผล
-    print("\n" + "=" * 60)
-    print("🎉 เทรนเสร็จสมบูรณ์!")
-    print("=" * 60)
-    print(f"   📁 ไฟล์ output ทั้งหมดอยู่ใน: {MODELS_DIR}")
-    print(f"   📄 depression_model.tflite   - โมเดลสำหรับ Flutter")
-    print(f"   📄 depression_model.keras    - โมเดล Keras (backup)")
-    print(f"   📄 depression_scaler.json    - Scaler parameters")
-    print(f"   📄 depression_labels.json    - Label & risk level info")
-    print(f"   🎯 Test Accuracy: {accuracy * 100:.2f}%")
-    print(f"\n   📱 วิธีใช้ในแอป Flutter:")
-    print(f"      1. คัดลอกไฟล์ .tflite ไปที่ assets/models/")
-    print(f"      2. ส่งค่า EEG (delta, theta, alpha, beta, gamma) เข้าโมเดล")
-    print(f"      3. โมเดลคืนค่า probability (0.0-1.0)")
-    print(f"      4. นำค่ามาคูณ 100 = คะแนนความเสี่ยงซึมเศร้า 0-100")
-    print(f"      5. 0-28 = เสี่ยงต่ำ (เขียว)")
-    print(f"         29-48 = ปานกลาง (ส้ม)")
-    print(f"         49-100 = เสี่ยงสูง (แดง)")
+    _print_summary(accuracy)
 
 
 if __name__ == "__main__":

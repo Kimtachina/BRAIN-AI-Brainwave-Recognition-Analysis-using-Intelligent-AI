@@ -1,11 +1,11 @@
 {
-    "name": "brain_wave_flutter",
-    "short_name": "brain_wave_flutter",
+    "name": "Smart Brain",
+    "short_name": "Smart Brain",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "วัดคลื่นสมองด้วย Muse และประเมินสุขภาพจิต",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
