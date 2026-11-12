@@ -1,7 +1,6 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -147,19 +146,15 @@ class _WeeklyReportScreenState extends State<WeeklyReportScreen> {
     _chartDates = dates;
   }
 
-  Future<File> _getCacheFile() async {
-    final directory = await getApplicationDocumentsDirectory();
-    return File('${directory.path}/weekly_ai_report_${widget.user!.id}.txt');
-  }
+  // เก็บรายงาน AI ล่าสุดไว้ใน shared_preferences (ใช้ได้ทั้งมือถือและเว็บ)
+  String get _cacheKey => 'weekly_ai_report_${widget.user!.id}';
 
   Future<void> _loadCachedAIReport() async {
     try {
-      final file = await _getCacheFile();
-      if (await file.exists()) {
-        final cachedText = await file.readAsString();
-        if (cachedText.isNotEmpty) {
-          _aiReport = cachedText;
-        }
+      final prefs = await SharedPreferences.getInstance();
+      final cachedText = prefs.getString(_cacheKey);
+      if (cachedText != null && cachedText.isNotEmpty) {
+        _aiReport = cachedText;
       }
     } catch (e) {
       debugPrint('Error loading cached AI report: $e');
@@ -168,8 +163,8 @@ class _WeeklyReportScreenState extends State<WeeklyReportScreen> {
 
   Future<void> _cacheAIReport(String text) async {
     try {
-      final file = await _getCacheFile();
-      await file.writeAsString(text);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_cacheKey, text);
     } catch (e) {
       debugPrint('Error saving cached AI report: $e');
     }

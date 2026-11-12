@@ -37,13 +37,26 @@ class AuthService {
       final authResponse = await client.auth.signUp(
         email: email,
         password: password,
+        // trigger ฝั่ง Supabase (migration 015) ใช้ข้อมูลนี้สร้างแถวในตาราง users ให้
         data: {
           'full_name': fullName,
+          'phone': phone,
+          'birth_date': birthDate,
         },
       );
 
       if (authResponse.user == null) {
         return {'success': false, 'message': 'ไม่สามารถสร้างบัญชีได้ กรุณาลองใหม่'};
+      }
+
+      // ยังไม่มี session (ต้องยืนยันอีเมลก่อน): RLS ไม่ให้แอปเขียนตาราง users ตอนนี้
+      // แถวถูกสร้างโดย trigger แล้ว และจะซิงค์อีกครั้งตอนล็อกอินครั้งแรก
+      if (authResponse.session == null) {
+        return {
+          'success': true,
+          'message': 'สมัครสมาชิกสำเร็จ กรุณาตรวจสอบอีเมลเพื่อยืนยันบัญชี',
+          'needs_verification': true,
+        };
       }
 
       // ขั้นตอนที่ 2: สร้าง row ในตาราง users เพื่อเชื่อมกับระบบแอป
@@ -129,6 +142,17 @@ class AuthService {
   ///   4. ซิงค์ข้อมูลกับตาราง users
   static Future<Map<String, dynamic>> signInWithGoogle() async {
     try {
+      // เว็บ: google_sign_in ใช้ serverClientId ไม่ได้ จึงให้ Supabase พาไปหน้า Google แล้วกลับมาที่เว็บ
+      // เมื่อกลับมา WelcomeScreen จะเจอ session และล็อกอินอัตโนมัติ (restoreSession)
+      // ต้องเพิ่ม URL ของเว็บใน Supabase → Authentication → URL Configuration → Redirect URLs
+      if (kIsWeb) {
+        await SupabaseService.client.auth.signInWithOAuth(
+          OAuthProvider.google,
+          redirectTo: Uri.base.origin + Uri.base.path,
+        );
+        return {'success': false, 'redirecting': true, 'message': 'กำลังไปหน้าเข้าสู่ระบบของ Google...'};
+      }
+
       // ขั้นตอนที่ 1: เปิดหน้า Google Sign-In
       final googleSignIn = GoogleSignIn(
         scopes: ['email', 'profile'],

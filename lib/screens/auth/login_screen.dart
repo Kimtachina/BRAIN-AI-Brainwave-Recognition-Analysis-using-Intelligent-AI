@@ -117,7 +117,8 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } else {
       // ถ้าผู้ใช้กดยกเลิกเอง ไม่ต้องแสดง error
-      if (result['message'] != 'ยกเลิกการเข้าสู่ระบบด้วย Google') {
+      if (result['redirecting'] != true &&
+          result['message'] != 'ยกเลิกการเข้าสู่ระบบด้วย Google') {
         _showError(result['message'] ?? 'เกิดข้อผิดพลาด');
       }
     }

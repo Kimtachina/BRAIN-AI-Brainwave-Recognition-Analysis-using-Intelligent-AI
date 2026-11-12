@@ -380,11 +380,12 @@ extension _MuseConnectionSection on _HomeScreenState {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('ไม่สามารถใช้ Bluetooth บนแพลตฟอร์มนี้ได้'),
+            Text('อุปกรณ์หรือเบราว์เซอร์นี้ใช้ Bluetooth ไม่ได้'),
             SizedBox(height: 8),
             Text('คุณสามารถ:', style: TextStyle(fontWeight: FontWeight.bold)),
-            Text('• ใช้โหมดจำลองเพื่อทดสอบ'),
-            Text('• รันแอปบน iOS/Android เพื่อเชื่อมต่อจริง'),
+            Text('• เปิดเว็บด้วย Chrome หรือ Edge บนคอมพิวเตอร์หรือ Android'),
+            Text('• ใช้แอปบน iOS/Android เพื่อเชื่อมต่อจริง'),
+            Text('• ใช้โหมดจำลองเพื่อทดลอง (ไม่บันทึกผล)'),
           ],
         ),
         actions: [

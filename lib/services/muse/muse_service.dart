@@ -1,5 +1,4 @@
-// บริการนำเข้าและส่งออกไฟล์เชื่อมต่ออุปกรณ์ Muse S แบบมีเงื่อนไข (Conditional Export)
-// เพื่อให้แอปพลิเคชันสามารถรองรับทั้งบนอุปกรณ์เคลื่อนที่ (Android/iOS via _io) และเว็บบราวเซอร์ (via _web)
-export 'muse_service_io.dart' if (dart.library.html) 'muse_service_web.dart';
+// บริการเชื่อมต่ออุปกรณ์ Muse ใช้ไฟล์เดียวกันทั้งมือถือ (Android/iOS) และเว็บ
+// บนเว็บ flutter_blue_plus ใช้ Web Bluetooth แทน BLE ของระบบปฏิบัติการ
+export 'muse_ble_service.dart';
 export 'muse_types.dart';
-

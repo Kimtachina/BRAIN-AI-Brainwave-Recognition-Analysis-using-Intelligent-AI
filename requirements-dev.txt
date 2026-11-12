@@ -1,0 +1,12 @@
+# แพ็กเกจสำหรับรัน test ของโค้ด Python (ไม่ต้องติดตั้ง tensorflow)
+#   python3 -m venv .venv
+#   .venv/bin/pip install -r requirements-dev.txt
+#   .venv/bin/pytest --cov --cov-report=xml
+fastapi
+pydantic
+numpy
+joblib
+pandas
+httpx
+pytest
+pytest-cov

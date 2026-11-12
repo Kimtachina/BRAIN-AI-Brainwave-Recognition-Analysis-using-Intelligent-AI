@@ -1,52 +1,30 @@
-import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import '../supabase_service.dart';
+import 'ai_proxy.dart';
 
 /// RAGService จัดการระบบ Retrieval-Augmented Generation (RAG) ของแอปพลิเคชัน
 /// ทำหน้าที่สกัดคำค้นหาหลัก (Keywords) สร้างเวกเตอร์คำค้นหาผ่านบริการของ OpenAI Embeddings API
 /// ค้นหาฐานความรู้ใน Supabase Database ทั้งแบบ Vector Similarity Search และ Keyword Search
 /// เพื่อใช้ป้อนเป็นบริบทข้อมูลที่เกี่ยวข้อง (Context) ไปให้กับ AI Chatbot ในการตอบคำถามผู้ใช้งาน
 class RAGService {
-  static String get _openaiApiKey => dotenv.env['OPENAI_API_KEY'] ?? '';
-  static const String _embeddingModel = 'text-embedding-3-small';
-  static const String _embeddingUrl = 'https://api.openai.com/v1/embeddings';
 
   // จำนวนผลลัพธ์ข้อมูลอ้างอิงสูงสุดในการดึงมาใช้
   static const int _maxResults = 5;
   // เกณฑ์ความคล้ายคลึงของเวกเตอร์ขั้นต่ำ (Cosine Similarity Threshold)
   static const double _matchThreshold = 0.7;
 
+  /// สร้างเวกเตอร์ของข้อความผ่าน openai-proxy (text-embedding-3-small)
   static Future<List<double>?> createEmbedding(String text) async {
-    if (_openaiApiKey.isEmpty || _openaiApiKey == 'YOUR_OPENAI_API_KEY') {
-      print('RAG: OpenAI API Key not configured');
-      return null;
-    }
-
     try {
-      final response = await http.post(
-        Uri.parse(_embeddingUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_openaiApiKey',
-        },
-        body: json.encode({
-          'model': _embeddingModel,
-          'input': text,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final embedding = data['data'][0]['embedding'] as List;
-        return embedding.map((e) => e as double).toList();
-      } else {
-        print('RAG Embedding Error: ${response.statusCode} - ${response.body}');
-        return null;
+      final response = await AiProxy.embedding(text);
+      if (response.ok) {
+        final embedding = response.data!['data'][0]['embedding'] as List;
+        return embedding.map((e) => (e as num).toDouble()).toList();
       }
+      debugPrint('RAG Embedding Error: ${response.statusCode} - ${response.errorMessage}');
+      return null;
     } catch (e) {
-      print('RAG Embedding Exception: $e');
+      debugPrint('RAG Embedding Exception: $e');
       return null;
     }
   }

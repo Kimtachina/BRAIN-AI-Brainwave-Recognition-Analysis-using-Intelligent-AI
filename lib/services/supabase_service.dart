@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:image_picker/image_picker.dart' show XFile;
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -9,12 +9,20 @@ class SupabaseService {
   // ไคลเอนต์หลักสำหรับเชื่อมโยงฐานข้อมูล Supabase
   static SupabaseClient? _client;
 
-  // URL และ Anon Key ของโครงการ Supabase
-  static const String supabaseUrl = 'https://ifsvthnxydchqnigvmuw.supabase.co';
-  static const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlmc3Z0aG54eWRjaHFuaWd2bXV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwNjQ2NDIsImV4cCI6MjA4NDY0MDY0Mn0.HWVTbQ7SwY93EZqdKCljnPCT8rCliJAMMxI1QC5JsR0';
+  // URL และ Anon Key ของโครงการ Supabase ส่งเข้ามาตอน build ด้วย
+  // --dart-define-from-file=env/supabase.json (ดู env/supabase.example.json และ README)
+  // ไม่เก็บ key ไว้ในซอร์สโค้ด
+  static const String supabaseUrl = String.fromEnvironment('SUPABASE_URL');
+  static const String supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
 
   /// เริ่มต้นการตั้งค่าและเตรียมเชื่อมต่อกับฐานข้อมูล Supabase (เรียกที่ main.dart ตอนเปิดแอป)
   static Future<void> initialize() async {
+    if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
+      throw StateError(
+        'ไม่พบ SUPABASE_URL / SUPABASE_ANON_KEY: '
+        'รันหรือ build ด้วย --dart-define-from-file=env/supabase.json',
+      );
+    }
     await Supabase.initialize(
       url: supabaseUrl,
       anonKey: supabaseAnonKey,
@@ -82,11 +90,14 @@ class SupabaseService {
 
   static Future<Map<String, dynamic>> uploadAvatar({
     required int userId,
-    required File imageFile,
+    required XFile imageFile,
   }) async {
     try {
 
-      final fileExt = imageFile.path.split('.').last.toLowerCase();
+      // ใช้ name แทน path เพราะบนเว็บ path เป็น blob URL ที่ไม่มีนามสกุลไฟล์
+      final fileExt = imageFile.name.contains('.')
+          ? imageFile.name.split('.').last.toLowerCase()
+          : 'jpg';
       final fileName = 'user_${userId}_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
       final filePath = 'profiles/$fileName';
 
@@ -135,26 +146,25 @@ class SupabaseService {
     String? currentPassword,
     required String newPassword,
   }) async {
-    try {
+    // รหัสผ่านอยู่ใน Supabase Auth (เก็บแบบ hash) ไม่ได้อยู่ในตาราง users
+    final email = client.auth.currentUser?.email;
+    if (email == null) {
+      return {'success': false, 'message': 'กรุณาเข้าสู่ระบบใหม่ก่อนเปลี่ยนรหัสผ่าน'};
+    }
 
-      if (currentPassword != null) {
-        final user = await client
-            .from('users')
-            .select('password')
-            .eq('id', userId)
-            .single();
-
-        if (user['password'] != currentPassword) {
-          return {'success': false, 'message': 'รหัสผ่านปัจจุบันไม่ถูกต้อง'};
-        }
+    if (currentPassword != null) {
+      try {
+        await client.auth.signInWithPassword(email: email, password: currentPassword);
+      } on AuthException {
+        return {'success': false, 'message': 'รหัสผ่านปัจจุบันไม่ถูกต้อง'};
       }
+    }
 
-      await client
-          .from('users')
-          .update({'password': newPassword})
-          .eq('id', userId);
-
+    try {
+      await client.auth.updateUser(UserAttributes(password: newPassword));
       return {'success': true, 'message': 'เปลี่ยนรหัสผ่านสำเร็จ'};
+    } on AuthException catch (e) {
+      return {'success': false, 'message': 'ไม่สามารถเปลี่ยนรหัสผ่านได้: ${e.message}'};
     } catch (e) {
       return {'success': false, 'message': 'ไม่สามารถเปลี่ยนรหัสผ่านได้'};
     }
@@ -509,10 +519,6 @@ class SupabaseService {
 
       await client.from('activities').delete().eq('user_id', userId);
 
-      try {
-        await client.from('schedules').delete().eq('user_id', userId);
-      } catch (_) {}
-
       final chatMessages = await client
           .from('chat_messages')
           .select('id')
@@ -522,8 +528,6 @@ class SupabaseService {
       }
 
       await client.from('chat_messages').delete().eq('user_id', userId);
-
-      await client.from('brainwave_data').delete().eq('user_id', userId);
 
       await client.from('test_results').delete().eq('user_id', userId);
 

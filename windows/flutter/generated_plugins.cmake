@@ -9,7 +9,6 @@ list(APPEND FLUTTER_PLUGIN_LIST
   permission_handler_windows
   printing
   record_windows
-  speech_to_text_windows
   url_launcher_windows
 )
 

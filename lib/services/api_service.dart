@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:image_picker/image_picker.dart' show XFile;
 import 'supabase_service.dart';
 import 'ai/chatgpt_service.dart';
 import 'auth_service.dart';
@@ -45,7 +45,7 @@ class ApiService {
   /// อัปโหลดรูปภาพโปรไฟล์ (Avatar) ไปยัง Supabase Storage
   static Future<Map<String, dynamic>> uploadAvatar({
     required int userId,
-    required File imageFile,
+    required XFile imageFile,
   }) async {
     return SupabaseService.uploadAvatar(
       userId: userId,

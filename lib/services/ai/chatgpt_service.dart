@@ -1,7 +1,5 @@
-import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
+import 'ai_proxy.dart';
 import 'rag_service.dart';
 import '../supabase_service.dart';
 
@@ -9,10 +7,7 @@ import '../supabase_service.dart';
 /// ทำหน้าที่เป็นสมองส่วนปัญญาประดิษฐ์ของแอปพลิเคชัน ในการตอบคำถามผู้ใช้งานเรื่องสุขภาพจิตและคลื่นสมอง
 /// โดยรองรับการพ่วง RAG Context ข้อมูลความรู้และประวัติสุขภาพสมองย้อนหลังของผู้ใช้เข้าไปในคำถามอัตโนมัติ
 class ChatGPTService {
-  // ดึงรหัส API Key ของ OpenAI จากไฟล์สภาพแวดล้อม (.env)
-  static String get _apiKey => dotenv.env['OPENAI_API_KEY'] ?? '';
-  static const String _baseUrl = 'https://api.openai.com/v1/chat/completions';
-  static const String _model = 'gpt-4o-mini';
+  // โมเดลและ API key อยู่ฝั่ง server (Supabase Edge Function: openai-proxy)
 
   // สถานะเปิดใช้งาน RAG (ดึงความรู้เสริม) ร่วมกับการตอบคำถามของบอท
   static bool _useRAG = true;
@@ -57,13 +52,6 @@ class ChatGPTService {
     int? userId,
     int? userMessageId,
   }) async {
-
-    if (_apiKey == 'YOUR_OPENAI_API_KEY' || _apiKey.isEmpty) {
-      return {
-        'success': false,
-        'message': 'กรุณาตั้งค่า OpenAI API Key ใน chatgpt_service.dart',
-      };
-    }
 
     try {
 
@@ -143,22 +131,10 @@ $ragContext''';
 
       messages.add({'role': 'user', 'content': message});
 
-      final response = await http.post(
-        Uri.parse(_baseUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_apiKey',
-        },
-        body: json.encode({
-          'model': _model,
-          'messages': messages,
-          'max_tokens': 800,
-          'temperature': 0.7,
-        }),
-      );
+      final response = await AiProxy.chat(messages: messages, maxTokens: 800);
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+      if (response.ok) {
+        final data = response.data!;
         final botResponse = data['choices'][0]['message']['content'];
 
         return {
@@ -169,10 +145,9 @@ $ragContext''';
           'retrieved_knowledge_ids': retrievedKnowledgeIds,
         };
       } else {
-        final errorData = json.decode(response.body);
         return {
           'success': false,
-          'message': 'API Error: ${errorData['error']['message'] ?? response.statusCode}',
+          'message': 'API Error: ${response.errorMessage}',
         };
       }
     } catch (e) {
@@ -186,13 +161,6 @@ $ragContext''';
   static Future<Map<String, dynamic>> generateWeeklyReport({
     required String promptContent,
   }) async {
-    if (_apiKey == 'YOUR_OPENAI_API_KEY' || _apiKey.isEmpty) {
-      return {
-        'success': false,
-        'message': 'กรุณาตั้งค่า OpenAI API Key ใน chatgpt_service.dart',
-      };
-    }
-
     try {
       final messages = [
         {
@@ -209,22 +177,10 @@ $ragContext''';
         {'role': 'user', 'content': promptContent}
       ];
 
-      final response = await http.post(
-        Uri.parse(_baseUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_apiKey',
-        },
-        body: json.encode({
-          'model': _model,
-          'messages': messages,
-          'max_tokens': 1200,
-          'temperature': 0.7,
-        }),
-      );
+      final response = await AiProxy.chat(messages: messages, maxTokens: 1200);
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+      if (response.ok) {
+        final data = response.data!;
         final botResponse = data['choices'][0]['message']['content'];
 
         return {
@@ -232,10 +188,9 @@ $ragContext''';
           'report': botResponse,
         };
       } else {
-        final errorData = json.decode(response.body);
         return {
           'success': false,
-          'message': 'API Error: ${errorData['error']['message'] ?? response.statusCode}',
+          'message': 'API Error: ${response.errorMessage}',
         };
       }
     } catch (e) {

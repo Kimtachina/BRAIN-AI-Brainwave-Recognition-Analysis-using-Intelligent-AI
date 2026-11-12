@@ -1,0 +1,7 @@
+[run]
+source =
+    emotion_api
+    gemini_code_reviewer
+omit =
+    tests/*
+    .venv/*

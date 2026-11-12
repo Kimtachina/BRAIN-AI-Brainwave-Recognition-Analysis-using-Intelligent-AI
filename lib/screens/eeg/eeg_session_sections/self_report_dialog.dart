@@ -217,6 +217,18 @@ extension _SelfReportDialog on _EegSessionScreenState {
                 onPressed: (!isMatch || isSaving)
                     ? null
                     : () async {
+                        // โหมดจำลองเป็นข้อมูลสุ่ม ห้ามปนกับข้อมูล session จริง
+                        if (widget.museService.isSimulating) {
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('โหมดจำลอง: ไม่บันทึก session เพราะไม่ใช่สัญญาณจากอุปกรณ์จริง'),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                          return;
+                        }
+
                         setDialogState(() => isSaving = true);
 
                         final n = _samplesCollected > 0 ? _samplesCollected : 1;

@@ -1,6 +1,6 @@
 part of '../home_screen.dart';
 
-/// 2. วิดีโอสมองพร้อมหน้าจอ HUD (สถานะการบันทึก ช่องสัญญาณ และปุ่มควบคุมวิดีโอ)
+/// 2. หน้าจอ HUD สมอง (สถานะการบันทึก และช่องสัญญาณ)
 extension _BrainVideoSection on _HomeScreenState {
   Widget _buildBrainVideoHud() {
     return Container(
@@ -20,28 +20,18 @@ extension _BrainVideoSection on _HomeScreenState {
         borderRadius: BorderRadius.circular(24),
         child: Stack(
           children: [
-            // ตัวเล่นวิดีโอ (Video Player) — แสดงผลเต็มพื้นที่ในกรอบ Stack
+            // พื้นหลังของ HUD
             Positioned.fill(
-              child: _isVideoLoaded
-                  ? FittedBox(
-                      fit: BoxFit.cover,
-                      clipBehavior: Clip.hardEdge,
-                      child: SizedBox(
-                        width: _videoController.value.size.width,
-                        height: _videoController.value.size.height,
-                        child: VideoPlayer(_videoController),
-                      ),
-                    )
-                  : Container(
-                      color: const Color(0xFF0F1424),
-                      child: const Center(
-                        child: Icon(
-                          Icons.psychology_outlined,
-                          color: Colors.cyan,
-                          size: 40,
-                        ),
-                      ),
-                    ),
+              child: Container(
+                color: const Color(0xFF0F1424),
+                child: const Center(
+                  child: Icon(
+                    Icons.psychology_outlined,
+                    color: Colors.cyan,
+                    size: 40,
+                  ),
+                ),
+              ),
             ),
 
             // กรอบมุมสไตล์ไฮเทค (High-Tech Cyber Corner Frame Paint)
@@ -55,12 +45,11 @@ extension _BrainVideoSection on _HomeScreenState {
             ),
 
             // แถบเส้นเลเซอร์สแกนแบบล้ำสมัย (Pulse-scanning laser line overlay)
-            if (_isVideoLoaded && _isVideoPlaying)
-              const Positioned.fill(
-                child: SciFiScannerOverlay(
-                  color: Colors.cyan,
-                ),
+            const Positioned.fill(
+              child: SciFiScannerOverlay(
+                color: Colors.cyan,
               ),
+            ),
 
             // แผ่นฟิล์มไล่ระดับเฉดสีเพื่อเพิ่มการอ่านค่า (Subtle gradient overlay at bottom and top for readability)
             Positioned.fill(
@@ -191,7 +180,7 @@ extension _BrainVideoSection on _HomeScreenState {
               ),
             ),
 
-            // หน้าจอ HUD มุมล่างขวา: แถบควบคุมวิดีโอแบบกระจกฝ้าลอยตัว (HUD Overlay: Bottom-Right)
+            // หน้าจอ HUD มุมล่างขวา: สถานะสัญญาณสด (HUD Overlay: Bottom-Right)
             Positioned(
               bottom: 12,
               right: 12,
@@ -208,60 +197,6 @@ extension _BrainVideoSection on _HomeScreenState {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // ปุ่มกด เล่น / หยุดเล่นวิดีโอ (Play / Pause Button)
-                    GestureDetector(
-                      onTap: () {
-                        _refresh(() {
-                          if (_videoController.value.isPlaying) {
-                            _videoController.pause();
-                            _isVideoPlaying = false;
-                          } else {
-                            _videoController.play();
-                            _isVideoPlaying = true;
-                          }
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          _isVideoPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                          color: Colors.white,
-                          size: 14,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    // ปุ่มเปิด / ปิดเสียงวิดีโอ (Mute Button)
-                    GestureDetector(
-                      onTap: () {
-                        _refresh(() {
-                          if (_videoController.value.volume > 0) {
-                            _videoController.setVolume(0);
-                            _isVideoMuted = true;
-                          } else {
-                            _videoController.setVolume(0.5);
-                            _isVideoMuted = false;
-                          }
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          _isVideoMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-                          color: Colors.white,
-                          size: 14,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
                     // จุดไฟกระพริบแสดงสัญญาณสดแบบเรียลไทม์ (Live Indicator Dot)
                     Container(
                       width: 5,
@@ -285,37 +220,6 @@ extension _BrainVideoSection on _HomeScreenState {
               ),
             ),
 
-            // หน้าต่างซ้อนทับขณะกำลังโหลด (Loading overlay)
-            if (!_isVideoLoaded)
-              Positioned.fill(
-                child: Container(
-                  color: const Color(0xFF0F1424),
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.cyan,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'ระบบบันทึกความถึ่สมองกำลังเตรียมการ...',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.7),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
           ],
         ),
       ),

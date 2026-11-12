@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../theme/app_theme.dart';
@@ -25,7 +25,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _isLoading = false;          // ใช้แสดงสถานะบันทึกข้อมูล
   bool _isUploadingImage = false;   // ใช้แสดงสถานะอัปโหลดรูปภาพโปรไฟล์
 
-  File? _selectedImage;             // ไฟล์ภาพโปรไฟล์ที่ผู้ใช้เลือกจากเครื่อง
+  XFile? _selectedImage;            // ไฟล์ภาพโปรไฟล์ที่ผู้ใช้เลือกจากเครื่อง (ใช้ได้ทั้งมือถือและเว็บ)
+  Uint8List? _selectedImageBytes;   // ไบต์ของภาพที่เลือก ใช้แสดงตัวอย่าง
   String? _currentAvatarUrl;        // ลิงก์ URL รูปภาพโปรไฟล์ปัจจุบันจากฐานข้อมูล
   final ImagePicker _picker = ImagePicker();
 
@@ -60,8 +61,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       );
 
       if (pickedFile != null) {
+        final bytes = await pickedFile.readAsBytes();
         setState(() {
-          _selectedImage = File(pickedFile.path);
+          _selectedImage = pickedFile;
+          _selectedImageBytes = bytes;
         });
       }
     } catch (e) {
@@ -166,6 +169,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     Navigator.pop(context);
                     setState(() {
                       _selectedImage = null;
+                      _selectedImageBytes = null;
                       _currentAvatarUrl = null;
                     });
                   },
@@ -524,9 +528,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   DecorationImage? _getAvatarDecoration() {
-    if (_selectedImage != null) {
+    if (_selectedImageBytes != null) {
       return DecorationImage(
-        image: FileImage(_selectedImage!),
+        image: MemoryImage(_selectedImageBytes!),
         fit: BoxFit.cover,
       );
     }

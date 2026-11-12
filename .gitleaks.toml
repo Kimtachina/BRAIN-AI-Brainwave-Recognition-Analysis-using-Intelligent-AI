@@ -1,0 +1,14 @@
+# ตั้งค่า gitleaks ของโปรเจกต์: ใช้กฎมาตรฐานทั้งหมด แล้วยกเว้นไฟล์ที่ไม่มีความลับ
+[extend]
+useDefault = true
+
+[allowlist]
+# - Podfile.lock: ค่าใต้ SPEC CHECKSUMS เป็น SHA-1 ของ podspec ที่ CocoaPods สร้างเอง ไม่ใช่ API key
+# - env/supabase.json: ไฟล์ตั้งค่าเฉพาะเครื่องที่อยู่ใน .gitignore (ไม่เข้า git)
+#   เก็บได้แค่ SUPABASE_URL และ anon key ซึ่ง Supabase ออกแบบให้อยู่ในตัวแอปได้
+#   ห้ามใส่ service_role key หรือ key ลับอื่นในไฟล์นี้ เพราะ gitleaks จะไม่ตรวจไฟล์นี้
+description = "ไฟล์ที่ไม่มีความลับ: Podfile.lock checksums และ env/supabase.json (anon key, gitignored)"
+paths = [
+  '''(^|/)Podfile\.lock$''',
+  '''(^|/)env/supabase\.json$''',
+]

@@ -1,10 +1,8 @@
 import 'dart:io';
-import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
 import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:http/http.dart' as http;
+import '../ai/ai_proxy.dart';
 
 /// STTService จัดการการแปลงสัญญาณเสียงพูดเป็นตัวอักษรภาษาไทย (Speech-to-Text) โดยใช้บริการ OpenAI Whisper API
 /// ทำหน้าที่บันทึกไฟล์เสียงคลื่นความถี่ 16kHz โมโนผ่านไมโครโฟนโทรศัพท์ 
@@ -19,10 +17,6 @@ class STTService {
   bool _isInitialized = false;
   bool _isListening = false;
   String _lastRecognizedText = '';
-
-  static String get _apiKey => dotenv.env['OPENAI_API_KEY'] ?? '';
-  static const String _whisperUrl =
-      'https://api.openai.com/v1/audio/transcriptions';
 
   String? _currentRecordingPath;
 
@@ -182,23 +176,17 @@ class STTService {
         return null;
       }
 
-      final request = http.MultipartRequest('POST', Uri.parse(_whisperUrl));
-      request.headers['Authorization'] = 'Bearer $_apiKey';
-      request.fields['model'] = 'whisper-1';
-      request.fields['language'] = 'th';
-      request.fields['response_format'] = 'json';
-      request.files.add(await http.MultipartFile.fromPath('file', filePath));
+      final response = await AiProxy.transcribe(
+        await file.readAsBytes(),
+        filename: filePath.split('/').last,
+      );
 
-      final response = await request.send();
-      final responseBody = await response.stream.bytesToString();
-
-      if (response.statusCode == 200) {
-        final json = jsonDecode(responseBody);
-        final text = json['text'] as String?;
+      if (response.ok) {
+        final text = response.data!['text'] as String?;
         debugPrint('🎤 Whisper: Success → "$text"');
         return text?.trim();
       } else {
-        debugPrint('🎤 Whisper: Error ${response.statusCode}: $responseBody');
+        debugPrint('🎤 Whisper: Error ${response.statusCode}: ${response.errorMessage}');
         onError?.call('ไม่สามารถแปลงเสียงได้ ลองใหม่อีกครั้ง');
         return null;
       }

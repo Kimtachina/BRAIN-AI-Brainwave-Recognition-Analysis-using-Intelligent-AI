@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'screens/auth/welcome_screen.dart';
 import 'theme/app_theme.dart';
 import 'services/supabase_service.dart';
@@ -7,12 +6,9 @@ import 'services/ai/rag_service.dart';
 import 'utils/responsive_helper.dart';
 
 /// จุดเริ่มต้นการทำทำงานหลักของแอปพลิเคชัน (Main Entry Point)
-void main() async {
+void main() {
   // บังคับให้เตรียมตัวแปรสำหรับการทำงานของเฟรมเวิร์กก่อนเริ่มวาด UI
   WidgetsFlutterBinding.ensureInitialized();
-
-  // โหลดตัวแปรสภาพแวดล้อมที่สำคัญ (เช่น API Keys) จากไฟล์ .env
-  await dotenv.load(fileName: ".env");
 
   // เริ่มทำการรันแอปพลิเคชันหลักทันที เพื่อแสดงหน้าตาแอปให้ผู้ใช้เห็นก่อนโดยไม่ต้องรอ
   runApp(const MyApp());

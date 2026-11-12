@@ -1,6 +1,5 @@
 import 'dart:async';
-import 'dart:io';
-import 'dart:math' show Random, cos, log, max, min, pi, sqrt, tan;
+import 'dart:math' show Random, log;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -10,11 +9,24 @@ import 'muse_types.dart';
 /// MuseService จัดการการสื่อสารกับหน้ากาก/อุปกรณ์วัดคลื่นสมอง Muse (รองรับ Bluetooth Low Energy: BLE)
 /// ทำหน้าที่สแกน ค้นหา เชื่อมต่อ รับส่งข้อมูล คัดกรองและประมวลผลทางคณิตศาสตร์ (FFT/Filters)
 /// เพื่อจัดเก็บและประเมินค่าคลื่นสมองแบบเรียลไทม์ (256Hz) และแบบจำลองสถานการณ์
+///
+/// ใช้ไฟล์เดียวกันทั้งมือถือและเว็บ: บนเว็บ flutter_blue_plus ใช้ Web Bluetooth
+/// (Chrome/Edge บน desktop และ Android เท่านั้น, ต้องเปิดผ่าน HTTPS)
+/// และผู้ใช้ต้องเลือกอุปกรณ์เองในหน้าต่างของเบราว์เซอร์ ดู [connectViaBrowserPicker]
 class MuseService extends ChangeNotifier {
   // Singleton instance เพื่อให้เรียกใช้งานได้จากทุกหน้าจอเป็นสถานะเดียวกัน
   static final MuseService _instance = MuseService._internal();
   factory MuseService() => _instance;
   MuseService._internal();
+
+  /// Service หลักของ Muse (ช่อง EEG 273e000x อยู่ใต้ service นี้)
+  /// Web Bluetooth ต้องระบุ service ล่วงหน้า ไม่งั้นจะ discover ไม่เจอ
+  static final Guid _museServiceUuid = Guid('0000fe8d-0000-1000-8000-00805f9b34fb');
+
+  static bool get _isAndroid => !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
+  /// เว็บใช้ [connectViaBrowserPicker] แทน [startScan] + [connectToDevice]
+  bool get usesBrowserPicker => kIsWeb;
 
   // อ้างอิงอุปกรณ์ Bluetooth ที่กำลังเชื่อมต่อ
   BluetoothDevice? _connectedDevice;
@@ -59,6 +71,27 @@ class MuseService extends ChangeNotifier {
   final int _minBufferFill = 768;
   int _packetCount = 0;
   DateTime? _lastFFTTime;
+
+  // === Per-Channel Signal Quality ===
+  // ติดตาม SQI แยกแต่ละช่อง เพื่อ Weighted Averaging
+  Map<String, double> _channelSQI = {
+    'TP9': 0, 'AF7': 0, 'AF8': 0, 'TP10': 0,
+  };
+  Map<String, double> get channelSQI => Map.unmodifiable(_channelSQI);
+
+  // === Horseshoe (Telemetry) ===
+  // 1 = Good, 2 = Medium, 4 = Bad
+  final Map<String, int> _horseshoe = {
+    'TP9': 4, 'AF7': 4, 'AF8': 4, 'TP10': 4,
+  };
+  Map<String, int> get horseshoe => Map.unmodifiable(_horseshoe);
+
+  // === Frontal Alpha Asymmetry (FAA) ===
+  // FAA = ln(Alpha_AF8) - ln(Alpha_AF7)
+  // Positive = Left-dominant = Approach/Happy (Davidson, 1992)
+  // Negative = Right-dominant = Withdrawal/Sad
+  double _frontalAlphaAsymmetry = 0;
+  double get frontalAlphaAsymmetry => _frontalAlphaAsymmetry;
 
   // Powerline interference filter configuration (50 Hz or 60 Hz)
   double _notchFrequency = 50.0;
@@ -119,7 +152,6 @@ class MuseService extends ChangeNotifier {
   }
 
   Future<bool> isBluetoothAvailable() async {
-    if (kIsWeb) return false;
     try {
       return await FlutterBluePlus.isSupported;
     } catch (e) {
@@ -129,7 +161,10 @@ class MuseService extends ChangeNotifier {
 
   Future<void> startScan() async {
     if (_isScanning) return;
-    if (kIsWeb) return;
+    if (kIsWeb) {
+      await connectViaBrowserPicker();
+      return;
+    }
 
     try {
 
@@ -141,7 +176,7 @@ class MuseService extends ChangeNotifier {
 
       if (!await FlutterBluePlus.isSupported) return;
 
-      if (Platform.isAndroid) {
+      if (_isAndroid) {
          try { await FlutterBluePlus.turnOn(); } catch (e) {}
       }
 
@@ -179,8 +214,55 @@ class MuseService extends ChangeNotifier {
     }
   }
 
+  /// Web: เปิดหน้าต่างเลือกอุปกรณ์ของเบราว์เซอร์ (requestDevice) แล้วเชื่อมต่อเครื่องที่เลือกทันที
+  /// ต้องเรียกจากการกดปุ่มของผู้ใช้ เพราะเบราว์เซอร์ไม่ยอมเปิดหน้าต่างนี้เอง
+  /// คืนค่า true ถ้าเชื่อมต่อสำเร็จ
+  Future<bool> connectViaBrowserPicker() async {
+    if (_isScanning || _isConnecting) return false;
+
+    _isScanning = true;
+    _scanResults = [];
+    _status = 'เลือกอุปกรณ์ Muse ในหน้าต่างของเบราว์เซอร์...';
+    _safeNotify();
+
+    final sub = FlutterBluePlus.scanResults.listen(
+      (results) {
+        if (results.isNotEmpty) _scanResults = results;
+      },
+      onError: (_) {}, // ผู้ใช้กดยกเลิกหน้าต่างเลือกอุปกรณ์
+    );
+
+    try {
+      // บนเว็บ startScan จะรอจนผู้ใช้เลือกอุปกรณ์หรือปิดหน้าต่าง
+      await FlutterBluePlus.startScan(
+        withServices: [_museServiceUuid],
+        webOptionalServices: [_museServiceUuid],
+      );
+      // รอให้ผลลัพธ์จาก stream มาถึงก่อน
+      await Future.delayed(const Duration(milliseconds: 200));
+    } catch (e) {
+      debugPrint('Web Bluetooth requestDevice: $e');
+    } finally {
+      await sub.cancel();
+      _isScanning = false;
+    }
+
+    if (_scanResults.isEmpty) {
+      _status = 'ยังไม่ได้เลือกอุปกรณ์';
+      _safeNotify();
+      return false;
+    }
+
+    await _connectToBluetoothDevice(_scanResults.first.device);
+    return _isConnected;
+  }
+
   Future<void> stopScan() async {
-    await FlutterBluePlus.stopScan();
+    try {
+      await FlutterBluePlus.stopScan();
+    } catch (e) {
+      debugPrint('stopScan: $e');
+    }
     _scanSubscription?.cancel();
     _isScanning = false;
     _safeNotify();
@@ -209,7 +291,7 @@ class MuseService extends ChangeNotifier {
   _status = 'เชื่อมต่อ ${device.platformName}...';
   _safeNotify();
 
-      if (Platform.isAndroid) {
+      if (_isAndroid) {
           try { await device.clearGattCache(); } catch (e) {}
       }
 
@@ -218,7 +300,7 @@ class MuseService extends ChangeNotifier {
       // === BLE Connection Priority (Android) ===
       // Request high-priority connection for lowest latency
       // ลด connection interval → ลด packet loss และได้ data rate ใกล้ 256 Hz มากขึ้น
-      if (Platform.isAndroid) {
+      if (_isAndroid) {
         try {
           await device.requestConnectionPriority(
             connectionPriorityRequest: ConnectionPriority.high,
@@ -270,7 +352,7 @@ class MuseService extends ChangeNotifier {
 
       List<BluetoothService> services = await _connectedDevice!.discoverServices();
 
-      try { if (Platform.isAndroid) await _connectedDevice!.requestMtu(512); } catch (e) {}
+      try { if (_isAndroid) await _connectedDevice!.requestMtu(512); } catch (e) {}
 
       List<BluetoothCharacteristic> eegChars = [];
       List<BluetoothCharacteristic> allNotifyChars = [];
@@ -393,7 +475,8 @@ class MuseService extends ChangeNotifier {
 
   Future<void> _writeRaw(BluetoothCharacteristic c, List<int> cmd) async {
     try {
-      await c.write(cmd, withoutResponse: true);
+      // ใช้ write without response เมื่อ characteristic รองรับ (Web Bluetooth จะ error ถ้าไม่รองรับ)
+      await c.write(cmd, withoutResponse: c.properties.writeWithoutResponse);
     } catch (e) {
       debugPrint('❌ BLE Write Error (${c.uuid}): $e | cmd=$cmd');
     }
@@ -431,8 +514,14 @@ class MuseService extends ChangeNotifier {
      try {
        String lowerUuid = uuid.toLowerCase();
 
-       // แพ็กเก็ต telemetry ไม่ใช่ข้อมูล EEG จึงข้ามไป
+       // แพ็กเก็ต telemetry: อ่านค่า horseshoe (คุณภาพการสัมผัสของ electrode) แล้วไม่ parse เป็น EEG
        if (lowerUuid.contains('273e000b') || lowerUuid.contains('273e0002')) {
+         if (rawData.length >= 10) {
+           _horseshoe['TP9'] = rawData[5];
+           _horseshoe['AF7'] = rawData[6];
+           _horseshoe['AF8'] = rawData[7];
+           _horseshoe['TP10'] = rawData[8];
+         }
          return;
        }
 
@@ -831,7 +920,7 @@ class MuseService extends ChangeNotifier {
   }
 
   Future<bool> _checkPermissions() async {
-    if (Platform.isAndroid) {
+    if (_isAndroid) {
       if (await Permission.bluetoothScan.request().isGranted &&
           await Permission.bluetoothConnect.request().isGranted &&
           await Permission.location.request().isGranted) {

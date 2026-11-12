@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:google_fonts/google_fonts.dart';
@@ -141,10 +140,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   final EmotionDetectionService _emotionService = EmotionDetectionService();
-  late final VideoPlayerController _videoController;
-  bool _isVideoLoaded = false;
-  bool _isVideoPlaying = true;
-  bool _isVideoMuted = true;
 
   EmotionResult? _tfliteEmotion;
   EmotionResult? _tsceptionEmotion;
@@ -174,21 +169,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-
-    // กำหนดค่าและเตรียมการเล่นวิดีโอตัวอย่างคลื่นสมองจากไฟล์ในเครื่อง (Initialize Video Player)
-    _videoController = VideoPlayerController.asset('assets/videos/brain_demo.mov')
-      ..setLooping(true)
-      ..setVolume(0)
-      ..initialize().then((_) {
-        if (mounted) {
-          setState(() {
-            _isVideoLoaded = true;
-            _isVideoPlaying = _videoController.value.isPlaying;
-            _isVideoMuted = _videoController.value.volume == 0;
-          });
-          _videoController.play();
-        }
-      });
 
     _museService.addListener(_onMuseDataUpdate);
     _updateOscilloscopeSubscription();
@@ -318,8 +298,11 @@ class _HomeScreenState extends State<HomeScreen> {
           _tsceptionEmotion = results['tsception'];
         });
 
+        // โหมดจำลองเป็นข้อมูลสุ่ม ห้ามบันทึกลงประวัติอารมณ์ของผู้ใช้
+        final canSave = !_museService.isSimulating;
+
         final mainResult = results['tflite'];
-        if (mainResult != null && mainResult.confidence >= EmotionConstants.confidenceThreshold) {
+        if (canSave && mainResult != null && mainResult.confidence >= EmotionConstants.confidenceThreshold) {
           ApiService.saveEmotionLog(
             userId: widget.user.id,
             emotionType: mainResult.emotionType,
@@ -329,7 +312,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         final secondResult = results['tsception'];
-        if (secondResult != null && secondResult.confidence >= EmotionConstants.confidenceThreshold) {
+        if (canSave && secondResult != null && secondResult.confidence >= EmotionConstants.confidenceThreshold) {
           ApiService.saveEmotionLog(
             userId: widget.user.id,
             emotionType: secondResult.emotionType,
@@ -360,7 +343,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     _museService.removeListener(_onMuseDataUpdate);
     _museService.stopSimulation();
-    _videoController.dispose();
     super.dispose();
   }
 
@@ -467,14 +449,25 @@ class _HomeScreenState extends State<HomeScreen> {
       _eegSummaryResult = summary;
     });
 
-    final saveResult = await ApiService.saveEegAssessmentReport(
-      userId: widget.user.id,
-      reportData: EegAssessmentService.toJson(summary),
-    );
+    // โหมดจำลองเป็นข้อมูลสุ่ม แสดงใบสรุปให้ดูได้แต่ไม่บันทึกลงประวัติ
+    final isSimulated = _museService.isSimulating;
+    final saveResult = isSimulated
+        ? const {'success': true}
+        : await ApiService.saveEegAssessmentReport(
+            userId: widget.user.id,
+            reportData: EegAssessmentService.toJson(summary),
+          );
 
     if (!mounted) return;
 
-    if (saveResult['success'] != true) {
+    if (isSimulated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('โหมดจำลอง: ผลนี้ไม่ได้มาจากอุปกรณ์จริง จึงไม่บันทึกลงประวัติ'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    } else if (saveResult['success'] != true) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(saveResult['message'] ?? 'บันทึกใบสรุปไม่สำเร็จ'),
@@ -533,10 +526,20 @@ class _HomeScreenState extends State<HomeScreen> {
       _showNoBluetoothDialog();
     } else {
 
-      await _museService.startScan();
+      if (_museService.usesBrowserPicker) {
+        // เว็บ: เบราว์เซอร์แสดงหน้าต่างเลือกอุปกรณ์เอง แล้วเชื่อมต่อทันที
+        final connected = await _museService.connectViaBrowserPicker();
+        if (mounted && !connected) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(_museService.status)),
+          );
+        }
+      } else {
+        await _museService.startScan();
 
-      if (mounted) {
-        _showDeviceSelectionDialog();
+        if (mounted) {
+          _showDeviceSelectionDialog();
+        }
       }
     }
 
@@ -581,7 +584,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       _buildHealthSummaryCard(),
                       const SizedBox(height: 20),
 
-                      // 2. วิดีโอสมองแบบ HUD (Video Brain View)
+                      // 2. หน้าจอ HUD สมอง (Brain HUD)
                       _buildBrainVideoHud(),
                       const SizedBox(height: 20),
 

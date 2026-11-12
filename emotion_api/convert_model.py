@@ -1,7 +1,5 @@
 import os
-import sys
 import json
-import numpy as np
 
 # กำหนดโฟลเดอร์สำหรับเก็บโมเดล โดยอิงตามโฟลเดอร์ assets/models ในฝั่ง Flutter
 MODELS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "models")
@@ -32,26 +30,25 @@ def convert_h5_to_tflite():
     try:
         # โหลดโมเดล Keras (.h5) แบบไม่ต้อง Compile เพื่อประหยัดเวลา
         model = tf.keras.models.load_model(MODEL_PATH, compile=False)
-        print(f"✅ โหลด model สำเร็จ")
+        print("✅ โหลด model สำเร็จ")
         print(f"   Input shape:  {model.input_shape}")
         print(f"   Output shape: {model.output_shape}")
         model.summary()
 
-        # สร้างตัวแปลงจากโมเดล Keras
-        converter = tf.lite.TFLiteConverter.from_keras_model(model)
+        # แปลงผ่าน SavedModel เพื่อให้ใช้กับ Keras 3 (TensorFlow 2.16+) ได้
+        from tflite_utils import convert_keras_to_tflite
 
-        # ตั้งค่าให้เหมาะสมสำหรับการแปลงและบีบอัดโมเดล
-        converter.optimizations = [tf.lite.Optimize.DEFAULT]
+        def configure(converter):
+            # ตั้งค่าให้เหมาะสมสำหรับการแปลงและบีบอัดโมเดล
+            converter.optimizations = [tf.lite.Optimize.DEFAULT]
+            # สนับสนุน Operations พื้นฐานและเรียกใช้ Select TF ops เพิ่มเติมกรณีมีมิติซับซ้อน
+            converter.target_spec.supported_ops = [
+                tf.lite.OpsSet.TFLITE_BUILTINS,
+                tf.lite.OpsSet.SELECT_TF_OPS,
+            ]
+            converter._experimental_lower_tensor_list_ops = False
 
-        # สนับสนุน Operations พื้นฐานและเรียกใช้ Select TF ops เพิ่มเติมกรณีมีมิติซับซ้อน
-        converter.target_spec.supported_ops = [
-            tf.lite.OpsSet.TFLITE_BUILTINS,
-            tf.lite.OpsSet.SELECT_TF_OPS,
-        ]
-        converter._experimental_lower_tensor_list_ops = False
-
-        # เริ่มต้นขั้นตอนการแปลงโมเดล
-        tflite_model = converter.convert()
+        tflite_model = convert_keras_to_tflite(tf, model, configure)
 
         # บันทึกผลลัพธ์ออกมาเป็นไฟล์ .tflite
         with open(OUTPUT_TFLITE, "wb") as f:
@@ -67,7 +64,7 @@ def convert_h5_to_tflite():
         interpreter.allocate_tensors()
         input_details = interpreter.get_input_details()
         output_details = interpreter.get_output_details()
-        print(f"\n📋 TFLite Model Details:")
+        print("\n📋 TFLite Model Details:")
         print(f"   Input:  {input_details[0]['shape']} dtype={input_details[0]['dtype']}")
         print(f"   Output: {output_details[0]['shape']} dtype={output_details[0]['dtype']}")
 
@@ -78,6 +75,67 @@ def convert_h5_to_tflite():
         import traceback
         traceback.print_exc()
         return False
+
+# แปลง numpy array / ค่า numpy เป็นชนิดข้อมูลที่ json.dump รองรับ
+def _to_json_value(value):
+    return value.tolist() if hasattr(value, "tolist") else value
+
+
+# พารามิเตอร์ของ Scaler ที่ส่งออกเป็น JSON: (ชื่อ attribute, ชื่อ key ใน JSON, แสดงบนหน้าจอหรือไม่)
+SCALER_ATTRIBUTES = [
+    # StandardScaler
+    ("mean_", "mean", True),
+    ("scale_", "scale", True),
+    ("var_", "var", False),
+    ("n_features_in_", "n_features", True),
+    ("feature_names_in_", "feature_names", True),
+    # MinMaxScaler
+    ("data_min_", "data_min", False),
+    ("data_max_", "data_max", False),
+    ("data_range_", "data_range", False),
+    ("min_", "min", False),
+]
+
+
+# ดึงพารามิเตอร์ที่ Scaler มี ตามรายการ SCALER_ATTRIBUTES
+def _scaler_params(scaler) -> dict:
+    params = {}
+    for attr, key, show in SCALER_ATTRIBUTES:
+        if not hasattr(scaler, attr):
+            continue
+        value = getattr(scaler, attr)
+        params[key] = _to_json_value(value)
+        if show:
+            print(f"   {key}: {value}")
+    return params
+
+
+# ดึงคลาสการจัดประเภท/ชื่อประเภทอารมณ์ พร้อมชุดเชื่อมโยง Index <-> Label
+def _encoder_classes_data(encoder) -> dict:
+    if not hasattr(encoder, "classes_"):
+        return {}
+    classes = _to_json_value(encoder.classes_)
+    data = {
+        "classes": [str(c) for c in classes],
+        "index_to_label": {str(i): str(c) for i, c in enumerate(classes)},
+        "label_to_index": {str(c): i for i, c in enumerate(classes)},
+    }
+    print(f"   classes: {data['classes']}")
+    return data
+
+
+# ข้อมูลเพิ่มเติมกรณีใช้งานร่วมกับโมเดลตระกูล Clustering (KMeans)
+def _clustering_data(encoder) -> dict:
+    data = {}
+    if hasattr(encoder, "cluster_centers_"):
+        data["cluster_centers"] = encoder.cluster_centers_.tolist()
+        print(f"   cluster_centers shape: {encoder.cluster_centers_.shape}")
+    if hasattr(encoder, "n_clusters"):
+        data["n_clusters"] = int(encoder.n_clusters)
+    if hasattr(encoder, "labels_"):
+        data["labels"] = encoder.labels_.tolist()
+    return data
+
 
 # ฟังก์ชันดึงพารามิเตอร์การสเกลข้อมูล (MinMaxScaler/StandardScaler) จาก pkl ไปเป็น JSON
 def convert_scaler_to_json():
@@ -97,33 +155,7 @@ def convert_scaler_to_json():
         scaler = joblib.load(SCALER_PATH)
         print(f"✅ โหลด scaler สำเร็จ: {type(scaler).__name__}")
 
-        scaler_data = {}
-
-        # ตรวจสอบตัวแปรภายในที่มักมีใน StandardScaler
-        if hasattr(scaler, "mean_"):
-            scaler_data["mean"] = scaler.mean_.tolist()
-            print(f"   mean: {scaler.mean_}")
-        if hasattr(scaler, "scale_"):
-            scaler_data["scale"] = scaler.scale_.tolist()
-            print(f"   scale: {scaler.scale_}")
-        if hasattr(scaler, "var_"):
-            scaler_data["var"] = scaler.var_.tolist()
-        if hasattr(scaler, "n_features_in_"):
-            scaler_data["n_features"] = int(scaler.n_features_in_)
-            print(f"   n_features: {scaler.n_features_in_}")
-        if hasattr(scaler, "feature_names_in_"):
-            scaler_data["feature_names"] = scaler.feature_names_in_.tolist()
-            print(f"   feature_names: {scaler.feature_names_in_}")
-
-        # ตรวจสอบตัวแปรภายในที่มักมีใน MinMaxScaler
-        if hasattr(scaler, "data_min_"):
-            scaler_data["data_min"] = scaler.data_min_.tolist()
-        if hasattr(scaler, "data_max_"):
-            scaler_data["data_max"] = scaler.data_max_.tolist()
-        if hasattr(scaler, "data_range_"):
-            scaler_data["data_range"] = scaler.data_range_.tolist()
-        if hasattr(scaler, "min_"):
-            scaler_data["min"] = scaler.min_.tolist() if hasattr(scaler.min_, 'tolist') else scaler.min_
+        scaler_data = _scaler_params(scaler)
 
         # บันทึกประเภทของ Scaler ไว้ด้วย
         scaler_data["type"] = type(scaler).__name__
@@ -159,28 +191,7 @@ def convert_label_encoder_to_json():
         encoder = joblib.load(LABEL_ENCODER_PATH)
         print(f"✅ โหลด label encoder สำเร็จ: {type(encoder).__name__}")
 
-        labels_data = {}
-
-        # ดึงคลาสการจัดประเภท/ชื่อประเภทอารมณ์และสัญกรต่างๆ
-        if hasattr(encoder, "classes_"):
-            classes = encoder.classes_
-            if hasattr(classes, 'tolist'):
-                classes = classes.tolist()
-            labels_data["classes"] = [str(c) for c in classes]
-            print(f"   classes: {labels_data['classes']}")
-
-            # สร้างชุดเชื่อมโยงข้อมูล Index <-> Label
-            labels_data["index_to_label"] = {str(i): str(c) for i, c in enumerate(classes)}
-            labels_data["label_to_index"] = {str(c): i for i, c in enumerate(classes)}
-
-        # กรณีใช้งานร่วมกับโมเดลตระกูล Clustering (KMeans)
-        if hasattr(encoder, "cluster_centers_"):
-            labels_data["cluster_centers"] = encoder.cluster_centers_.tolist()
-            print(f"   cluster_centers shape: {encoder.cluster_centers_.shape}")
-        if hasattr(encoder, "n_clusters"):
-            labels_data["n_clusters"] = int(encoder.n_clusters)
-        if hasattr(encoder, "labels_"):
-            labels_data["labels"] = encoder.labels_.tolist()
+        labels_data = {**_encoder_classes_data(encoder), **_clustering_data(encoder)}
 
         # บันทึกชนิดโมเดลวิเคราะห์ตัวแปรลง JSON
         labels_data["type"] = type(encoder).__name__
@@ -198,8 +209,8 @@ def convert_label_encoder_to_json():
         traceback.print_exc()
         return False
 
-# ฟังก์ชันหลักสำหรับการเริ่มกระบวนการแปลงไฟล์ทั้งหมด
-if __name__ == "__main__":
+# ฟังก์ชันหลักสำหรับการเริ่มกระบวนการแปลงไฟล์ทั้งหมด คืน True ถ้าแปลงสำเร็จครบทุกไฟล์
+def main():
     print("🚀 เริ่มแปลง model สำหรับ Flutter TFLite\n")
 
     results = {}
@@ -221,3 +232,9 @@ if __name__ == "__main__":
         print("   - emotion_labels.json")
     else:
         print("\n⚠️ บางส่วนล้มเหลว ดูข้อผิดพลาดด้านบน")
+
+    return all(results.values())
+
+
+if __name__ == "__main__":
+    main()
