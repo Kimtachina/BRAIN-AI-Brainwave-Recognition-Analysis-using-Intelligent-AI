@@ -21,7 +21,9 @@ import '../../widgets/eeg/eeg_research_waveform_card.dart';
 import 'widgets/cyber_frame_painter.dart';
 import 'widgets/electrode_placement_map.dart';
 import 'widgets/grid_pattern_painter.dart';
+import 'widgets/hover_lift.dart';
 import 'widgets/micro_wave_chart.dart';
+import 'widgets/neural_core.dart';
 import 'widgets/pulse_dot.dart';
 import 'widgets/sci_fi_scanner_overlay.dart';
 
@@ -560,6 +562,63 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// หน้าหลักแบ่งเป็นส่วน ๆ ตามลำดับที่แสดงบนจอ
   /// โค้ดของแต่ละส่วนอยู่ในโฟลเดอร์ home_sections/ (part ของไฟล์นี้)
+  /// การ์ดฝั่งเนื้อหาหลัก: จอ HUD, พลังคลื่นสมอง, ตรวจจับอารมณ์ และผลประเมินล่าสุด
+  List<Widget> _buildLiveSections({required bool wide}) {
+    return [
+      // หน้าจอ HUD สมอง (Brain HUD)
+      _buildBrainVideoHud(height: wide ? 320 : 240),
+      const SizedBox(height: 20),
+
+      // พลังคลื่นสมองแต่ละย่าน (EEG Band Power)
+      _buildBandPowerCard(),
+      const SizedBox(height: 16),
+
+      // ตรวจจับอารมณ์และนับถอยหลังเก็บข้อมูล EEG
+      if (_museService.isConnected) ...[
+        _buildEmotionDetectionCard(),
+        const SizedBox(height: 16),
+        _buildEegCountdownCard(),
+        const SizedBox(height: 16),
+      ],
+
+      // ผลประเมินล่าสุด (Latest Report)
+      if (_isEegCountdownDone && _eegSummaryResult != null) ...[
+        _buildLatestReportBanner(),
+        const SizedBox(height: 16),
+      ],
+    ];
+  }
+
+  /// การ์ดการเชื่อมต่อ Muse และการ์ดรอรับข้อมูล
+  List<Widget> _buildMuseSections() {
+    return [
+      _buildMuseConnectionCard(),
+      const SizedBox(height: 16),
+      if (_museService.isConnected &&
+          _museService.latestData == null &&
+          !_museService.isSimulating) ...[
+        _buildWaitingForDataCard(),
+        const SizedBox(height: 16),
+      ],
+    ];
+  }
+
+  /// วงแสงสีจางประดับพื้นหลังของหน้า
+  Widget _buildBackgroundGlow(Color color, double size) {
+    return IgnorePointer(
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(
+            colors: [color.withValues(alpha: 0.16), color.withValues(alpha: 0.0)],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -568,65 +627,105 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: const BoxDecoration(
           gradient: AppGradients.glassBackgroundGradient,
         ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 1. สรุปสุขภาพ (Health Summary)
-                      _buildHealthSummaryCard(),
-                      const SizedBox(height: 20),
-
-                      // 2. หน้าจอ HUD สมอง (Brain HUD)
-                      _buildBrainVideoHud(),
-                      const SizedBox(height: 20),
-
-                      // 3. เมนูลัด (Quick Actions)
-                      _buildQuickActions(),
-                      const SizedBox(height: 20),
-
-                      // 4. การเชื่อมต่อ Muse (Muse Connection)
-                      _buildMuseConnectionCard(),
-                      const SizedBox(height: 16),
-                      if (_museService.isConnected &&
-                          _museService.latestData == null &&
-                          !_museService.isSimulating) ...[
-                        _buildWaitingForDataCard(),
-                        const SizedBox(height: 16),
-                      ],
-
-                      // 5. พลังคลื่นสมองแต่ละย่าน (EEG Band Power)
-                      _buildBandPowerCard(),
-                      const SizedBox(height: 16),
-
-                      // 6. ตรวจจับอารมณ์และนับถอยหลังเก็บข้อมูล EEG
-                      if (_museService.isConnected) ...[
-                        _buildEmotionDetectionCard(),
-                        const SizedBox(height: 16),
-                        _buildEegCountdownCard(),
-                        const SizedBox(height: 16),
-                      ],
-
-                      // 7. ผลประเมินล่าสุด (Latest Report)
-                      if (_isEegCountdownDone && _eegSummaryResult != null) ...[
-                        _buildLatestReportBanner(),
-                        const SizedBox(height: 16),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
+        child: Stack(
+          children: [
+            Positioned(
+              top: -160,
+              right: -120,
+              child: _buildBackgroundGlow(AppColors.primaryBlue, 520),
             ),
-          ),
+            Positioned(
+              top: 380,
+              left: -200,
+              child: _buildBackgroundGlow(AppColors.primaryGreen, 520),
+            ),
+            SafeArea(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // จอกว้าง (เว็บ/แท็บเล็ตแนวนอน) จัดเป็น 2 คอลัมน์ จอแคบเรียงลงมาคอลัมน์เดียว
+                  final wide = constraints.maxWidth >= 1000;
+                  return SingleChildScrollView(
+                    // เว้นที่ด้านล่างไม่ให้แถบเมนูลอยบังการ์ดใบสุดท้าย
+                    padding: const EdgeInsets.only(bottom: 110),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1280),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildHeader(wide: wide),
+                            const SizedBox(height: 14),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              child: wide ? _buildWideBody() : _buildNarrowBody(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  /// จอแคบ: เรียงการ์ดลงมาคอลัมน์เดียวตามลำดับเดิม
+  Widget _buildNarrowBody() {
+    final live = _buildLiveSections(wide: false);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 1. สรุปสุขภาพ (Health Summary)
+        _buildHealthSummaryCard(),
+        const SizedBox(height: 20),
+
+        // 2. หน้าจอ HUD สมอง (Brain HUD)
+        ...live.take(2),
+
+        // 3. เมนูลัด (Quick Actions)
+        _buildQuickActions(),
+        const SizedBox(height: 20),
+
+        // 4. การเชื่อมต่อ Muse (Muse Connection)
+        ..._buildMuseSections(),
+
+        // 5-7. พลังคลื่นสมอง ตรวจจับอารมณ์ และผลประเมินล่าสุด
+        ...live.skip(2),
+      ],
+    );
+  }
+
+  /// จอกว้าง: ซ้ายเป็นข้อมูลคลื่นสมองแบบสด ขวาเป็นสรุปสุขภาพ เมนูลัด และการเชื่อมต่ออุปกรณ์
+  Widget _buildWideBody() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 6,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: _buildLiveSections(wide: true),
+          ),
+        ),
+        const SizedBox(width: 24),
+        Expanded(
+          flex: 5,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHealthSummaryCard(),
+              const SizedBox(height: 20),
+              _buildQuickActions(),
+              const SizedBox(height: 20),
+              ..._buildMuseSections(),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
