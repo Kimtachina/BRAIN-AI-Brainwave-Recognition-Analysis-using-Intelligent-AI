@@ -123,10 +123,17 @@ class AuthService {
         'user': syncResult['user'],
       };
     } on AuthException catch (e) {
-      return {'success': false, 'message': _translateAuthError(e.message)};
+      // code ให้หน้าล็อกอินรู้ว่าควรเสนอปุ่ม "ส่งอีเมลยืนยันอีกครั้ง" หรือไม่
+      final notConfirmed = e.code == 'email_not_confirmed' ||
+          e.message.toLowerCase().contains('email not confirmed');
+      return {
+        'success': false,
+        'message': _translateAuthError(e.message),
+        if (notConfirmed) 'code': 'email_not_confirmed',
+      };
     } catch (e) {
       debugPrint('❌ SignIn Error: $e');
-      return {'success': false, 'message': 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ: $e'};
+      return {'success': false, 'message': 'เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่'};
     }
   }
 
@@ -215,20 +222,57 @@ class AuthService {
   // ═══════════════════════════════════════════
 
   /// ส่งอีเมลลิงก์สำหรับรีเซ็ตรหัสผ่าน
-  /// ผู้ใช้จะได้รับอีเมลพร้อมลิงก์สำหรับตั้งรหัสผ่านใหม่
+  /// ข้อความที่ตอบกลับเหมือนกันไม่ว่าอีเมลนี้จะมีบัญชีหรือไม่ เพื่อไม่ให้ใครใช้ฟอร์มนี้ตรวจว่าอีเมลใดสมัครไว้
+  /// (แนวทาง OWASP Authentication / Forgot Password Cheat Sheet)
   static Future<Map<String, dynamic>> sendPasswordResetEmail(String email) async {
+    const sentMessage =
+        'ถ้าอีเมลนี้มีบัญชีอยู่ เราได้ส่งลิงก์ตั้งรหัสผ่านใหม่ไปให้แล้ว กรุณาตรวจกล่องจดหมายและโฟลเดอร์สแปม';
     try {
       final client = SupabaseService.client;
-      await client.auth.resetPasswordForEmail(email);
-
-      return {
-        'success': true,
-        'message': 'ส่งลิงก์รีเซ็ตรหัสผ่านไปที่อีเมล $email แล้ว กรุณาตรวจสอบกล่องจดหมาย',
-      };
+      await client.auth.resetPasswordForEmail(
+        email,
+        // เว็บ: ให้ลิงก์ในอีเมลพากลับมาที่เว็บนี้ แล้ว WelcomeScreen จะเปิดหน้าตั้งรหัสผ่านใหม่
+        // ต้องมี URL นี้ใน Supabase → Authentication → URL Configuration → Redirect URLs
+        redirectTo: kIsWeb ? Uri.base.origin + Uri.base.path : null,
+      );
+      return {'success': true, 'message': sentMessage};
     } on AuthException catch (e) {
+      final msg = e.message.toLowerCase();
+      if (msg.contains('rate limit') || msg.contains('seconds') || msg.contains('too many')) {
+        return {'success': false, 'message': _translateAuthError(e.message)};
+      }
+      debugPrint('❌ Reset Password Error: ${e.message}');
+      return {'success': true, 'message': sentMessage};
+    } catch (e) {
+      debugPrint('❌ Reset Password Error: $e');
+      return {'success': false, 'message': 'ส่งอีเมลไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่'};
+    }
+  }
+
+  /// ตั้งรหัสผ่านใหม่หลังเปิดลิงก์รีเซ็ตจากอีเมล (ต้องมี session จากลิงก์นั้นอยู่)
+  /// สำเร็จแล้วคืนข้อมูลผู้ใช้เพื่อเข้าแอปต่อได้เลย
+  static Future<Map<String, dynamic>> setNewPassword(String newPassword) async {
+    try {
+      final client = SupabaseService.client;
+      final response = await client.auth.updateUser(UserAttributes(password: newPassword));
+      SupabaseService.passwordRecoveryPending = false;
+      final authUser = response.user ?? client.auth.currentUser;
+      if (authUser == null) {
+        return {'success': false, 'message': 'ลิงก์หมดอายุแล้ว กรุณาขอลิงก์ตั้งรหัสผ่านใหม่อีกครั้ง'};
+      }
+      return await _getOrCreateUserProfile(authUser);
+    } on AuthException catch (e) {
+      final msg = e.message.toLowerCase();
+      if (msg.contains('different from the old') || e.code == 'same_password') {
+        return {'success': false, 'message': 'รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสผ่านเดิม'};
+      }
+      if (msg.contains('session') || msg.contains('expired') || msg.contains('jwt')) {
+        return {'success': false, 'message': 'ลิงก์หมดอายุแล้ว กรุณาขอลิงก์ตั้งรหัสผ่านใหม่อีกครั้ง'};
+      }
       return {'success': false, 'message': _translateAuthError(e.message)};
     } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถส่งอีเมลรีเซ็ตรหัสผ่านได้: $e'};
+      debugPrint('❌ Set New Password Error: $e');
+      return {'success': false, 'message': 'ตั้งรหัสผ่านใหม่ไม่สำเร็จ กรุณาลองใหม่'};
     }
   }
 
@@ -236,9 +280,22 @@ class AuthService {
   //  การส่งอีเมลยืนยันซ้ำ
   // ═══════════════════════════════════════════
 
-  // ═══════════════════════════════════════════
-  //  ยืนยัน OTP สำหรับสมัครสมาชิก
-  // ═══════════════════════════════════════════
+  /// ส่งอีเมลยืนยันบัญชีอีกครั้ง สำหรับผู้ที่สมัครแล้วแต่ยังไม่ได้กดลิงก์ยืนยัน
+  static Future<Map<String, dynamic>> resendVerificationEmail(String email) async {
+    try {
+      await SupabaseService.client.auth.resend(
+        type: OtpType.signup,
+        email: email,
+        emailRedirectTo: kIsWeb ? Uri.base.origin + Uri.base.path : null,
+      );
+      return {'success': true, 'message': 'ส่งอีเมลยืนยันไปที่ $email แล้ว กรุณาตรวจกล่องจดหมายและโฟลเดอร์สแปม'};
+    } on AuthException catch (e) {
+      return {'success': false, 'message': _translateAuthError(e.message)};
+    } catch (e) {
+      debugPrint('❌ Resend Verification Error: $e');
+      return {'success': false, 'message': 'ส่งอีเมลไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่'};
+    }
+  }
 
   // ═══════════════════════════════════════════
   //  การออกจากระบบ
@@ -248,6 +305,7 @@ class AuthService {
   static Future<void> signOut() async {
     try {
       final client = SupabaseService.client;
+      SupabaseService.passwordRecoveryPending = false;
       await client.auth.signOut();
 
       // ออกจาก Google Sign-In ด้วย (ถ้าเคยล็อกอินด้วย Google)

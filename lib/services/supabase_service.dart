@@ -28,7 +28,19 @@ class SupabaseService {
       anonKey: supabaseAnonKey,
     );
     _client = Supabase.instance.client;
+
+    // ผู้ใช้เปิดเว็บจากลิงก์รีเซ็ตรหัสผ่านในอีเมล: Supabase ส่งเหตุการณ์ passwordRecovery ระหว่าง initialize
+    // สตรีมนี้ส่งเหตุการณ์ล่าสุดให้ผู้ฟังที่มาทีหลังด้วย จึงจับได้แม้เพิ่งเริ่มฟังตรงนี้
+    // WelcomeScreen อ่านค่านี้เพื่อพาไปหน้าตั้งรหัสผ่านใหม่แทนการล็อกอินอัตโนมัติ
+    _client!.auth.onAuthStateChange.listen((data) {
+      if (data.event == AuthChangeEvent.passwordRecovery) {
+        passwordRecoveryPending = true;
+      }
+    });
   }
+
+  /// true เมื่อ session ปัจจุบันมาจากลิงก์รีเซ็ตรหัสผ่าน และผู้ใช้ยังไม่ได้ตั้งรหัสผ่านใหม่
+  static bool passwordRecoveryPending = false;
 
   /// ดึงอ้างอิงของไคลเอนต์ Supabase เพื่อเริ่มดึงข้อมูล (จะแจ้งเตือนข้อผิดพลาดหากยังไม่ได้รับการตั้งค่า)
   static SupabaseClient get client {
