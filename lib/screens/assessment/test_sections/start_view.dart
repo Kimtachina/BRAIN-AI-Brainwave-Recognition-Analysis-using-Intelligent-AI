@@ -4,6 +4,7 @@ part of '../test_screen.dart';
 extension _StartView on _TestScreenState {
   Widget _buildStart() {
     return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context, maxWidth: AppLayout.readingWidth), vertical: 20),
       child: Column(
         children: [
 
@@ -215,7 +216,7 @@ extension _StartView on _TestScreenState {
           ),
           const SizedBox(width: 10),
           SizedBox(
-            width: 45,
+            width: 64,
             child: Text(
               range,
               style: const TextStyle(

@@ -3,6 +3,7 @@ import '../../theme/app_theme.dart';
 import '../../models/user.dart';
 import '../../services/api_service.dart';
 import '../profile/settings_screen.dart';
+import '../../widgets/app_page.dart';
 
 part 'test_sections/start_view.dart';
 part 'test_sections/quiz_view.dart';
@@ -162,23 +163,12 @@ class _TestScreenState extends State<TestScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: AppColors.primaryBlue),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          _hasStarted ? 'แบบประเมิน PHQ-9' : 'แบบทดสอบ',
-          style: TextStyle(
-            color: AppColors.primaryBlue,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
+    return AppBackground(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: buildAppPageBar(
+        context,
+        title: _hasStarted ? 'แบบประเมิน PHQ-9' : 'แบบทดสอบ',
         actions: [
           IconButton(
             onPressed: () {
@@ -193,9 +183,7 @@ class _TestScreenState extends State<TestScreen> with SingleTickerProviderStateM
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: _hasStarted ? _buildQuiz() : _buildStart(),
+      body: _hasStarted ? _buildQuiz() : _buildStart(),
       ),
     );
   }

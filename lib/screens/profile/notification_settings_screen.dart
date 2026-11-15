@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../models/user.dart';
 import '../../services/api_service.dart';
+import '../../widgets/app_page.dart';
 
 /// NotificationSettingsScreen คือหน้าจอสำหรับการตั้งค่าระบบสั่น เสียง และสิทธิ์การส่งพุชแจ้งเตือนของแอปพลิเคชัน
 /// แสดงปุ่มเปิด/ปิด (Switch) สำหรับอัปเดตค่าความต้องการส่งการแจ้งเตือนต่างๆ ของผู้ใช้งานบันทึกลงใน API หลังบ้าน
@@ -60,28 +61,21 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: AppColors.primaryBlue),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'การตั้งค่าการแจ้งเตือน',
-          style: TextStyle(
-            color: AppColors.primaryBlue,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
+    return AppBackground(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: buildAppPageBar(context, title: 'การตั้งค่าการแจ้งเตือน'),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(20),
+          : SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context, maxWidth: AppLayout.readingWidth), vertical: 20),
+              child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              decoration: AppTheme.glassDecoration(
+                color: Colors.white,
+                opacity: 0.8,
+                borderColor: AppColors.primaryBlue.withValues(alpha: 0.15),
+              ),
               child: Column(
                 children: [
                   _buildToggleItem(
@@ -110,7 +104,9 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                   ),
                 ],
               ),
+              ),
             ),
+    ),
     );
   }
 

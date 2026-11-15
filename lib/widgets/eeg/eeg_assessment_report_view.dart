@@ -11,6 +11,7 @@ import '../../emotion_detection/models/emotion_type.dart';
 import 'eeg_risk_gauge.dart';
 import 'eeg_topographic_map.dart';
 import '../../theme/app_theme.dart';
+import '../app_page.dart';
 
 /// EegAssessmentReportView เป็น Widget หน้าต่าง/การ์ดแสดงผลใบประเมินและสรุปผลคลื่นสมอง qEEG แบบพรีเมียม
 /// รวบรวมข้อมูลผู้ใช้งาน การแสดงผลเกจระดับความเครียด/ความเสี่ยง แผนภูมิสมอง Topographic และคำแนะนำการดูแลสุขภาพจิต
@@ -191,7 +192,7 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
       child: Container(
         color: Colors.transparent,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context, maxWidth: AppLayout.contentWidth, min: 16), vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

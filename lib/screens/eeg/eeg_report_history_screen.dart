@@ -6,6 +6,7 @@ import '../../services/api_service.dart';
 import '../../services/eeg/eeg_assessment_service.dart';
 import '../../services/eeg/eeg_pdf_service.dart';
 import 'eeg_assessment_report_screen.dart';
+import '../../widgets/app_page.dart';
 
 /// EegReportHistoryScreen คือหน้าแสดงประวัติผลการประเมินวิเคราะห์คลื่นสมอง qEEG ทั้งหมดของคนไข้
 /// ดึงประวัติรายงานที่บันทึกไว้ในฐานข้อมูล แสดงผลระดับความเสี่ยงของแต่ละรายงาน และความสามารถในการเปิดอ่านหรือแปลงเป็นไฟล์ PDF
@@ -103,25 +104,10 @@ class _EegReportHistoryScreenState extends State<EegReportHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: AppGradients.glassBackgroundGradient,
-      ),
+    return AppBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_rounded, color: AppColors.primaryBlue),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: const Text(
-            'ประวัติใบสรุป qEEG',
-            style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w700),
-          ),
-          centerTitle: true,
-        ),
+        appBar: buildAppPageBar(context, title: 'ประวัติใบสรุป qEEG'),
         body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _reports.isEmpty
@@ -146,7 +132,7 @@ class _EegReportHistoryScreenState extends State<EegReportHistoryScreen> {
               : RefreshIndicator(
                   onRefresh: _load,
                   child: ListView.separated(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context, maxWidth: AppLayout.readingWidth, min: 16), vertical: 16),
                     itemCount: _reports.length,
                     separatorBuilder: (_, _) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {

@@ -10,6 +10,7 @@ import '../games/mini_games_screen.dart';
 import '../assessment/test_screen.dart';
 import 'nutrition_screen.dart';
 import '../reports/weekly_report_screen.dart';
+import '../../widgets/app_page.dart';
 
 part 'recommendation_sections/message_bubble.dart';
 part 'recommendation_sections/chat_input.dart';
@@ -551,10 +552,7 @@ class _RecommendationScreenState extends State<RecommendationScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppGradients.glassBackgroundGradient,
-        ),
+      body: AppBackground(
         child: SafeArea(
           child: _isLoading
               ? const Center(child: CircularProgressIndicator())
@@ -562,7 +560,7 @@ class _RecommendationScreenState extends State<RecommendationScreen>
                   children: [
                   // Clinic-Grade AI Telemetry Header
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
+                    padding: EdgeInsets.fromLTRB(AppLayout.gutter(context, maxWidth: AppLayout.readingWidth), 16, AppLayout.gutter(context, maxWidth: AppLayout.readingWidth), 10),
                     child: Row(
                       children: [
                         // Pulsing Hexagon AI Icon
@@ -711,7 +709,10 @@ class _RecommendationScreenState extends State<RecommendationScreen>
                 Expanded(
                   child: ListView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppLayout.gutter(context, maxWidth: AppLayout.readingWidth, min: 16),
+                      vertical: 16,
+                    ),
                     itemCount: _messages.length,
                     itemBuilder: (context, index) {
                       final message = _messages[index];
@@ -722,7 +723,7 @@ class _RecommendationScreenState extends State<RecommendationScreen>
 
                 if (_isSending)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context, maxWidth: AppLayout.readingWidth, min: 16)),
                     child: Row(
                       children: [
                         Container(
@@ -755,16 +756,16 @@ class _RecommendationScreenState extends State<RecommendationScreen>
                     ),
                   ),
 
-                if (_isVoiceMode) _buildVoiceListeningBar(),
+                if (_isVoiceMode) CenteredContent(maxWidth: AppLayout.readingWidth, child: _buildVoiceListeningBar()),
 
                 if (_suggestedQuestions.isNotEmpty && !_isSending && !_isVoiceMode) ...[
                   const SizedBox(height: 4),
-                  _buildSuggestedQuestionsArea(),
+                  CenteredContent(maxWidth: AppLayout.readingWidth, child: _buildSuggestedQuestionsArea()),
                 ],
 
                 const SizedBox(height: 8),
 
-                _buildInputArea(),
+                CenteredContent(maxWidth: AppLayout.readingWidth, child: _buildInputArea()),
               ],
             ),
         ),

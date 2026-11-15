@@ -3,6 +3,7 @@ import '../../theme/app_theme.dart';
 import '../../models/user.dart';
 import 'memory_game_screen.dart';
 import 'number_puzzle_screen.dart';
+import '../../widgets/app_page.dart';
 
 /// MiniGamesScreen คือหน้าจอรายการมินิเกมคลายเครียดและบริหารสมอง
 /// แสดงผลรายการเกมฝึกสมองต่างๆ เช่น เกมจับคู่ความจำ และเกมปริศนาตัวเลข พร้อมให้ผู้ใช้สามารถกดเลือกเข้าเล่นได้
@@ -13,31 +14,14 @@ class MiniGamesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.bgBlue,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded, color: AppColors.textDark),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'มินิเกมคลายเครียด',
-          style: TextStyle(
-            color: AppColors.textDark,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        centerTitle: true,
-      ),
+    return AppBackground(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: buildAppPageBar(context, title: 'มินิเกมคลายเครียด'),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppGradients.glassBackgroundGradient,
-        ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context, maxWidth: AppLayout.readingWidth), vertical: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -132,6 +116,7 @@ class MiniGamesScreen extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 

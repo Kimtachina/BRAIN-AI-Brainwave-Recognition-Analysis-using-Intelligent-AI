@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_page.dart';
 
 /// HelpScreen เป็นหน้าจอสำหรับแสดงคู่มือช่วยเหลือแนะนำการใช้แอปพลิเคชัน
 /// อธิบายวิธีการใช้งานหน้าฟังก์ชันหลัก รวมถึงช่องทางการติดต่อขอรับความช่วยเหลือด่วน
@@ -9,26 +10,12 @@ class HelpScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: AppColors.primaryBlue),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'ช่วยเหลือ',
-          style: TextStyle(
-            color: AppColors.primaryBlue,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
+    return AppBackground(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: buildAppPageBar(context, title: 'ช่วยเหลือ'),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context, maxWidth: AppLayout.readingWidth), vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -175,6 +162,7 @@ class HelpScreen extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 

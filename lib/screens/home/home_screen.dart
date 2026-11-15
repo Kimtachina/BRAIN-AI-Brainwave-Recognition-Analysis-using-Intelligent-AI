@@ -645,8 +645,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   // จอกว้าง (เว็บ/แท็บเล็ตแนวนอน) จัดเป็น 2 คอลัมน์ จอแคบเรียงลงมาคอลัมน์เดียว
                   final wide = constraints.maxWidth >= 1000;
                   return SingleChildScrollView(
-                    // เว้นที่ด้านล่างไม่ให้แถบเมนูลอยบังการ์ดใบสุดท้าย
-                    padding: const EdgeInsets.only(bottom: 110),
+                    padding: const EdgeInsets.only(bottom: 24),
                     child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 1280),

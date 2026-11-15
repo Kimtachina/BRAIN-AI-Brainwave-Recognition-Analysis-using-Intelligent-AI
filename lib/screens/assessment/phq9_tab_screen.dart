@@ -3,6 +3,7 @@ import '../../theme/app_theme.dart';
 import '../../models/user.dart';
 import '../../services/api_service.dart';
 import 'test_screen.dart';
+import '../../widgets/app_page.dart';
 
 /// Phq9TabScreen เป็นหน้าจอหลักสำหรับการทำแบบประเมินและติดตามประวัติ PHQ-9
 /// แบ่งออกเป็น 2 แท็บย่อย: แท็บทำแบบประเมิน และแท็บดูประวัติผลการทดสอบย้อนหลัง
@@ -50,16 +51,13 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppGradients.glassBackgroundGradient,
-        ),
+      body: AppBackground(
         child: SafeArea(
           child: Column(
             children: [
             // ส่วนหัวข้อด้านบนของหน้าจอ
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+              padding: EdgeInsets.fromLTRB(AppLayout.gutter(context), 20, AppLayout.gutter(context), 10),
               child: Column(
                 children: [
                   // ส่วนแสดงชื่อแบบทดสอบพร้อมไอคอนประจิตวิทยา
@@ -191,7 +189,7 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
 
   Widget _buildTestTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.fromLTRB(AppLayout.gutter(context), 20, AppLayout.gutter(context), 20),
       child: Column(
         children: [
           // การ์ดแสดงข้อมูลทั่วไปเกี่ยวกับ PHQ-9
@@ -394,7 +392,7 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
               ),
             )
           : ListView.builder(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.fromLTRB(AppLayout.gutter(context), 20, AppLayout.gutter(context), 20),
               itemCount: _testHistory.length + 1,
               itemBuilder: (context, index) {
                 if (index == 0) {
@@ -613,7 +611,7 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
           ),
           const SizedBox(width: 10),
           SizedBox(
-            width: 45,
+            width: 64,
             child: Text(
               range,
               style: const TextStyle(

@@ -7,6 +7,7 @@ import '../../services/muse/muse_service.dart';
 import '../../services/api_service.dart';
 import '../../widgets/eeg/eeg_pipeline_visualizer.dart';
 import '../../widgets/eeg/eeg_research_waveform_card.dart';
+import '../../widgets/app_page.dart';
 
 part 'eeg_session_sections/session_list.dart';
 part 'eeg_session_sections/running_session.dart';
@@ -317,8 +318,9 @@ class _EegSessionScreenState extends State<EegSessionScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFAFBFF),
+    return AppBackground(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -356,6 +358,7 @@ class _EegSessionScreenState extends State<EegSessionScreen>
         centerTitle: true,
       ),
       body: _isRunning ? _buildRunningSession() : _buildSessionList(),
+    ),
     );
   }
 }
