@@ -7,6 +7,7 @@ import 'wellness/recommendation_screen.dart';
 import 'profile/profile_screen.dart';
 // ลบ ActivitiesDashboardScreen ออกตามความต้องการของผู้ใช้ที่ให้เอาหน้ากิจกรรมออก
 import '../theme/app_theme.dart';
+import '../widgets/app_page.dart';
 
 class MainNavigation extends StatefulWidget {
   final User user;
@@ -57,7 +58,12 @@ class _MainNavigationState extends State<MainNavigation> {
         children: _screens,
       ),
       bottomNavigationBar: Container(
-        margin: const EdgeInsets.only(left: 16, right: 16, bottom: 24),
+        // จอกว้าง: แถบเมนูกว้างไม่เกิน 560 และอยู่กึ่งกลางจอ
+        margin: EdgeInsets.only(
+          left: AppLayout.gutter(context, maxWidth: 560, min: 16),
+          right: AppLayout.gutter(context, maxWidth: 560, min: 16),
+          bottom: 24,
+        ),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(32),
           boxShadow: [

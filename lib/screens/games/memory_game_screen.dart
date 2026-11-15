@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../models/user.dart';
 import '../../services/api_service.dart';
+import '../../widgets/app_page.dart';
 
 /// MemoryGameScreen คือหน้าจอมินิเกมจับคู่ภาพความจำ (Emoji Memory Game / Card Matching Game)
 /// สุ่มอีโมจิผลไม้บนบอร์ด 12 แผ่น ให้ผู้เล่นสลับเปิดและจับคู่ภาพเหมือนกันเพื่อส่งเสริมประสิทธิภาพความจำระยะสั้น
@@ -135,22 +136,13 @@ class _MemoryGameScreenState extends State<MemoryGameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: AppColors.primaryBlue),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'เกมจับคู่',
-          style: TextStyle(color: AppColors.primaryBlue, fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-      ),
-      body: Padding(
+    return AppBackground(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: buildAppPageBar(context, title: 'เกมจับคู่'),
+      body: CenteredContent(
+        maxWidth: AppLayout.formWidth,
+        child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
@@ -207,6 +199,8 @@ class _MemoryGameScreenState extends State<MemoryGameScreen> {
           ],
         ),
       ),
+      ),
+    ),
     );
   }
 }

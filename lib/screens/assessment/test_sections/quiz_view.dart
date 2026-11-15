@@ -9,6 +9,7 @@ extension _QuizView on _TestScreenState {
     return FadeTransition(
       opacity: _fadeAnim,
       child: SingleChildScrollView(
+        padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context, maxWidth: AppLayout.readingWidth), vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

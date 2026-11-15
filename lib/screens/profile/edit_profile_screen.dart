@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../theme/app_theme.dart';
 import '../../models/user.dart';
 import '../../services/api_service.dart';
+import '../../widgets/app_page.dart';
 
 /// EditProfileScreen เป็นหน้าจอสำหรับแก้ไขข้อมูลโปรไฟล์ส่วนบุคคลของผู้ใช้งาน
 /// รองรับการอัปโหลดเปลี่ยนรูปโปรไฟล์ (Avatar Image) โดยการเลือกจากคลังภาพหรือถ่ายภาพใหม่
@@ -341,26 +342,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: AppColors.primaryBlue),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'แก้ไขโปรไฟล์',
-          style: TextStyle(
-            color: AppColors.primaryBlue,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
+    return AppBackground(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: buildAppPageBar(context, title: 'แก้ไขโปรไฟล์'),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context, maxWidth: AppLayout.formWidth), vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -524,6 +511,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 

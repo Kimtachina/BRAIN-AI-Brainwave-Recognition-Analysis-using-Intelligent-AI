@@ -2,10 +2,10 @@ part of '../home_screen.dart';
 
 /// 2. หน้าจอ HUD สมอง (สถานะการบันทึก และช่องสัญญาณ)
 extension _BrainVideoSection on _HomeScreenState {
-  Widget _buildBrainVideoHud() {
+  Widget _buildBrainVideoHud({double height = 240}) {
     return Container(
       width: double.infinity,
-      height: 240,
+      height: height,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
@@ -23,13 +23,15 @@ extension _BrainVideoSection on _HomeScreenState {
             // พื้นหลังของ HUD
             Positioned.fill(
               child: Container(
-                color: const Color(0xFF0F1424),
-                child: const Center(
-                  child: Icon(
-                    Icons.psychology_outlined,
-                    color: Colors.cyan,
-                    size: 40,
+                decoration: const BoxDecoration(
+                  gradient: RadialGradient(
+                    colors: [Color(0xFF16233F), Color(0xFF0B1020)],
+                    radius: 0.9,
                   ),
+                ),
+                child: NeuralCore(
+                  color: AppColors.electricCyan,
+                  isActive: _museService.isConnected,
                 ),
               ),
             ),

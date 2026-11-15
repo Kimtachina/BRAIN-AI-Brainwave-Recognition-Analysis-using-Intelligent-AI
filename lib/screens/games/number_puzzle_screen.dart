@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../models/user.dart';
 import '../../services/api_service.dart';
+import '../../widgets/app_page.dart';
 
 /// NumberPuzzleScreen คือหน้าจอมินิเกมเลื่อนแผ่นเลขปริศนา (Number Sliding Puzzle Game)
 /// ออกแบบมาเพื่อกระตุ้นสมองด้วยตรรกะคณิตศาสตร์เบื้องต้น โดยการเลื่อนจัดเรียงตัวเลข 1-8 ให้ตรงตามเป้าหมาย
@@ -145,26 +146,18 @@ class _NumberPuzzleScreenState extends State<NumberPuzzleScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
     final puzzleSize = screenHeight < 700 ? 200.0 : 280.0;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: AppColors.primaryBlue),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'ปริศนาตัวเลข',
-          style: TextStyle(color: AppColors.primaryBlue, fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-      ),
+    return AppBackground(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: buildAppPageBar(context, title: 'ปริศนาตัวเลข'),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
+            // ให้คอลัมน์กว้างเต็มจอ เพื่อให้กระดานอยู่กึ่งกลาง
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              const SizedBox(width: double.infinity),
 
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -298,6 +291,7 @@ class _NumberPuzzleScreenState extends State<NumberPuzzleScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 }

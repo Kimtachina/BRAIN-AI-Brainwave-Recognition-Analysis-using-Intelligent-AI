@@ -65,7 +65,7 @@ extension _QuickActionsSection on _HomeScreenState {
           child: Opacity(opacity: value.clamp(0.0, 1.0), child: child),
         );
       },
-      child: GestureDetector(
+      child: HoverLift(child: GestureDetector(
         onTap: () {
           // นำทางผู้ใช้ไปยังหน้าจอการเก็บบันทึกข้อมูลคลื่นสมองและอารมณ์จริง EegSessionScreen
           Navigator.push(
@@ -193,7 +193,7 @@ extension _QuickActionsSection on _HomeScreenState {
             ],
           ),
         ),
-      ),
+      )),
     );
   }
 
@@ -205,7 +205,7 @@ extension _QuickActionsSection on _HomeScreenState {
     required Color iconColor,
     required VoidCallback onTap,
   }) {
-    return Container(
+    return HoverLift(child: Container(
       width: double.infinity,
       decoration: AppTheme.glassDecoration(
         color: Colors.white,
@@ -276,6 +276,6 @@ extension _QuickActionsSection on _HomeScreenState {
           ),
         ),
       ),
-    );
+    ));
   }
 }

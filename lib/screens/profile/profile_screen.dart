@@ -8,6 +8,7 @@ import 'edit_profile_screen.dart';
 import 'help_screen.dart';
 import 'settings_screen.dart';
 import '../reports/weekly_report_screen.dart';
+import '../../widgets/app_page.dart';
 
 /// ProfileScreen คือหน้าจอโปรไฟล์ผู้ใช้งานสำหรับการแสดงระเบียนและข้อมูลส่วนบุคคล
 /// ดึงข้อมูลโปรไฟล์แบบเรียลไทม์ผ่าน API และลิงก์ไปยังการตั้งค่า แก้ไขข้อมูล รายงาน AI และการออกจากระบบ
@@ -82,16 +83,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppGradients.glassBackgroundGradient,
-        ),
+      body: AppBackground(
         child: RefreshIndicator(
           onRefresh: _loadProfile,
           child: _isLoading
               ? const Center(child: CircularProgressIndicator())
               : SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppLayout.gutter(context, maxWidth: AppLayout.readingWidth + 40, min: 0),
+                  ),
                   child: Column(
                   children: [
 

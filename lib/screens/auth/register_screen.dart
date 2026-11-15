@@ -5,6 +5,7 @@ import '../../theme/app_theme.dart';
 import '../../services/auth_service.dart';
 import '../../utils/password_validator.dart';
 import 'login_screen.dart';
+import '../../widgets/app_page.dart';
 
 part 'register_sections/form_fields.dart';
 part 'register_sections/password_strength.dart';
@@ -239,10 +240,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: AppGradients.glassBackgroundGradient,
-      ),
+    return AppBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
@@ -266,6 +264,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           height: double.infinity,
           child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: AuthCard(child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppLayout.isWide(context) ? 16 : 0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -543,6 +543,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 20),
             ],
           ),
+          )),
         ),
       ),
     ),

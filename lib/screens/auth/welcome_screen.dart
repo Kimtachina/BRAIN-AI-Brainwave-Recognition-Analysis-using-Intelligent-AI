@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/app_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
 import '../../services/auth_service.dart';
@@ -6,6 +7,8 @@ import '../../models/user.dart';
 import '../main_navigation.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
+import 'reset_password_screen.dart';
+import '../../services/supabase_service.dart';
 
 /// WelcomeScreen คือหน้าจอแรกหลังจากเปิดแอปพลิเคชัน (Splash/Welcome Screen)
 /// ทำหน้าที่ต้อนรับผู้ใช้งาน แนะนำฟีเจอร์หลักของระบบ และแสดงปุ่มเลือกสำหรับลงทะเบียนหรือเข้าสู่ระบบ
@@ -64,6 +67,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
     if (!mounted) return;
 
     try {
+      // เปิดเว็บมาจากลิงก์รีเซ็ตรหัสผ่าน: ต้องตั้งรหัสผ่านใหม่ก่อน ไม่ล็อกอินอัตโนมัติ
+      if (AuthService.isLoggedIn && SupabaseService.passwordRecoveryPending) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const ResetPasswordScreen()),
+          (route) => false,
+        );
+        return;
+      }
       if (AuthService.isLoggedIn) {
         final result = await AuthService.restoreSession();
         if (result['success'] == true && mounted) {
@@ -117,16 +129,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppGradients.glassBackgroundGradient,
-        ),
+      body: AppBackground(
         child: SafeArea(
           child: FadeTransition(
             opacity: _animation,
-            child: Column(
+            child: AuthCard(
+              maxHeight: 900,
+              child: Column(
               children: [
-                const SizedBox(height: 60),
+                SizedBox(height: AppLayout.isWide(context) ? 20 : 60),
 
                 // โลโก้แอปและหัวข้อหลัก
                 Column(
@@ -342,6 +353,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   const SizedBox(height: 40),
                 ],
               ],
+            ),
             ),
           ),
         ),

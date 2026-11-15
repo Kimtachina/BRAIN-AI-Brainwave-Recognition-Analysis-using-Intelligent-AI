@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_page.dart';
 
 /// NutritionScreen คือหน้าจอสาระน่ารู้เกี่ยวกับโภชนาการคลายเครียดและการดูแลสมอง
 /// แสดงรายชื่ออาหาร วิตามินเสริม และเครื่องดื่ม ที่ช่วยส่งเสริมการทำงานของคลื่นสมอง Alpha และควบคุมระดับฮอร์โมนความเครียด
@@ -31,17 +32,14 @@ class _NutritionScreenState extends State<NutritionScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppGradients.glassBackgroundGradient,
-        ),
+      body: AppBackground(
         child: SafeArea(
           child: Column(
             children: [
 
-            _buildHeader(context),
+            CenteredContent(child: _buildHeader(context)),
 
-            _buildTabBar(),
+            CenteredContent(child: _buildTabBar()),
 
             Expanded(
               child: TabBarView(
@@ -217,7 +215,7 @@ class _NutritionScreenState extends State<NutritionScreen>
 
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      padding: EdgeInsets.fromLTRB(AppLayout.gutter(context), 16, AppLayout.gutter(context), 20),
       itemCount: foods.length + 1,
       itemBuilder: (context, index) {
         if (index == 0) {
@@ -282,7 +280,7 @@ class _NutritionScreenState extends State<NutritionScreen>
 
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      padding: EdgeInsets.fromLTRB(AppLayout.gutter(context), 16, AppLayout.gutter(context), 20),
       itemCount: vitamins.length + 1,
       itemBuilder: (context, index) {
         if (index == 0) {
@@ -346,7 +344,7 @@ class _NutritionScreenState extends State<NutritionScreen>
 
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      padding: EdgeInsets.fromLTRB(AppLayout.gutter(context), 16, AppLayout.gutter(context), 20),
       itemCount: drinks.length + 1,
       itemBuilder: (context, index) {
         if (index == 0) {

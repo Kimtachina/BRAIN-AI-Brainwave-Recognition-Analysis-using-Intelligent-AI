@@ -6,6 +6,7 @@ import '../../services/api_service.dart';
 import '../auth/welcome_screen.dart';
 import 'notification_settings_screen.dart';
 import 'change_password_screen.dart';
+import '../../widgets/app_page.dart';
 
 /// SettingsScreen หน้าจอการตั้งค่าการแจ้งเตือน รหัสผ่าน และการขอลบบัญชีผู้ใช้งานระบบ
 class SettingsScreen extends StatefulWidget {
@@ -22,27 +23,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: AppColors.primaryBlue),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'ตั้งค่า',
-          style: TextStyle(
-            color: AppColors.primaryBlue,
-            fontWeight: FontWeight.w600,
+    return AppBackground(
+      child: Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: buildAppPageBar(context, title: 'ตั้งค่า'),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context, maxWidth: AppLayout.readingWidth), vertical: 20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: AppTheme.glassDecoration(
+            color: Colors.white,
+            opacity: 0.8,
+            borderColor: AppColors.primaryBlue.withValues(alpha: 0.15),
           ),
-        ),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
+          child: Column(
           children: [
             _buildSettingItem(
               icon: Icons.notifications_outlined,
@@ -74,7 +68,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ],
         ),
+        ),
       ),
+    ),
     );
   }
 

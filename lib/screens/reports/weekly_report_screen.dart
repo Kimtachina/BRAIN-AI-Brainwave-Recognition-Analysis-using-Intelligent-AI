@@ -9,6 +9,7 @@ import '../../models/user.dart';
 import '../../services/api_service.dart';
 import '../../services/supabase_service.dart';
 import '../../services/ai/chatgpt_service.dart';
+import '../../widgets/app_page.dart';
 
 /// WeeklyReportScreen เป็นหน้าจอสรุปสถิติและแนวโน้มสภาวะจิตใจรายสัปดาห์ (AI Weekly Report)
 /// ดึงประวัติการบันทึกอารมณ์ ค่าคลื่นสมอง และคะแนน PHQ-9 ย้อนหลัง 7 วัน
@@ -292,28 +293,11 @@ $phq9Str
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppBackground(
+      child: Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.white.withValues(alpha: 0.8),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppColors.primaryBlue),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'รายงานประจำสัปดาห์ AI',
-          style: TextStyle(
-            color: AppColors.primaryBlue,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-      ),
+      appBar: buildAppPageBar(context, title: 'รายงานประจำสัปดาห์ AI'),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppGradients.glassBackgroundGradient,
-        ),
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _errorMessage.isNotEmpty
@@ -324,7 +308,7 @@ $phq9Str
                     ),
                   )
                 : SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+                    padding: EdgeInsets.fromLTRB(AppLayout.gutter(context, maxWidth: AppLayout.contentWidth), 20, AppLayout.gutter(context, maxWidth: AppLayout.contentWidth), 40),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -342,6 +326,7 @@ $phq9Str
                     ),
                   ),
       ),
+    ),
     );
   }
 
