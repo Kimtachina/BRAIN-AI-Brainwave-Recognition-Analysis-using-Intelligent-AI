@@ -523,7 +523,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onPressed: () async {
               Navigator.pop(dialogContext);
               
-              // ล้างเซสชันการเข้าสู่ระบบทั้งหมด (Supabase Auth + Google Sign-In)
+              // ล้างเซสชันการเข้าสู่ระบบทั้งหมด (Supabase Auth)
               await ApiService.signOut();
               
               WidgetsBinding.instance.addPostFrameCallback((_) {

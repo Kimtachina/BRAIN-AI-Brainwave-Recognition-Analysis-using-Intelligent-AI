@@ -63,9 +63,6 @@ dependencies:
   pdf: ^3.12.0
   printing: ^5.14.3
   
-  # Authentication — Google Sign-In สำหรับเข้าสู่ระบบด้วยบัญชี Google
-  google_sign_in: ^6.2.2
-  
   # จดจำข้อมูลล็อกอินในเครื่อง (Remember Me)
   shared_preferences: ^2.3.4
 

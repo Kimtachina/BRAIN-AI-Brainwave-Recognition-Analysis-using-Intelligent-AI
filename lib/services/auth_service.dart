@@ -1,13 +1,10 @@
 import 'package:flutter/foundation.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user.dart' as app_models;
 import 'supabase_service.dart';
 
 /// AuthService จัดการระบบยืนยันตัวตน (Authentication) ทั้งหมดของแอปพลิเคชัน
-/// รองรับ 2 ช่องทางการเข้าสู่ระบบ:
-///   1. Email + Password (ผ่าน Supabase Auth พร้อม bcrypt hash อัตโนมัติ)
-///   2. Google Sign-In (ผ่าน OAuth 2.0 + Supabase Auth)
+/// เข้าสู่ระบบด้วย Email + Password ที่ผู้ใช้สมัครเอง (ผ่าน Supabase Auth พร้อม bcrypt hash อัตโนมัติ)
 ///
 /// หลังล็อกอินสำเร็จจะซิงค์ข้อมูลกับตาราง users ในฐานข้อมูล
 /// เพื่อให้ userId ใช้งานได้ทั่วทั้งแอป
@@ -138,86 +135,6 @@ class AuthService {
   }
 
   // ═══════════════════════════════════════════
-  //  การเข้าสู่ระบบด้วย Google
-  // ═══════════════════════════════════════════
-
-  /// เข้าสู่ระบบด้วยบัญชี Google ผ่าน OAuth 2.0
-  /// ขั้นตอน:
-  ///   1. เปิดหน้าล็อกอิน Google ให้ผู้ใช้เลือกบัญชี
-  ///   2. รับ idToken จาก Google
-  ///   3. ส่ง idToken ให้ Supabase Auth ตรวจสอบ
-  ///   4. ซิงค์ข้อมูลกับตาราง users
-  static Future<Map<String, dynamic>> signInWithGoogle() async {
-    try {
-      // เว็บ: google_sign_in ใช้ serverClientId ไม่ได้ จึงให้ Supabase พาไปหน้า Google แล้วกลับมาที่เว็บ
-      // เมื่อกลับมา WelcomeScreen จะเจอ session และล็อกอินอัตโนมัติ (restoreSession)
-      // ต้องเพิ่ม URL ของเว็บใน Supabase → Authentication → URL Configuration → Redirect URLs
-      if (kIsWeb) {
-        await SupabaseService.client.auth.signInWithOAuth(
-          OAuthProvider.google,
-          redirectTo: Uri.base.origin + Uri.base.path,
-        );
-        return {'success': false, 'redirecting': true, 'message': 'กำลังไปหน้าเข้าสู่ระบบของ Google...'};
-      }
-
-      // ขั้นตอนที่ 1: เปิดหน้า Google Sign-In
-      final googleSignIn = GoogleSignIn(
-        scopes: ['email', 'profile'],
-        serverClientId: '557274858748-hbn5quidnjbs6iqv52j21bdql50qm1gn.apps.googleusercontent.com',
-      );
-
-      final googleUser = await googleSignIn.signIn();
-
-      if (googleUser == null) {
-        // ผู้ใช้กดยกเลิกการเข้าสู่ระบบ
-        return {'success': false, 'message': 'ยกเลิกการเข้าสู่ระบบด้วย Google'};
-      }
-
-      // ขั้นตอนที่ 2: ดึง Authentication Token
-      final googleAuth = await googleUser.authentication;
-      final idToken = googleAuth.idToken;
-      final accessToken = googleAuth.accessToken;
-
-      if (idToken == null) {
-        return {'success': false, 'message': 'ไม่สามารถรับ Token จาก Google ได้'};
-      }
-
-      // ขั้นตอนที่ 3: ส่ง Token ให้ Supabase Auth
-      final client = SupabaseService.client;
-      final authResponse = await client.auth.signInWithIdToken(
-        provider: OAuthProvider.google,
-        idToken: idToken,
-        accessToken: accessToken,
-      );
-
-      if (authResponse.user == null) {
-        return {'success': false, 'message': 'ไม่สามารถยืนยันตัวตนกับ Supabase ได้'};
-      }
-
-      // ขั้นตอนที่ 4: ซิงค์ข้อมูลกับตาราง users
-      final syncResult = await _getOrCreateUserProfile(
-        authResponse.user!,
-        displayName: googleUser.displayName,
-        photoUrl: googleUser.photoUrl,
-        authProvider: 'google',
-      );
-
-      if (syncResult['success'] != true) {
-        return syncResult;
-      }
-
-      return {
-        'success': true,
-        'message': 'เข้าสู่ระบบด้วย Google สำเร็จ',
-        'user': syncResult['user'],
-      };
-    } catch (e) {
-      debugPrint('❌ Google SignIn Error: $e');
-      return {'success': false, 'message': 'เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google: $e'};
-    }
-  }
-
-  // ═══════════════════════════════════════════
   //  การรีเซ็ตรหัสผ่าน (Forgot Password)
   // ═══════════════════════════════════════════
 
@@ -301,20 +218,12 @@ class AuthService {
   //  การออกจากระบบ
   // ═══════════════════════════════════════════
 
-  /// ออกจากระบบทั้ง Supabase Auth และ Google Sign-In
+  /// ออกจากระบบ Supabase Auth
   static Future<void> signOut() async {
     try {
       final client = SupabaseService.client;
       SupabaseService.passwordRecoveryPending = false;
       await client.auth.signOut();
-
-      // ออกจาก Google Sign-In ด้วย (ถ้าเคยล็อกอินด้วย Google)
-      try {
-        final googleSignIn = GoogleSignIn();
-        await googleSignIn.signOut();
-      } catch (_) {
-        // ไม่เป็นไรถ้า Google Sign-In ไม่ได้เริ่มต้น
-      }
     } catch (e) {
       debugPrint('❌ SignOut Error: $e');
     }
@@ -406,7 +315,7 @@ class AuthService {
             .update({
               'auth_user_id': authUserId,
               'auth_provider': authProvider,
-              'email_verified': authProvider == 'google', // Google = verified อัตโนมัติ
+              'email_verified': false,
             })
             .eq('id', existingByEmail['id']);
 
@@ -436,7 +345,7 @@ class AuthService {
             'birth_date': birthDate,
             'auth_user_id': authUserId,
             'auth_provider': authProvider,
-            'email_verified': authProvider == 'google',
+            'email_verified': false,
           })
           .select()
           .single();
@@ -459,8 +368,6 @@ class AuthService {
   /// ดึงหรือสร้าง profile ในตาราง users สำหรับ Auth User ที่ล็อกอินแล้ว
   static Future<Map<String, dynamic>> _getOrCreateUserProfile(
     User authUser, {
-    String? displayName,
-    String? photoUrl,
     String authProvider = 'email',
   }) async {
     try {
@@ -500,26 +407,17 @@ class AuthService {
         }
       }
 
-      // ถ้ายังไม่พบ สร้างใหม่ (กรณี Google Sign-In ครั้งแรก)
+      // ถ้ายังไม่พบ สร้างใหม่ (เช่น ยืนยันอีเมลแล้วล็อกอินครั้งแรก)
       if (userRow == null) {
         final result = await _syncUserToDatabase(
           authUserId: authUser.id,
           email: authUser.email ?? '',
-          fullName: displayName ?? authUser.userMetadata?['full_name'],
+          fullName: authUser.userMetadata?['full_name'],
           authProvider: authProvider,
         );
 
         if (result['success'] != true) return result;
         userRow = result['user'];
-
-        // อัปเดต avatar ถ้ามี (จาก Google)
-        if (photoUrl != null && userRow != null) {
-          await client
-              .from('users')
-              .update({'avatar_url': photoUrl})
-              .eq('id', userRow['id']);
-          userRow['avatar_url'] = photoUrl;
-        }
       }
 
       // แปลงเป็น app_models.User

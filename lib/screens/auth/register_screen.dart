@@ -12,9 +12,7 @@ part 'register_sections/password_strength.dart';
 part 'register_sections/terms_and_privacy.dart';
 
 /// RegisterScreen เป็นหน้าจอกรอกข้อมูลสมัครสมาชิกใหม่สำหรับแอปพลิเคชัน
-/// รองรับ:
-///   1. สมัครด้วย Email + Password (ผ่าน Supabase Auth) พร้อม Password Strength Indicator
-///   2. สมัครด้วย Google Sign-In
+/// สมัครด้วย Email + Password (ผ่าน Supabase Auth) พร้อม Password Strength Indicator
 /// ประกอบด้วย Bottom Sheet กฎเงื่อนไขการใช้บริการ (Terms) และนโยบายความเป็นส่วนตัว (Privacy Policy)
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -34,7 +32,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscurePassword = true;        // เปิด/ปิด การซ่อนรหัสผ่านในกล่องข้อความ
   bool _obscureConfirmPassword = true;  // เปิด/ปิด การซ่อนช่องยืนยันรหัสผ่าน
   bool _isLoading = false;             // บอกสถานะการโหลดระหว่างส่งข้อมูล API
-  bool _isGoogleLoading = false;       // บอกสถานะการโหลด Google Sign-In
   bool _agreeToTerms = false;          // เช็คว่ายอมรับข้อตกลงการใช้งานหรือยัง
   late TapGestureRecognizer _termsRecognizer;
   late TapGestureRecognizer _privacyRecognizer;
@@ -188,39 +185,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
     } else {
       _showError(result['message'] ?? 'เกิดข้อผิดพลาด');
-    }
-  }
-
-  /// สมัครด้วย Google Sign-In
-  Future<void> _registerWithGoogle() async {
-    if (!_agreeToTerms) {
-      _showError('กรุณายอมรับเงื่อนไขการใช้งานก่อนสมัครด้วย Google');
-      return;
-    }
-
-    setState(() => _isGoogleLoading = true);
-
-    final result = await AuthService.signInWithGoogle();
-
-    setState(() => _isGoogleLoading = false);
-
-    if (result['success'] == true) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('สมัครสมาชิกด้วย Google สำเร็จ'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-        );
-      }
-    } else {
-      if (result['message'] != 'ยกเลิกการเข้าสู่ระบบด้วย Google') {
-        _showError(result['message'] ?? 'เกิดข้อผิดพลาด');
-      }
     }
   }
 
@@ -454,61 +418,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // เส้นคั่น "หรือ"
-              Row(
-                children: [
-                  Expanded(child: Divider(color: AppColors.textLight.withValues(alpha: 0.5))),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'หรือ',
-                      style: GoogleFonts.prompt(color: AppColors.textGray, fontSize: 13),
-                    ),
-                  ),
-                  Expanded(child: Divider(color: AppColors.textLight.withValues(alpha: 0.5))),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              // ปุ่มสมัครด้วย Google
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: OutlinedButton.icon(
-                  onPressed: _isGoogleLoading ? null : _registerWithGoogle,
-                  icon: _isGoogleLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2.5),
-                        )
-                      : Image.network(
-                          'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
-                          height: 22,
-                          width: 22,
-                          errorBuilder: (c, e, s) => const Icon(Icons.g_mobiledata_rounded, size: 28),
-                        ),
-                  label: Text(
-                    'สมัครด้วย Google',
-                    style: GoogleFonts.prompt(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textDark,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.textDark,
-                    side: BorderSide(color: Colors.grey.shade300, width: 1.5),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
                 ),
               ),
 
