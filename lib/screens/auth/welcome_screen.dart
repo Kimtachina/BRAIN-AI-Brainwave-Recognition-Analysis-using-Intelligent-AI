@@ -25,7 +25,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
   late AnimationController _controller;
   late Animation<double> _animation;
   bool _isCheckingSession = true;  // บอกสถานะว่ากำลังเช็ค session อยู่หรือไม่
-  bool _isGoogleLoading = false;   // บอกสถานะโหลด Google Sign-In
 
   @override
   void initState() {
@@ -94,35 +93,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
 
     if (mounted) {
       setState(() => _isCheckingSession = false);
-    }
-  }
-
-  /// เข้าสู่ระบบด้วย Google Sign-In จากหน้า Welcome
-  Future<void> _loginWithGoogle() async {
-    setState(() => _isGoogleLoading = true);
-
-    final result = await AuthService.signInWithGoogle();
-
-    if (!mounted) return;
-    setState(() => _isGoogleLoading = false);
-
-    if (result['success'] == true) {
-      final user = User.fromJson(result['user']);
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => MainNavigation(user: user)),
-        (route) => false,
-      );
-    } else {
-      if (result['redirecting'] != true &&
-          result['message'] != 'ยกเลิกการเข้าสู่ระบบด้วย Google') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result['message'] ?? 'เกิดข้อผิดพลาด'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
     }
   }
 
@@ -304,44 +274,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 0.3,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 14),
-
-                        // ปุ่มเข้าสู่ระบบด้วย Google
-                        SizedBox(
-                          width: double.infinity,
-                          height: 52,
-                          child: OutlinedButton.icon(
-                            onPressed: _isGoogleLoading ? null : _loginWithGoogle,
-                            icon: _isGoogleLoading
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(strokeWidth: 2.5),
-                                  )
-                                : Image.network(
-                                    'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
-                                    height: 22,
-                                    width: 22,
-                                    errorBuilder: (c, e, s) => const Icon(Icons.g_mobiledata_rounded, size: 28),
-                                  ),
-                            label: Text(
-                              'เข้าสู่ระบบด้วย Google',
-                              style: GoogleFonts.prompt(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textDark,
-                              ),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.textDark,
-                              side: BorderSide(color: Colors.grey.shade300, width: 1.5),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
                               ),
                             ),
                           ),

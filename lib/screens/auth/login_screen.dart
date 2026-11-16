@@ -3,7 +3,7 @@ import 'package:flutter/services.dart'; // TextInput.finishAutofillContext ใ�
 import 'package:google_fonts/google_fonts.dart'; // สำหรับใช้ฟอนต์สวยงามจาก Google Fonts
 import 'package:shared_preferences/shared_preferences.dart'; // สำหรับบันทึกอีเมลล่าสุดไว้ในเครื่อง (Remember Me)
 import '../../theme/app_theme.dart'; // เรียกใช้ชุดสีและดีไซน์หลักของแอป
-import '../../services/auth_service.dart'; // เชื่อมต่อระบบล็อกอิน (Supabase, Google Sign-In)
+import '../../services/auth_service.dart'; // เชื่อมต่อระบบล็อกอิน (Supabase Auth)
 import '../../models/user.dart'; // รูปแบบโครงสร้างข้อมูลผู้ใช้งาน
 import '../main_navigation.dart'; // สำหรับเปลี่ยนหน้าไปยังหน้าหลักหลังเข้าระบบสำเร็จ
 import 'register_screen.dart'; // สำหรับเปิดหน้าจอสมัครสมาชิกใหม่เมื่อคลิกสมัคร
@@ -11,9 +11,7 @@ import '../../widgets/app_page.dart';
 import '../../utils/password_validator.dart'; // ตรวจรูปแบบอีเมล
 
 /// LoginScreen เป็นหน้าจอล็อกอินสำหรับการเข้าสู่ระบบผู้ใช้งาน
-/// รองรับ 2 ช่องทาง:
-///   1. Email + Password (ผ่าน Supabase Auth)
-///   2. Google Sign-In (OAuth 2.0)
+/// เข้าสู่ระบบด้วย Email + Password (ผ่าน Supabase Auth)
 /// มีระบบจดจำ Email ผ่าน SharedPreferences และฟังก์ชันลืมรหัสผ่าน
 ///
 /// แนวทางของฟอร์ม (web.dev Sign-in form best practices, OWASP Authentication Cheat Sheet):
@@ -35,7 +33,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordFocus = FocusNode();
   bool _obscurePassword = true; // ควบคุมสถานะการซ่อน/แสดงรหัสผ่าน
   bool _isLoading = false;      // ใช้แสดงโหลดดิ้งขณะเชื่อมต่อ API
-  bool _isGoogleLoading = false; // ใช้แสดงโหลดดิ้งขณะ Google Sign-In
   bool _isResending = false;    // กำลังส่งอีเมลยืนยันซ้ำ
   bool _rememberMe = false;     // ติ๊กบันทึก email ในเครื่องหรือไม่
   bool _submitted = false;      // กดเข้าสู่ระบบแล้วอย่างน้อยหนึ่งครั้ง: หลังจากนี้ตรวจช่องกรอกทันทีที่พิมพ์
@@ -45,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _bannerIsError = true;
   bool _canResendVerification = false;
 
-  bool get _busy => _isLoading || _isGoogleLoading;
+  bool get _busy => _isLoading;
 
   @override
   void initState() {
@@ -154,29 +151,6 @@ class _LoginScreenState extends State<LoginScreen> {
         result['message'] ?? 'เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่',
         canResend: result['code'] == 'email_not_confirmed',
       );
-    }
-  }
-
-  /// เข้าสู่ระบบด้วย Google Sign-In
-  Future<void> _loginWithGoogle() async {
-    if (_busy) return;
-    setState(() {
-      _isGoogleLoading = true;
-      _bannerMessage = null;
-    });
-
-    final result = await AuthService.signInWithGoogle();
-
-    if (!mounted) return;
-    // เว็บ: กำลังออกไปหน้า Google ให้ปุ่มหมุนค้างไว้จนเปลี่ยนหน้า
-    if (result['redirecting'] == true) return;
-    setState(() => _isGoogleLoading = false);
-
-    if (result['success'] == true) {
-      _goToApp(result);
-    } else if (result['message'] != 'ยกเลิกการเข้าสู่ระบบด้วย Google') {
-      // ถ้าผู้ใช้กดยกเลิกเอง ไม่ต้องแสดง error
-      _showBanner(result['message'] ?? 'เข้าสู่ระบบด้วย Google ไม่สำเร็จ');
     }
   }
 
@@ -474,61 +448,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // เส้นคั่น "หรือ"
-              Row(
-                children: [
-                  Expanded(child: Divider(color: AppColors.textLight.withValues(alpha: 0.5))),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'หรือ',
-                      style: GoogleFonts.prompt(color: AppColors.textGray, fontSize: 13),
-                    ),
-                  ),
-                  Expanded(child: Divider(color: AppColors.textLight.withValues(alpha: 0.5))),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-
-              // ปุ่มเข้าสู่ระบบด้วย Google
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: OutlinedButton.icon(
-                  onPressed: _busy ? null : _loginWithGoogle,
-                  icon: _isGoogleLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2.5),
-                        )
-                      : Image.network(
-                          'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
-                          height: 22,
-                          width: 22,
-                          errorBuilder: (c, e, s) => const Icon(Icons.g_mobiledata_rounded, size: 28),
-                        ),
-                  label: Text(
-                    'เข้าสู่ระบบด้วย Google',
-                    style: GoogleFonts.prompt(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textDark,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.textDark,
-                    side: BorderSide(color: Colors.grey.shade300, width: 1.5),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
                 ),
               ),
 
