@@ -66,7 +66,7 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                          color: AppColors.primary.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 2),
                           boxShadow: [
@@ -79,7 +79,7 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
                         ),
                         child: const Icon(
                           Icons.psychology_outlined,
-                          color: AppColors.primaryBlue,
+                          color: AppColors.primary,
                           size: 24,
                         ),
                       ),
@@ -93,7 +93,7 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w800,
-                                color: AppColors.textDark,
+                                color: AppColors.ink,
                                 letterSpacing: -0.5,
                               ),
                             ),
@@ -101,7 +101,7 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
                               'Patient Health Questionnaire-9',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.textGray,
+                                color: AppColors.inkSoft,
                               ),
                             ),
                           ],
@@ -119,11 +119,11 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
                     child: TabBar(
                       controller: _tabController,
                       indicator: BoxDecoration(
-                        color: AppColors.primaryBlue,
+                        color: AppColors.primary,
                         borderRadius: BorderRadius.circular(14),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primaryBlue.withValues(alpha: 0.2),
+                            color: AppColors.primary.withValues(alpha: 0.2),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),
@@ -132,7 +132,7 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
                       indicatorSize: TabBarIndicatorSize.tab,
                       indicatorPadding: const EdgeInsets.all(3),
                       labelColor: Colors.white,
-                      unselectedLabelColor: AppColors.textGray,
+                      unselectedLabelColor: AppColors.inkSoft,
                       labelStyle: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -197,9 +197,9 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
             width: double.infinity,
             padding: const EdgeInsets.all(24),
             decoration: AppTheme.glassDecoration(
-              color: AppColors.primaryBlue,
+              color: AppColors.primary,
               opacity: 0.15,
-              borderColor: AppColors.primaryBlue.withValues(alpha: 0.3),
+              borderColor: AppColors.primary.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Column(
@@ -207,12 +207,12 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.15),
+                    color: AppColors.primary.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.psychology_outlined,
-                    color: AppColors.primaryBlue,
+                    color: AppColors.primary,
                     size: 40,
                   ),
                 ),
@@ -222,7 +222,7 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textDark,
+                    color: AppColors.ink,
                     letterSpacing: 2,
                   ),
                 ),
@@ -231,7 +231,7 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
                   'แบบประเมินภาวะความเครียดมาตรฐานสากล',
                   style: TextStyle(
                     fontSize: 14,
-                    color: AppColors.textGray,
+                    color: AppColors.inkSoft,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -254,14 +254,14 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
                 Row(
                   children: [
                     Icon(Icons.info_outline,
-                        color: AppColors.primaryBlue, size: 20),
+                        color: AppColors.primary, size: 20),
                     const SizedBox(width: 8),
                     Text(
                       'เกี่ยวกับแบบทดสอบ',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.primaryBlue,
+                        color: AppColors.primary,
                       ),
                     ),
                   ],
@@ -330,7 +330,7 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
                 ).then((_) => _loadHistory());
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryBlue,
+                backgroundColor: AppColors.primary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
@@ -588,7 +588,7 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: AppColors.primaryBlue),
+          Icon(icon, size: 16, color: AppColors.primary),
           const SizedBox(width: 8),
           Text(text, style: const TextStyle(fontSize: 14)),
         ],

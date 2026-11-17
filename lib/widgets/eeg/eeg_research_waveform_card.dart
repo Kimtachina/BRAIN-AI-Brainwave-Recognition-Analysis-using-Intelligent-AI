@@ -75,7 +75,7 @@ class EegResearchWaveformCard extends StatelessWidget {
         '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
 
     const channelColors = {
-      'TP9': Color(0xFF1565C0),
+      'TP9': Color(0xFF4636A8),
       'AF7': Color(0xFF2E7D32),
       'AF8': Color(0xFFE65100),
       'TP10': Color(0xFF6A1B9A),
@@ -100,7 +100,7 @@ class EegResearchWaveformCard extends StatelessWidget {
         children: [
           // ── Header Banner (Collapsible with Material InkWell ripple feedback) ──
           Material(
-            color: const Color(0xFF1A237E),
+            color: const Color(0xFF1D1B2E),
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(13),
               topRight: const Radius.circular(13),
@@ -417,7 +417,7 @@ class EegResearchWaveformCard extends StatelessWidget {
         Text(
           value,
           style: const TextStyle(
-            color: Color(0xFF1A237E),
+            color: Color(0xFF1D1B2E),
             fontSize: 9,
             fontWeight: FontWeight.w700,
           ),

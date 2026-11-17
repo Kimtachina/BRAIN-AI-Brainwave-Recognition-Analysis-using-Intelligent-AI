@@ -4,10 +4,7 @@
 class User {
   final int id;
   final String username;
-  final String? password;
   final String? email;
-  final String? firstName;
-  final String? lastName;
   final String? fullName;
   final String? phone;
   final bool isActive;
@@ -19,10 +16,7 @@ class User {
   User({
     required this.id,
     required this.username,
-    this.password,
     this.email,
-    this.firstName,
-    this.lastName,
     this.fullName,
     this.phone,
     this.isActive = true,
@@ -36,10 +30,7 @@ class User {
     return User(
       id: json['id'] is String ? int.parse(json['id']) : json['id'],
       username: json['username'] ?? '',
-      password: json['password'],
       email: json['email'],
-      firstName: json['first_name'],
-      lastName: json['last_name'],
       fullName: json['full_name'],
       phone: json['phone'],
       isActive: json['is_active'] ?? true,
@@ -57,8 +48,6 @@ class User {
       'id': id,
       'username': username,
       'email': email,
-      'first_name': firstName,
-      'last_name': lastName,
       'full_name': fullName,
       'phone': phone,
       'is_active': isActive,
@@ -70,19 +59,13 @@ class User {
 
   String get displayName {
     if (fullName != null && fullName!.isNotEmpty) return fullName!;
-    if (firstName != null || lastName != null) {
-      return '${firstName ?? ''} ${lastName ?? ''}'.trim();
-    }
     return username;
   }
 
   User copyWith({
     int? id,
     String? username,
-    String? password,
     String? email,
-    String? firstName,
-    String? lastName,
     String? fullName,
     String? phone,
     bool? isActive,
@@ -94,10 +77,7 @@ class User {
     return User(
       id: id ?? this.id,
       username: username ?? this.username,
-      password: password ?? this.password,
       email: email ?? this.email,
-      firstName: firstName ?? this.firstName,
-      lastName: lastName ?? this.lastName,
       fullName: fullName ?? this.fullName,
       phone: phone ?? this.phone,
       isActive: isActive ?? this.isActive,

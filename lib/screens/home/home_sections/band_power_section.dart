@@ -9,7 +9,7 @@ extension _BandPowerSection on _HomeScreenState {
       decoration: AppTheme.glassDecoration(
         color: Colors.white,
         opacity: 0.7,
-        borderColor: AppColors.primaryBlue.withValues(alpha: 0.15),
+        borderColor: AppColors.primary.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
@@ -17,12 +17,12 @@ extension _BandPowerSection on _HomeScreenState {
         children: [
           Row(
             children: [
-              const Icon(Icons.insights_rounded, color: AppColors.primaryBlue, size: 20),
+              const Icon(Icons.insights_rounded, color: AppColors.primary, size: 20),
               const SizedBox(width: 8),
               const Expanded(
                 child: Text(
                   'วิเคราะห์ช่องสัญญาณคลื่นสมอง (EEG Bands)',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.ink),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -31,7 +31,7 @@ extension _BandPowerSection on _HomeScreenState {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: (_museService.isConnected && _museService.latestData != null)
-                      ? AppColors.primaryGreen.withValues(alpha: 0.12)
+                      ? AppColors.secondary.withValues(alpha: 0.12)
                       : Colors.grey.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -40,7 +40,7 @@ extension _BandPowerSection on _HomeScreenState {
                   children: [
                     PulseDot(
                       color: (_museService.isConnected && _museService.latestData != null)
-                          ? AppColors.primaryGreen
+                          ? AppColors.secondary
                           : Colors.grey,
                       size: 6,
                     ),
@@ -53,7 +53,7 @@ extension _BandPowerSection on _HomeScreenState {
                         fontSize: 9,
                         fontWeight: FontWeight.w700,
                         color: (_museService.isConnected && _museService.latestData != null)
-                            ? AppColors.primaryGreen
+                            ? AppColors.secondary
                             : Colors.grey[600],
                       ),
                     ),
@@ -67,7 +67,7 @@ extension _BandPowerSection on _HomeScreenState {
             (_museService.isConnected && _museService.latestData != null)
                 ? 'ความเข้มของคลื่นสัญญาณสมองในแต่ละย่านความถี่ (ความถี่สุ่ม 256Hz)'
                 : 'กรุณาเชื่อมต่ออุปกรณ์ Muse เพื่อเริ่มอ่านคลื่นสมองแบบสด',
-            style: const TextStyle(fontSize: 13, color: AppColors.textGray),
+            style: const TextStyle(fontSize: 13, color: AppColors.inkSoft),
           ),
           const SizedBox(height: 18),
 
@@ -231,7 +231,7 @@ extension _BandPowerSection on _HomeScreenState {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: isActive ? AppColors.textDark : Colors.grey[600],
+              color: isActive ? AppColors.ink : Colors.grey[600],
             ),
           ),
           const SizedBox(height: 8),
@@ -278,7 +278,7 @@ extension _BandPowerSection on _HomeScreenState {
             desc,
             style: TextStyle(
               fontSize: 12,
-              color: isActive ? AppColors.textGray : Colors.grey[500],
+              color: isActive ? AppColors.inkSoft : Colors.grey[500],
               fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,

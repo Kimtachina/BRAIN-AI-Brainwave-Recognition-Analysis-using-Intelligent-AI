@@ -30,13 +30,13 @@ class MiniGamesScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18, 
                   fontWeight: FontWeight.bold, 
-                  color: AppColors.textDark,
+                  color: AppColors.ink,
                 ),
               ),
               const SizedBox(height: 6),
               const Text(
                 'การเล่นเกมช่วยผ่อนคลายและกระตุ้นการทำงานของสมอง',
-                style: TextStyle(fontSize: 14, color: AppColors.textGray),
+                style: TextStyle(fontSize: 14, color: AppColors.inkSoft),
               ),
               const SizedBox(height: 24),
 
@@ -96,13 +96,13 @@ class MiniGamesScreen extends StatelessWidget {
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
-                              color: AppColors.textDark,
+                              color: AppColors.ink,
                             ),
                           ),
                           SizedBox(height: 8),
                           Text(
                             'การเล่นเกมบริหารสมองวันละ 15-30 นาที จะช่วยชะลอความเสื่อมของสมอง เสริมสร้างความจำ และลดความเครียดได้เป็นอย่างดีครับ',
-                            style: TextStyle(fontSize: 13, color: AppColors.textGray, height: 1.5),
+                            style: TextStyle(fontSize: 13, color: AppColors.inkSoft, height: 1.5),
                           ),
                         ],
                       ),
@@ -201,7 +201,7 @@ class MiniGamesScreen extends StatelessWidget {
                           desc,
                           style: const TextStyle(
                             fontSize: 13,
-                            color: AppColors.textGray,
+                            color: AppColors.inkSoft,
                           ),
                         ),
                       ],

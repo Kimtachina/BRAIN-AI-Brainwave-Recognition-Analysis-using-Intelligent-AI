@@ -36,7 +36,7 @@ class EegTopographicMap extends StatelessWidget {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: GoogleFonts.prompt(
+            style: GoogleFonts.ibmPlexSansThai(
               fontSize: 10,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF37474F),
@@ -145,9 +145,9 @@ class EegTopographicMap extends StatelessWidget {
     );
   }
 
-  TextStyle _legendStyle() => GoogleFonts.prompt(
+  TextStyle _legendStyle() => GoogleFonts.ibmPlexSansThai(
         fontSize: 8.5,
-        color: AppColors.textGray,
+        color: AppColors.inkSoft,
         fontWeight: FontWeight.w500,
       );
 }
@@ -374,7 +374,7 @@ class _TopoPainter extends CustomPainter {
           s['pos'] as Offset,
           6.0,
           Paint()
-            ..color = AppColors.primaryBlue.withValues(alpha: 0.4)
+            ..color = AppColors.primary.withValues(alpha: 0.4)
             ..style = PaintingStyle.stroke
             ..strokeWidth = 1.2,
         );
@@ -382,7 +382,7 @@ class _TopoPainter extends CustomPainter {
         canvas.drawCircle(
           s['pos'] as Offset,
           2.5,
-          Paint()..color = AppColors.primaryBlue..style = PaintingStyle.fill,
+          Paint()..color = AppColors.primary..style = PaintingStyle.fill,
         );
       }
     } else if (drawOutline) {

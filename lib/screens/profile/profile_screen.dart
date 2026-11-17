@@ -1,549 +1,268 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../../theme/app_theme.dart';
 import '../../models/user.dart';
 import '../../services/api_service.dart';
-import '../auth/welcome_screen.dart';
+import '../../theme/app_theme.dart';
+import '../../utils/thai_date.dart';
+import '../../widgets/app_page.dart';
+import '../../widgets/settings_list.dart';
+import '../eeg/eeg_report_history_screen.dart';
+import '../reports/weekly_report_screen.dart';
+import 'account_actions.dart';
 import 'edit_profile_screen.dart';
 import 'help_screen.dart';
 import 'settings_screen.dart';
-import '../reports/weekly_report_screen.dart';
-import '../../widgets/app_page.dart';
 
-/// ProfileScreen คือหน้าจอโปรไฟล์ผู้ใช้งานสำหรับการแสดงระเบียนและข้อมูลส่วนบุคคล
-/// ดึงข้อมูลโปรไฟล์แบบเรียลไทม์ผ่าน API และลิงก์ไปยังการตั้งค่า แก้ไขข้อมูล รายงาน AI และการออกจากระบบ
+/// หน้าบัญชีแบบแอปใหญ่ (Google Account / Instagram):
+/// หัวโปรไฟล์ + ปุ่มแก้ไขโปรไฟล์ → ตัวเลขสรุป → ข้อมูลส่วนตัว → กิจกรรม → ทั่วไป → ออกจากระบบ
 class ProfileScreen extends StatefulWidget {
   final User user;
-  final Function(User)? onUserUpdated;
+  final ValueChanged<User>? onUserUpdated;
+  final VoidCallback? onSearch;
+  final ValueChanged<int>? onSelectTab;
 
-  const ProfileScreen({super.key, required this.user, this.onUserUpdated});
+  const ProfileScreen({super.key, required this.user, this.onUserUpdated, this.onSearch, this.onSelectTab});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  late User _currentUser; // ตัวแปรสำหรับจัดเก็บโปรไฟล์ผู้ใช้งานปัจจุบัน
-  bool _isLoading = true;  // ใช้ตรวจสอบสถานะการดึงข้อมูลจากหลังบ้าน (Supabase)
+  late User _user;
+  int? _assessments;
+  int? _eegReports;
+  bool _eegCapped = false;
 
   @override
   void initState() {
     super.initState();
-    _currentUser = widget.user;
-    _loadProfile();
+    _user = widget.user;
+    _load();
   }
 
   @override
-  void didUpdateWidget(covariant ProfileScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (oldWidget.user.id != widget.user.id ||
-        oldWidget.user.fullName != widget.user.fullName ||
-        oldWidget.user.email != widget.user.email ||
-        oldWidget.user.phone != widget.user.phone) {
-      setState(() => _currentUser = widget.user);
-    }
+  void didUpdateWidget(covariant ProfileScreen old) {
+    super.didUpdateWidget(old);
+    if (old.user != widget.user) setState(() => _user = widget.user);
   }
 
-  Future<void> _loadProfile() async {
-    try {
-      final result = await ApiService.getProfile(_currentUser.id);
-      if (result['success'] == true && result['profile'] != null) {
-        final freshUser = User.fromJson(result['profile']);
-        if (mounted) {
-          setState(() {
-            _currentUser = freshUser;
-            _isLoading = false;
-          });
-          widget.onUserUpdated?.call(freshUser);
-        }
-      } else {
-        if (mounted) setState(() => _isLoading = false);
+  Future<void> _load() async {
+    final results = await Future.wait([
+      ApiService.getProfile(_user.id),
+      ApiService.getTestResults(_user.id),
+      ApiService.getEegAssessmentReports(_user.id),
+    ]);
+    if (!mounted) return;
+    final profile = results[0];
+    final tests = results[1]['results'];
+    final eeg = results[2]['reports'];
+    setState(() {
+      if (profile['success'] == true && profile['profile'] != null) {
+        _user = User.fromJson(profile['profile']);
       }
-    } catch (e) {
-      debugPrint('Profile load error: $e');
-      if (mounted) setState(() => _isLoading = false);
-    }
+      _assessments = tests is List ? tests.length : null;
+      _eegReports = eeg is List ? eeg.length : null;
+      _eegCapped = eeg is List && eeg.length >= 50;
+    });
+    if (profile['success'] == true) widget.onUserUpdated?.call(_user);
   }
 
-  Future<void> _openEditProfile() async {
-    final updatedUser = await Navigator.push<User>(
+  Future<void> _editProfile() async {
+    final updated = await Navigator.push<User>(
       context,
-      MaterialPageRoute(builder: (_) => EditProfileScreen(user: _currentUser)),
+      MaterialPageRoute(builder: (_) => EditProfileScreen(user: _user)),
     );
-
-    if (updatedUser != null) {
-      setState(() => _currentUser = updatedUser);
-      widget.onUserUpdated?.call(updatedUser);
-    }
+    if (updated == null) return;
+    setState(() => _user = updated);
+    widget.onUserUpdated?.call(updated);
   }
 
+  void _push(Widget page) => Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+
+  void _openSettings() => _push(SettingsScreen(user: _user, onUserUpdated: (u) {
+        setState(() => _user = u);
+        widget.onUserUpdated?.call(u);
+      }));
 
   @override
   Widget build(BuildContext context) {
+    final name = _user.fullName ?? _user.username;
+    final gutter = AppLayout.gutter(context, maxWidth: AppLayout.readingWidth);
+    final wide = AppLayout.isWide(context);
+
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: AppBackground(
+      backgroundColor: AppColors.paper,
+      body: SafeArea(
+        bottom: false,
         child: RefreshIndicator(
-          onRefresh: _loadProfile,
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppLayout.gutter(context, maxWidth: AppLayout.readingWidth + 40, min: 0),
+          onRefresh: _load,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(gutter, wide ? 28 : 12, gutter, 40),
+            children: [
+              // แถบบน: ชื่อหน้า + ปุ่มค้นหาและตั้งค่า (ตำแหน่งเดียวกับแอปใหญ่ส่วนมาก)
+              Row(
+                children: [
+                  Expanded(child: Text('บัญชี', style: AppTextStyles.title.copyWith(fontSize: wide ? 30 : 26))),
+                  if (widget.onSearch != null)
+                    IconButton(
+                      tooltip: 'ค้นหา',
+                      onPressed: widget.onSearch,
+                      icon: const Icon(Icons.search_rounded, color: AppColors.ink),
+                    ),
+                  IconButton(
+                    tooltip: 'ตั้งค่า',
+                    onPressed: _openSettings,
+                    icon: const Icon(Icons.settings_outlined, color: AppColors.ink),
                   ),
-                  child: Column(
-                  children: [
-
-                    // ส่วนหัวข้อมูลผู้ป่วยพรีเมียม (Premium Patient Profile Header)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: AppTheme.glassDecoration(
-                              color: AppColors.primaryBlue,
-                              opacity: 0.1,
-                              borderColor: AppColors.primaryBlue.withValues(alpha: 0.3),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Icon(
-                              Icons.person_rounded,
-                              color: AppColors.primaryBlue,
-                              size: 26,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'โปรไฟล์ผู้ใช้งาน',
-                                  style: GoogleFonts.prompt(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.textDark,
-                                    letterSpacing: -0.3,
-                                  ),
-                                ),
-                                Text(
-                                  'ข้อมูลระเบียนคนไข้และการตั้งค่าระบบ',
-                                  style: GoogleFonts.prompt(
-                                    fontSize: 12,
-                                    color: AppColors.textGray,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => SettingsScreen(user: _currentUser)),
-                              );
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: AppTheme.glassDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                color: Colors.white,
-                                opacity: 0.8,
-                              ),
-                              child: const Icon(
-                                Icons.settings_outlined,
-                                color: AppColors.textDark,
-                                size: 22,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-
-                    // การ์ดประวัติผู้ป่วย HUD ตรงกลาง (Centered User Bio HUD Card)
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 20),
-                      padding: const EdgeInsets.all(22),
-                      width: double.infinity,
-                      decoration: AppTheme.glassDecoration(
-                        color: Colors.white,
-                        opacity: 0.9,
-                        borderColor: Colors.white.withValues(alpha: 0.6),
-                      ),
-                      child: Column(
-                        children: [
-                          GestureDetector(
-                            onTap: _openEditProfile,
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                // วงแหวนล้อมรอบรูปภาพรูปโปรไฟล์เรืองแสง (Glowing Avatar Ring)
-                                Container(
-                                  width: 102,
-                                  height: 102,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: AppColors.primaryBlue.withValues(alpha: 0.35),
-                                      width: 2.5,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                                        blurRadius: 14,
-                                        spreadRadius: 2,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  width: 90,
-                                  height: 90,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.white, width: 3),
-                                    image: _currentUser.avatarUrl != null && _currentUser.avatarUrl!.isNotEmpty
-                                        ? DecorationImage(
-                                            image: NetworkImage(_currentUser.avatarUrl!),
-                                            fit: BoxFit.cover,
-                                          )
-                                        : null,
-                                  ),
-                                  child: _currentUser.avatarUrl == null || _currentUser.avatarUrl!.isEmpty
-                                      ? const Icon(Icons.person_rounded, size: 45, color: AppColors.primaryBlue)
-                                      : null,
-                                ),
-                                // ป้ายสถานะสีเขียวแสดงการเชื่อมต่อออนไลน์ (Pulse Status Badge on Avatar)
-                                Positioned(
-                                  right: 4,
-                                  bottom: 4,
-                                  child: Container(
-                                    width: 14,
-                                    height: 14,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.neonGreen,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(color: Colors.white, width: 2),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: AppColors.neonGreen.withValues(alpha: 0.5),
-                                          blurRadius: 6,
-                                          spreadRadius: 1,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                          Text(
-                            _currentUser.fullName ?? _currentUser.username,
-                            style: GoogleFonts.prompt(
-                              fontSize: 18.5,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textDark,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            _currentUser.email ?? '',
-                            style: GoogleFonts.prompt(
-                              fontSize: 13,
-                              color: AppColors.textGray,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          // แท็กไอดีแสดงผลรหัสผู้ป่วย (Premium Hospital ID Tag)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryBlue.withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: AppColors.primaryBlue.withValues(alpha: 0.2),
-                                width: 1,
-                              ),
-                            ),
-                            child: Text(
-                              'PATIENT ID: #SM-${_currentUser.id.toString().padLeft(4, '0')}',
-                              style: GoogleFonts.prompt(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.primaryBlue,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        children: [
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(18),
-                            decoration: AppTheme.glassDecoration(
-                              borderRadius: BorderRadius.circular(22),
-                              color: Colors.white,
-                              opacity: 0.9,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 4,
-                                      height: 20,
-                                      decoration: BoxDecoration(
-                                        gradient: AppGradients.primaryBlue,
-                                        borderRadius: BorderRadius.circular(2),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      'ข้อมูลส่วนตัวผู้ป่วย',
-                                      style: GoogleFonts.prompt(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.textDark,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                _buildProfileField(Icons.person_outline_rounded, 'ชื่อจริง-นามสกุล', _currentUser.fullName ?? '-'),
-                                _buildProfileField(Icons.phone_outlined, 'เบอร์โทรศัพท์', _currentUser.phone ?? '-'),
-                                _buildProfileField(Icons.email_outlined, 'อีเมล', _currentUser.email ?? '-'),
-                                _buildProfileField(Icons.cake_outlined, 'วันเกิด', _currentUser.birthDate ?? '-', isLast: true),
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: 24),
-                          _buildMenuItem(
-                            context,
-                            icon: Icons.assignment_outlined,
-                            label: 'รายงานประจำสัปดาห์ AI',
-                            color: AppColors.primaryBlue,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => WeeklyReportScreen(user: _currentUser)),
-                              );
-                            },
-                          ),
-
-                          _buildMenuItem(
-                            context,
-                            icon: Icons.person_outline_rounded,
-                            label: 'แก้ไขข้อมูลส่วนตัว',
-                            color: const Color(0xFF667eea),
-                            onTap: _openEditProfile,
-                          ),
-                          _buildMenuItem(
-                            context,
-                            icon: Icons.settings_outlined,
-                            label: 'ตั้งค่าการใช้งาน',
-                            color: const Color(0xFF4CAF50),
-                            onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => SettingsScreen(user: _currentUser)));
-                            },
-                          ),
-                          _buildMenuItem(
-                            context,
-                            icon: Icons.help_outline_rounded,
-                            label: 'ช่วยเหลือผู้ใช้',
-                            color: const Color(0xFF2196F3),
-                            onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const HelpScreen()));
-                            },
-                          ),
-                          _buildMenuItem(
-                            context,
-                            icon: Icons.logout_rounded,
-                            label: 'ออกจากระบบ',
-                            isDestructive: true,
-                            color: Colors.red,
-                            onTap: () => _showLogoutConfirmation(context),
-                          ),
-                          const SizedBox(height: 100), // เพิ่มระยะเว้นช่องว่างสำหรับแถบเมนูล่างแบบลอยตัว (Floating Navigation Bar)
-                        ],
-                      ),
-                    ),
-                  ],
+                ],
+              ),
+              const SizedBox(height: 16),
+              _identity(name),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _editProfile,
+                  style: OutlinedButton.styleFrom(minimumSize: const Size(0, 44)),
+                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  label: const Text('แก้ไขโปรไฟล์'),
                 ),
               ),
+              const SizedBox(height: 16),
+              _stats(),
+              SettingsGroup(
+                title: 'ข้อมูลส่วนตัว',
+                children: [
+                  SettingsTile(icon: Icons.person_outline_rounded, title: 'ชื่อ-นามสกุล', value: _user.fullName, emptyHint: 'เพิ่ม', onTap: _editProfile),
+                  SettingsTile(icon: Icons.phone_outlined, title: 'เบอร์โทรศัพท์', value: _user.phone, emptyHint: 'เพิ่ม', onTap: _editProfile),
+                  SettingsTile(icon: Icons.alternate_email_rounded, title: 'อีเมล', value: _user.email, emptyHint: 'เพิ่ม', onTap: _editProfile),
+                  SettingsTile(icon: Icons.cake_outlined, title: 'วันเกิด', value: ThaiDate.fromText(_user.birthDate), emptyHint: 'เพิ่ม', onTap: _editProfile),
+                ],
+              ),
+              SettingsGroup(
+                title: 'กิจกรรมของฉัน',
+                children: [
+                  SettingsTile(
+                    icon: Icons.checklist_rounded,
+                    title: 'ผลแบบประเมิน PHQ-9',
+                    onTap: widget.onSelectTab == null ? null : () => widget.onSelectTab!(1),
+                  ),
+                  SettingsTile(
+                    icon: Icons.insights_outlined,
+                    title: 'ประวัติรายงานคลื่นสมอง',
+                    onTap: () => _push(EegReportHistoryScreen(user: _user)),
+                  ),
+                  SettingsTile(
+                    icon: Icons.event_note_outlined,
+                    title: 'รายงานประจำสัปดาห์',
+                    subtitle: 'สรุปและบันทึกเป็น PDF',
+                    onTap: () => _push(WeeklyReportScreen(user: _user)),
+                  ),
+                ],
+              ),
+              SettingsGroup(
+                title: 'ทั่วไป',
+                children: [
+                  SettingsTile(icon: Icons.settings_outlined, title: 'ตั้งค่า', subtitle: 'การแจ้งเตือน รหัสผ่าน ความเป็นส่วนตัว', onTap: _openSettings),
+                  SettingsTile(icon: Icons.help_outline_rounded, title: 'ช่วยเหลือและติดต่อ', onTap: () => _push(const HelpScreen())),
+                ],
+              ),
+              SettingsGroup(
+                children: [
+                  SettingsTile(
+                    icon: Icons.logout_rounded,
+                    title: 'ออกจากระบบ',
+                    destructive: true,
+                    onTap: () => AccountActions.confirmSignOut(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Center(child: Text('${AppInfo.name} เวอร์ชัน ${AppInfo.version}', style: AppTextStyles.caption)),
+              if (!wide) const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildProfileField(
-    IconData icon,
-    String label,
-    String value, {
-    bool isLast = false,
-  }) {
-    return Column(
+  Widget _identity(String name) {
+    return Row(
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Row(
+        Semantics(
+          button: true,
+          label: 'เปลี่ยนรูปโปรไฟล์',
+          child: Pressable(
+            onTap: _editProfile,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                UserAvatar(name: name, url: _user.avatarUrl, size: 76),
+                Positioned(
+                  right: -2,
+                  bottom: -2,
+                  child: Container(
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.line),
+                    ),
+                    child: const Icon(Icons.photo_camera_outlined, size: 14, color: AppColors.inkSoft),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.15), width: 1),
-                ),
-                child: Icon(icon, size: 18, color: AppColors.primaryBlue),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: GoogleFonts.prompt(
-                        fontSize: 11,
-                        color: AppColors.textGray,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      value,
-                      style: GoogleFonts.prompt(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textDark,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              Text(name, style: AppTextStyles.title.copyWith(fontSize: 22), maxLines: 1, overflow: TextOverflow.ellipsis),
+              if ((_user.email ?? '').isNotEmpty)
+                Text(_user.email!, style: AppTextStyles.small, maxLines: 1, overflow: TextOverflow.ellipsis),
             ],
           ),
         ),
-        if (!isLast) Divider(height: 1, color: Colors.grey.shade100),
       ],
     );
   }
 
-  Widget _buildMenuItem(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    bool isDestructive = false,
-    Color color = const Color(0xFF667eea),
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-        decoration: AppTheme.glassDecoration(
-          borderRadius: BorderRadius.circular(18),
-          color: isDestructive ? Colors.red : color,
-          opacity: 0.06,
-          borderColor: (isDestructive ? Colors.red : color).withValues(alpha: 0.2),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: (isDestructive ? Colors.red : color).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(icon, color: isDestructive ? Colors.red : color, size: 22),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Text(
-                label,
-                style: GoogleFonts.prompt(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: isDestructive ? Colors.red : AppColors.textDark,
-                ),
-              ),
-            ),
-            Icon(Icons.chevron_right_rounded, color: AppColors.textLight.withValues(alpha: 0.6), size: 22),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget _stats() {
+    String count(int? n, {bool capped = false}) => n == null ? '–' : (capped ? '$n+' : '$n');
+    final since = _user.createdAt == null ? '–' : ThaiDate.monthYear(_user.createdAt!.toLocal());
 
-  void _showLogoutConfirmation(BuildContext context) {
-    final parentContext = context;
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text(
-          'ออกจากระบบ',
-          style: GoogleFonts.prompt(fontWeight: FontWeight.bold, color: AppColors.textDark),
-        ),
-        content: Text(
-          'คุณต้องการออกจากระบบการใช้งานในขณะนี้หรือไม่?',
-          style: GoogleFonts.prompt(color: AppColors.textGray),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              'ยกเลิก',
-              style: GoogleFonts.prompt(color: AppColors.textGray, fontWeight: FontWeight.w600),
+    Widget cell(String value, String label) => Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Column(
+              children: [
+                Text(value, style: AppTextStyles.heading.copyWith(fontSize: 18), maxLines: 1, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 2),
+                Text(label, style: AppTextStyles.caption, textAlign: TextAlign.center),
+              ],
             ),
           ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(dialogContext);
-              
-              // ล้างเซสชันการเข้าสู่ระบบทั้งหมด (Supabase Auth)
-              await ApiService.signOut();
-              
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                Navigator.pushAndRemoveUntil(
-                  parentContext,
-                  MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-                  (route) => false,
-                );
-              });
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            ),
-            child: Text(
-              'ออกจากระบบ',
-              style: GoogleFonts.prompt(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-          ),
+        );
+    const sep = SizedBox(height: 40, child: VerticalDivider(width: 1, thickness: 1, color: AppColors.line));
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: AppColors.line),
+      ),
+      child: Row(
+        children: [
+          cell(count(_assessments), 'แบบประเมิน'),
+          sep,
+          cell(count(_eegReports, capped: _eegCapped), 'รายงานคลื่นสมอง'),
+          sep,
+          cell(since, 'สมาชิกตั้งแต่'),
         ],
       ),
     );

@@ -169,7 +169,7 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
                     Expanded(
                       child: Text(
                         'EEG Preprocessing Pipeline (การเตรียมสัญญาณ)',
-                        style: GoogleFonts.prompt(
+                        style: GoogleFonts.ibmPlexSansThai(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
                           fontSize: 13,
@@ -198,7 +198,7 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
                             value: EegPipelineVisualizer.selectedChannel,
                             dropdownColor: const Color(0xFF1E3A8A),
                             icon: const Icon(Icons.arrow_drop_down, color: Colors.white, size: 18),
-                            style: GoogleFonts.prompt(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                            style: GoogleFonts.ibmPlexSansThai(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                             onChanged: (String? newValue) {
                               if (newValue != null) {
                                 setState(() {
@@ -237,14 +237,14 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
                         color: const Color(0xFFF8FAFC),
                         child: Text(
                           'กระบวนการขจัดสัญญาณรบกวน (Noise Artifacts) แบบเรียลไทม์ 3 ขั้นตอนเรียงลำดับ เพื่อเตรียมข้อมูลสำหรับโมเดลปัญญาประดิษฐ์ให้ได้ความแม่นยำระดับห้องวิจัย',
-                          style: GoogleFonts.prompt(
+                          style: GoogleFonts.ibmPlexSansThai(
                             fontSize: 11,
                             color: const Color(0xFF475569),
                             height: 1.4,
                           ),
                         ),
                       ),
-                      const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                      const Divider(height: 1, color: Color(0xFFE4E1EC)),
 
                       if (!widget.hasData || rawSignal.isEmpty) ...[
                         Container(
@@ -257,7 +257,7 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
                               const SizedBox(height: 8),
                               Text(
                                 'กำลังรอข้อมูลสัญญาณดิบ...',
-                                style: GoogleFonts.prompt(color: Colors.grey.shade500, fontSize: 12),
+                                style: GoogleFonts.ibmPlexSansThai(color: Colors.grey.shade500, fontSize: 12),
                               ),
                             ],
                           ),
@@ -372,12 +372,12 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
       decoration: BoxDecoration(
         color: highlight
             ? (highlightColor?.withValues(alpha: 0.08) ?? const Color(0xFFEFF6FF))
-            : const Color(0xFFF1F5F9),
+            : const Color(0xFFF5F4F8),
         borderRadius: BorderRadius.circular(4),
         border: Border.all(
           color: highlight
               ? (highlightColor?.withValues(alpha: 0.3) ?? const Color(0xFFBFDBFE))
-              : const Color(0xFFE2E8F0),
+              : const Color(0xFFE4E1EC),
           width: 0.5,
         ),
       ),
@@ -386,7 +386,7 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
         children: [
           Text(
             '$label: ',
-            style: GoogleFonts.prompt(
+            style: GoogleFonts.ibmPlexSansThai(
               fontSize: 8.5,
               color: Colors.grey.shade600,
               fontWeight: FontWeight.w500,
@@ -397,11 +397,11 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: GoogleFonts.firaCode(
+              style: GoogleFonts.ibmPlexMono(
                 fontSize: 8.5,
                 color: highlight
                     ? (highlightColor ?? const Color(0xFF1D4ED8))
-                    : const Color(0xFF1E293B),
+                    : const Color(0xFF1D1B2E),
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -459,16 +459,16 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
                   children: [
                     Text(
                       titleTh,
-                      style: GoogleFonts.prompt(
+                      style: GoogleFonts.ibmPlexSansThai(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1E293B),
+                        color: const Color(0xFF1D1B2E),
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       descTh,
-                      style: GoogleFonts.prompt(
+                      style: GoogleFonts.ibmPlexSansThai(
                         fontSize: 10,
                         color: const Color(0xFF475569),
                       ),
@@ -485,15 +485,15 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9),
+              color: const Color(0xFFF5F4F8),
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: const Color(0xFFE2E8F0), width: 0.5),
+              border: Border.all(color: const Color(0xFFE4E1EC), width: 0.5),
             ),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Text(
                 formula,
-                style: GoogleFonts.firaCode(
+                style: GoogleFonts.ibmPlexMono(
                   fontSize: 8.5,
                   fontWeight: FontWeight.w600,
                   color: Colors.indigo.shade900,
@@ -525,11 +525,11 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(yMaxLabel, style: GoogleFonts.firaCode(fontSize: 7.5, color: Colors.grey.shade500)),
+                  Text(yMaxLabel, style: GoogleFonts.ibmPlexMono(fontSize: 7.5, color: Colors.grey.shade500)),
                   const SizedBox(height: 16),
-                  Text(isZeroCentered ? '0 µV' : 'Mid', style: GoogleFonts.firaCode(fontSize: 7.5, color: Colors.grey.shade500)),
+                  Text(isZeroCentered ? '0 µV' : 'Mid', style: GoogleFonts.ibmPlexMono(fontSize: 7.5, color: Colors.grey.shade500)),
                   const SizedBox(height: 16),
-                  Text(yMinLabel, style: GoogleFonts.firaCode(fontSize: 7.5, color: Colors.grey.shade500)),
+                  Text(yMinLabel, style: GoogleFonts.ibmPlexMono(fontSize: 7.5, color: Colors.grey.shade500)),
                 ],
               ),
               const SizedBox(width: 8),

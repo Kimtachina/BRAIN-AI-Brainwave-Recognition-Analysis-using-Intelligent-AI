@@ -40,7 +40,7 @@ class ElectrodePlacementMap extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textDark,
+                    color: AppColors.ink,
                     letterSpacing: -0.1,
                   ),
                 ),
@@ -63,7 +63,7 @@ class ElectrodePlacementMap extends StatelessWidget {
                       : 'รอการเชื่อมต่อเซนเซอร์ตรวจจับประจุไฟฟ้า',
                   style: TextStyle(
                     fontSize: 8.5,
-                    color: isConnected ? AppColors.primaryGreen : AppColors.textGray,
+                    color: isConnected ? AppColors.secondary : AppColors.inkSoft,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -76,7 +76,7 @@ class ElectrodePlacementMap extends StatelessWidget {
   }
 
   Widget _buildContactStatusNode(String label, bool active) {
-    final color = active ? AppColors.primaryGreen : Colors.grey[400]!;
+    final color = active ? AppColors.secondary : Colors.grey[400]!;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -88,7 +88,7 @@ class ElectrodePlacementMap extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: active ? [
               BoxShadow(
-                color: AppColors.primaryGreen.withValues(alpha: 0.4),
+                color: AppColors.secondary.withValues(alpha: 0.4),
                 blurRadius: 4,
                 spreadRadius: 0.5,
               ),
@@ -101,7 +101,7 @@ class ElectrodePlacementMap extends StatelessWidget {
           style: TextStyle(
             fontSize: 9,
             fontWeight: FontWeight.bold,
-            color: active ? AppColors.textDark : Colors.grey[600],
+            color: active ? AppColors.ink : Colors.grey[600],
           ),
         ),
       ],
@@ -155,7 +155,7 @@ class _HeadPlacementPainter extends CustomPainter {
 
     // วาดเส้นแนวเชื่อมต่อสัญญาณประสาท (Connecting signal routes)
     final routePaint = Paint()
-      ..color = isConnected ? AppColors.primaryGreen.withValues(alpha: 0.3) : Colors.grey.withValues(alpha: 0.2)
+      ..color = isConnected ? AppColors.secondary.withValues(alpha: 0.3) : Colors.grey.withValues(alpha: 0.2)
       ..strokeWidth = 0.8
       ..style = PaintingStyle.stroke;
     
@@ -165,7 +165,7 @@ class _HeadPlacementPainter extends CustomPainter {
 
     // วาดจุดอิเล็กโทรดบนศีรษะ (Draw electrodes node values)
     void drawNode(Offset pos, bool good) {
-      final nodeColor = good ? AppColors.primaryGreen : Colors.grey[500]!;
+      final nodeColor = good ? AppColors.secondary : Colors.grey[500]!;
       
       // เส้นวงกลมเรืองแสงวงนอก (Outer glow boundary)
       final borderPaint = Paint()

@@ -10,14 +10,14 @@ extension _ChatInput on _RecommendationScreenState {
         children: [
           Row(
             children: [
-              const Icon(Icons.tips_and_updates_outlined, color: AppColors.primaryBlue, size: 16),
+              const Icon(Icons.tips_and_updates_outlined, color: AppColors.primary, size: 16),
               const SizedBox(width: 8),
               Text(
                 'คำถามแนะนำเพื่อเจาะลึก:',
-                style: GoogleFonts.prompt(
+                style: GoogleFonts.ibmPlexSansThai(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textGray,
+                  color: AppColors.inkSoft,
                   letterSpacing: 0.1,
                 ),
               ),
@@ -38,7 +38,7 @@ extension _ChatInput on _RecommendationScreenState {
                       decoration: AppTheme.glassDecoration(
                         color: Colors.white,
                         opacity: 0.9,
-                        borderColor: AppColors.primaryBlue.withValues(alpha: 0.25),
+                        borderColor: AppColors.primary.withValues(alpha: 0.25),
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: Row(
@@ -48,17 +48,17 @@ extension _ChatInput on _RecommendationScreenState {
                             width: 6,
                             height: 6,
                             decoration: const BoxDecoration(
-                              color: AppColors.primaryGreen,
+                              color: AppColors.secondary,
                               shape: BoxShape.circle,
                             ),
                           ),
                           const SizedBox(width: 8),
                           Text(
                             question,
-                            style: GoogleFonts.prompt(
+                            style: GoogleFonts.ibmPlexSansThai(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.primaryBlue,
+                              color: AppColors.primary,
                             ),
                           ),
                         ],
@@ -121,8 +121,8 @@ extension _ChatInput on _RecommendationScreenState {
                   children: [
                     Text(
                       _partialText.isNotEmpty ? _partialText : 'กำลังรับสัญญาณเสียง... พูดได้เลย',
-                      style: GoogleFonts.prompt(
-                        color: _partialText.isNotEmpty ? Colors.white : AppColors.textLight,
+                      style: GoogleFonts.ibmPlexSansThai(
+                        color: _partialText.isNotEmpty ? Colors.white : AppColors.inkFaint,
                         fontSize: 13.5,
                         fontWeight: _partialText.isNotEmpty ? FontWeight.w600 : FontWeight.w400,
                       ),
@@ -200,7 +200,7 @@ extension _ChatInput on _RecommendationScreenState {
               decoration: BoxDecoration(
                 color: _isVoiceMode
                     ? AppColors.electricCyan
-                    : AppColors.primaryBlue.withValues(alpha: 0.1),
+                    : AppColors.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
                 boxShadow: _isVoiceMode ? [
                   BoxShadow(
@@ -212,7 +212,7 @@ extension _ChatInput on _RecommendationScreenState {
               ),
               child: Icon(
                 _isVoiceMode ? Icons.mic_rounded : Icons.mic_none_rounded,
-                color: _isVoiceMode ? Colors.black87 : AppColors.primaryBlue,
+                color: _isVoiceMode ? Colors.black87 : AppColors.primary,
                 size: 22,
               ),
             ),
@@ -226,21 +226,21 @@ extension _ChatInput on _RecommendationScreenState {
               height: 48,
               alignment: Alignment.center,
               decoration: AppTheme.glassDecoration(
-                color: AppColors.bgBlue,
+                color: AppColors.paper,
                 opacity: 0.6,
                 borderColor: Colors.grey.shade200,
                 borderRadius: BorderRadius.circular(24),
               ),
               child: TextField(
                 controller: _messageController,
-                style: GoogleFonts.prompt(
+                style: GoogleFonts.ibmPlexSansThai(
                   fontSize: 14,
-                  color: AppColors.textDark,
+                  color: AppColors.ink,
                 ),
                 decoration: InputDecoration(
                   hintText: 'พิมพ์ข้อมูลหรือสั่งงานด้วยเสียง...',
-                  hintStyle: GoogleFonts.prompt(
-                    color: AppColors.textLight,
+                  hintStyle: GoogleFonts.ibmPlexSansThai(
+                    color: AppColors.inkFaint,
                     fontSize: 13,
                   ),
                   border: InputBorder.none,
@@ -262,12 +262,12 @@ extension _ChatInput on _RecommendationScreenState {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                gradient: _isSending ? null : AppGradients.primaryBlue,
+                gradient: _isSending ? null : AppGradients.primary,
                 color: _isSending ? Colors.grey.shade300 : null,
                 shape: BoxShape.circle,
                 boxShadow: _isSending ? [] : [
                   BoxShadow(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.25),
+                    color: AppColors.primary.withValues(alpha: 0.25),
                     blurRadius: 10,
                     offset: const Offset(0, 3),
                   ),

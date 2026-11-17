@@ -26,15 +26,15 @@ class HelpScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.primaryBlue.withValues(alpha: 0.1),
-                    AppColors.primaryBlue.withValues(alpha: 0.03),
+                    AppColors.primary.withValues(alpha: 0.1),
+                    AppColors.primary.withValues(alpha: 0.03),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.2),
+                  color: AppColors.primary.withValues(alpha: 0.2),
                 ),
               ),
               child: Column(
@@ -42,7 +42,7 @@ class HelpScreen extends StatelessWidget {
                   Icon(
                     Icons.help_outline,
                     size: 48,
-                    color: AppColors.primaryBlue,
+                    color: AppColors.primary,
                   ),
                   const SizedBox(height: 12),
                   Text(
@@ -50,7 +50,7 @@ class HelpScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.primaryBlue,
+                      color: AppColors.primary,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -72,7 +72,7 @@ class HelpScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
               ),
             ),
             const SizedBox(height: 12),
@@ -115,7 +115,7 @@ class HelpScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
               ),
             ),
             const SizedBox(height: 12),
@@ -142,7 +142,7 @@ class HelpScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
               ),
             ),
             const SizedBox(height: 12),

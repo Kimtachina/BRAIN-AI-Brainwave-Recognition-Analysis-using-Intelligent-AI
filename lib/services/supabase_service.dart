@@ -29,18 +29,7 @@ class SupabaseService {
     );
     _client = Supabase.instance.client;
 
-    // ผู้ใช้เปิดเว็บจากลิงก์รีเซ็ตรหัสผ่านในอีเมล: Supabase ส่งเหตุการณ์ passwordRecovery ระหว่าง initialize
-    // สตรีมนี้ส่งเหตุการณ์ล่าสุดให้ผู้ฟังที่มาทีหลังด้วย จึงจับได้แม้เพิ่งเริ่มฟังตรงนี้
-    // WelcomeScreen อ่านค่านี้เพื่อพาไปหน้าตั้งรหัสผ่านใหม่แทนการล็อกอินอัตโนมัติ
-    _client!.auth.onAuthStateChange.listen((data) {
-      if (data.event == AuthChangeEvent.passwordRecovery) {
-        passwordRecoveryPending = true;
-      }
-    });
   }
-
-  /// true เมื่อ session ปัจจุบันมาจากลิงก์รีเซ็ตรหัสผ่าน และผู้ใช้ยังไม่ได้ตั้งรหัสผ่านใหม่
-  static bool passwordRecoveryPending = false;
 
   /// ดึงอ้างอิงของไคลเอนต์ Supabase เพื่อเริ่มดึงข้อมูล (จะแจ้งเตือนข้อผิดพลาดหากยังไม่ได้รับการตั้งค่า)
   static SupabaseClient get client {
@@ -70,8 +59,6 @@ class SupabaseService {
   static Future<Map<String, dynamic>> updateProfile({
     required int userId,
     String? fullName,
-    String? firstName,
-    String? lastName,
     String? phone,
     String? email,
     String? birthDate,
@@ -81,8 +68,6 @@ class SupabaseService {
     try {
       final updateData = <String, dynamic>{};
       if (fullName != null) updateData['full_name'] = fullName;
-      if (firstName != null) updateData['first_name'] = firstName;
-      if (lastName != null) updateData['last_name'] = lastName;
       if (phone != null) updateData['phone'] = phone;
       if (email != null) updateData['email'] = email;
       if (birthDate != null) updateData['birth_date'] = birthDate;
@@ -227,58 +212,6 @@ class SupabaseService {
     }
   }
 
-  static Future<Map<String, dynamic>> saveEmotionSession({
-    required int userId,
-    required String targetEmotion,
-    required String activityType,
-    String? sessionName,
-    int durationSeconds = 0,
-    int samplesCollected = 0,
-    double avgAlpha = 0,
-    double avgBeta = 0,
-    double avgTheta = 0,
-    double avgDelta = 0,
-    double avgGamma = 0,
-    int? selfReportValence,
-    int? selfReportArousal,
-    String? notes,
-    bool isCompleted = false,
-  }) async {
-    try {
-      final insertData = <String, dynamic>{
-        'user_id': userId,
-        'target_emotion': targetEmotion,
-        'activity_type': activityType,
-        'duration_seconds': durationSeconds,
-        'samples_collected': samplesCollected,
-        'avg_alpha': avgAlpha,
-        'avg_beta': avgBeta,
-        'avg_theta': avgTheta,
-        'avg_delta': avgDelta,
-        'avg_gamma': avgGamma,
-        'is_completed': isCompleted,
-      };
-      if (sessionName != null) insertData['session_name'] = sessionName;
-      if (selfReportValence != null) insertData['self_report_valence'] = selfReportValence;
-      if (selfReportArousal != null) insertData['self_report_arousal'] = selfReportArousal;
-      if (notes != null) insertData['notes'] = notes;
-
-      final response = await client
-          .from('emotion_sessions')
-          .insert(insertData)
-          .select()
-          .single();
-
-      return {
-        'success': true,
-        'message': 'บันทึก session สำเร็จ',
-        'id': response['id'],
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถบันทึก session ได้: $e'};
-    }
-  }
-
   static Future<Map<String, dynamic>> saveActivity({
     required int userId,
     required String activityType,
@@ -408,30 +341,13 @@ class SupabaseService {
     bool? dailyReminder,
     bool? weeklyReport,
     bool? stressAlert,
-    String? reminderTime,
-    bool? darkMode,
-    String? language,
-    String? notificationPrefer,
-    String? sensitivityLevel,
-    String? stressThreshold,
-    int? criticalFFT,
-    String? brainMode,
-    int? fontSize,
   }) async {
     try {
       final updateData = <String, dynamic>{};
       if (dailyReminder != null) updateData['daily_reminder'] = dailyReminder;
       if (weeklyReport != null) updateData['weekly_report'] = weeklyReport;
       if (stressAlert != null) updateData['stress_alert'] = stressAlert;
-      if (reminderTime != null) updateData['reminder_time'] = reminderTime;
-      if (darkMode != null) updateData['dark_mode'] = darkMode;
-      if (language != null) updateData['language'] = language;
-      if (notificationPrefer != null) updateData['notification_prefer'] = notificationPrefer;
-      if (sensitivityLevel != null) updateData['sensitivity_level'] = sensitivityLevel;
-      if (stressThreshold != null) updateData['stress_threshold'] = stressThreshold;
-      if (criticalFFT != null) updateData['critical_fft'] = criticalFFT;
-      if (brainMode != null) updateData['brain_mode'] = brainMode;
-      if (fontSize != null) updateData['font_size'] = fontSize;
+      if (updateData.isEmpty) return {'success': true};
 
       await client
           .from('user_settings')
@@ -444,125 +360,10 @@ class SupabaseService {
     }
   }
 
-  static Future<Map<String, dynamic>> getEEGSessions(int userId, {int limit = 20}) async {
-    try {
-      final response = await client
-          .from('eeg_sessions')
-          .select()
-          .eq('user_id', userId)
-          .order('started_at', ascending: false)
-          .limit(limit);
-
-      return {
-        'success': true,
-        'sessions': response,
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถโหลด sessions ได้'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> saveEmotionLog({
-    required int userId,
-    required String emotionType,
-    String? triggerEvent,
-    int intensity = 5,
-  }) async {
-    try {
-      final response = await client
-          .from('emotion_logs')
-          .insert({
-            'user_id': userId,
-            'emotion_type': emotionType,
-            'trigger_event': triggerEvent,
-            'intensity': intensity,
-          })
-          .select()
-          .single();
-
-      return {
-        'success': true,
-        'log_id': response['log_id'],
-        'message': 'บันทึกอารมณ์สำเร็จ',
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถบันทึกอารมณ์ได้: $e'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> getEmotionSummary(int userId) async {
-    try {
-      final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7)).toIso8601String();
-
-      final response = await client
-          .from('emotion_logs')
-          .select()
-          .eq('user_id', userId)
-          .gte('created_at', sevenDaysAgo)
-          .order('created_at', ascending: false);
-
-      final Map<String, int> emotionCounts = {};
-      double totalIntensity = 0;
-
-      for (final log in response) {
-        final type = log['emotion_type'] as String;
-        emotionCounts[type] = (emotionCounts[type] ?? 0) + 1;
-        totalIntensity += (log['intensity'] ?? 5);
-      }
-
-      return {
-        'success': true,
-        'total_logs': response.length,
-        'emotion_counts': emotionCounts,
-        'avg_intensity': response.isNotEmpty ? totalIntensity / response.length : 0,
-        'logs': response,
-      };
-    } catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถโหลดสรุปอารมณ์ได้'};
-    }
-  }
-
+  /// ลบข้อมูลบัญชีในฐานข้อมูล ตารางลูกทุกตาราง (การตั้งค่า ผลประเมิน รายงานคลื่นสมอง แชต กิจกรรม)
+  /// ผูก ON DELETE CASCADE กับ users อยู่แล้ว จึงลบแถว users แถวเดียวพอ
   static Future<Map<String, dynamic>> deleteAccount(int userId) async {
     try {
-
-      await client.from('user_settings').delete().eq('user_id', userId);
-
-      await client.from('emergency_contacts').delete().eq('user_id', userId);
-
-      await client.from('activities').delete().eq('user_id', userId);
-
-      final chatMessages = await client
-          .from('chat_messages')
-          .select('id')
-          .eq('user_id', userId);
-      for (final msg in chatMessages) {
-        await client.from('voice_metadata').delete().eq('message_id', msg['id']);
-      }
-
-      await client.from('chat_messages').delete().eq('user_id', userId);
-
-      await client.from('test_results').delete().eq('user_id', userId);
-
-      try {
-        await client.from('eeg_sessions').delete().eq('user_id', userId);
-      } catch (_) {}
-
-      try {
-        await client.from('eeg_devices').delete().eq('user_id', userId);
-      } catch (_) {}
-
-      try {
-        await client.from('emotion_logs').delete().eq('user_id', userId);
-      } catch (_) {}
-
-      try {
-        await client.from('conversations').delete().eq('user_id', userId);
-      } catch (_) {}
-
-      try {
-        await client.from('elderly_profiles').delete().eq('user_id', userId);
-      } catch (_) {}
-
       await client.from('users').delete().eq('id', userId);
 
       return {'success': true, 'message': 'ลบบัญชีสำเร็จ'};

@@ -117,19 +117,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               onToggle: () => setState(() => _obscureCurrent = !_obscureCurrent),
             ),
 
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () {},
-                child: Text(
-                  'ลืมรหัสผ่าน?',
-                  style: TextStyle(
-                    color: AppColors.primaryBlue,
-                  ),
-                ),
-              ),
-            ),
-
             const SizedBox(height: 8),
 
             _buildLabel('รหัสผ่านใหม่'),
@@ -156,7 +143,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _changePassword,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
+                  backgroundColor: AppColors.primary,
                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),

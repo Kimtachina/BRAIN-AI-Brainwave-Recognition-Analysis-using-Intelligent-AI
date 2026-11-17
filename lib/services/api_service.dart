@@ -165,63 +165,6 @@ class ApiService {
     );
   }
 
-  /// บันทึกเซสชันอารมณ์และคลื่นสมองเฉลี่ยที่รวบรวมได้
-  static Future<Map<String, dynamic>> saveEmotionSession({
-    required int userId,
-    required String targetEmotion,
-    required String activityType,
-    String? sessionName,
-    int durationSeconds = 0,
-    int samplesCollected = 0,
-    double avgAlpha = 0,
-    double avgBeta = 0,
-    double avgTheta = 0,
-    double avgDelta = 0,
-    double avgGamma = 0,
-    int? selfReportValence,
-    int? selfReportArousal,
-    String? notes,
-    bool isCompleted = false,
-  }) async {
-    return SupabaseService.saveEmotionSession(
-      userId: userId,
-      targetEmotion: targetEmotion,
-      activityType: activityType,
-      sessionName: sessionName,
-      durationSeconds: durationSeconds,
-      samplesCollected: samplesCollected,
-      avgAlpha: avgAlpha,
-      avgBeta: avgBeta,
-      avgTheta: avgTheta,
-      avgDelta: avgDelta,
-      avgGamma: avgGamma,
-      selfReportValence: selfReportValence,
-      selfReportArousal: selfReportArousal,
-      notes: notes,
-      isCompleted: isCompleted,
-    );
-  }
-
-  /// บันทึกอารมณ์รายวันพร้อมเหตุการณ์กระตุ้น
-  static Future<Map<String, dynamic>> saveEmotionLog({
-    required int userId,
-    required String emotionType,
-    String? triggerEvent,
-    int intensity = 5,
-  }) async {
-    return SupabaseService.saveEmotionLog(
-      userId: userId,
-      emotionType: emotionType,
-      triggerEvent: triggerEvent,
-      intensity: intensity,
-    );
-  }
-
-  /// ดึงภาพรวมสถิติอารมณ์เฉลี่ยของผู้ใช้
-  static Future<Map<String, dynamic>> getEmotionSummary(int userId) async {
-    return SupabaseService.getEmotionSummary(userId);
-  }
-
   /// บันทึกสรุปรายงานผลวิเคราะห์ qEEG
   static Future<Map<String, dynamic>> saveEegAssessmentReport({
     required int userId,

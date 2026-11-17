@@ -8,7 +8,7 @@
 --   - ไม่สร้างตารางที่ถูกลบไปแล้ว: schedules, brainwave_data, chat_context, user_knowledge
 --   - ข้ามไฟล์ซ่อมบำรุง (003/004 resequence, 004 reset) เพราะฐานข้อมูลใหม่ไม่ต้องใช้
 --   - users: เพิ่ม auth_user_id / auth_provider / email_verified ที่โค้ด auth_service ใช้,
---     password เป็น NULL ได้ (ผู้ใช้ Supabase Auth / Google ไม่มีรหัสผ่านในตารางนี้),
+--     password เป็น NULL ได้ (ผู้ใช้ Supabase Auth ไม่มีรหัสผ่านในตารางนี้),
 --     username ไม่บังคับไม่ซ้ำ (สร้างจากส่วนหน้า @ ของอีเมล จึงชนกันได้)
 --   - get_user_context(): เดิมอ่าน brainwave_data ที่ถูกลบแล้วจึงพัง เปลี่ยนไปอ่าน
 --     emotion_sessions + eeg_sessions แทน
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS users (
     role VARCHAR(50) DEFAULT 'user',
     is_active BOOLEAN DEFAULT TRUE,
     auth_user_id UUID UNIQUE,                  -- id จาก Supabase Auth (auth.users.id)
-    auth_provider VARCHAR(50) DEFAULT 'email', -- email, google
+    auth_provider VARCHAR(50) DEFAULT 'email', -- email
     email_verified BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

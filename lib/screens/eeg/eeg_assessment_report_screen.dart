@@ -46,7 +46,7 @@ class _EegAssessmentReportScreenState extends State<EegAssessmentReportScreen> {
               },
             ),
             IconButton(
-              icon: const Icon(Icons.history_rounded, color: AppColors.primaryBlue),
+              icon: const Icon(Icons.history_rounded, color: AppColors.primary),
               tooltip: 'ประวัติใบสรุป',
               onPressed: () {
                 Navigator.push(

@@ -133,7 +133,7 @@ class _NumberPuzzleScreenState extends State<NumberPuzzleScreen> {
               Navigator.pop(context);
               setState(() => _initGame());
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryBlue),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             child: const Text('เล่นอีกครั้ง', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -162,7 +162,7 @@ class _NumberPuzzleScreenState extends State<NumberPuzzleScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -170,7 +170,7 @@ class _NumberPuzzleScreenState extends State<NumberPuzzleScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primaryBlue,
+                    color: AppColors.primary,
                   ),
                 ),
               ),
@@ -210,7 +210,7 @@ class _NumberPuzzleScreenState extends State<NumberPuzzleScreen> {
                         onTap: () => _onTileTap(index),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: AppColors.primaryBlue,
+                            color: AppColors.primary,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Center(
@@ -282,7 +282,7 @@ class _NumberPuzzleScreenState extends State<NumberPuzzleScreen> {
                 icon: const Icon(Icons.refresh, color: Colors.white, size: 20),
                 label: const Text('เริ่มใหม่', style: TextStyle(color: Colors.white)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
+                  backgroundColor: AppColors.primary,
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),

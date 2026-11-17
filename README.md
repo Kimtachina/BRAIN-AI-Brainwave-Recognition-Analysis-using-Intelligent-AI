@@ -16,7 +16,6 @@
 ![Dart](https://img.shields.io/badge/Dart-3.10+-0175C2?style=for-the-badge&logo=dart&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
 ![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white)
-![TensorFlow Lite](https://img.shields.io/badge/TFLite-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)
 
 ![Android](https://img.shields.io/badge/Android-3DDC84?style=flat-square&logo=android&logoColor=white)
 ![iOS](https://img.shields.io/badge/iOS-000000?style=flat-square&logo=apple&logoColor=white)
@@ -27,7 +26,7 @@
 
 <br/>
 
-**[ภาพตัวอย่าง](#-ภาพตัวอย่าง)** · **[ฟีเจอร์](#-ฟีเจอร์)** · **[การทำงาน](#-การทำงาน)** · **[เริ่มต้นใช้งาน](#-เริ่มต้นใช้งาน)** · **[Emotion API](#-emotion-api-python)** · **[ทดสอบ](#-ทดสอบ)** · **[Deploy](#-deploy-เว็บ)** · **[Muse บนเว็บ](#-muse-บนเว็บ)**
+**[ภาพตัวอย่าง](#-ภาพตัวอย่าง)** · **[ฟีเจอร์](#-ฟีเจอร์)** · **[การทำงาน](#-การทำงาน)** · **[เริ่มต้นใช้งาน](#-เริ่มต้นใช้งาน)** · **[ทดสอบ](#-ทดสอบ)** · **[Deploy](#-deploy-เว็บ)** · **[Muse บนเว็บ](#-muse-บนเว็บ)**
 
 </div>
 
@@ -51,7 +50,7 @@
 <tr>
 <td width="50%" align="center">
 <img src="docs/screenshots/web-login.png" alt="หน้าเข้าสู่ระบบ" width="100%" /><br/>
-<sub><b>เข้าสู่ระบบ</b> · จดจำอีเมล และลืมรหัสผ่าน</sub>
+<sub><b>เข้าสู่ระบบ</b> · ด้วยอีเมลและรหัสผ่าน</sub>
 </td>
 <td width="50%" align="center">
 <img src="docs/screenshots/web-register.png" alt="หน้าสมัครสมาชิก" width="100%" /><br/>
@@ -80,47 +79,41 @@
 </td>
 <td width="50%" valign="top">
 
-#### 😊 ตรวจจับอารมณ์
-โมเดล TSception (TFLite) ทำงานบนเครื่อง ส่วนบนเว็บใช้สูตรจากสัดส่วนคลื่นสมอง
-
-</td>
-</tr>
-<tr>
-<td valign="top">
-
 #### 📝 แบบประเมิน PHQ-9
 ประเมินภาวะซึมเศร้า และเก็บประวัติผลการประเมินไว้ดูย้อนหลัง
 
 </td>
-<td valign="top">
+</tr>
+<tr>
+<td width="50%" valign="top">
 
 #### 🤖 ผู้ช่วย AI
 แชตพร้อม RAG ถอดเสียงพูด (STT) และอ่านออกเสียง (TTS)
 
 </td>
-</tr>
-<tr>
-<td valign="top">
+<td width="50%" valign="top">
 
 #### 📊 รายงาน
 รายงานผล EEG รายงานประจำสัปดาห์ และส่งออกเป็น PDF
 
 </td>
-<td valign="top">
+</tr>
+<tr>
+<td width="50%" valign="top">
 
 #### 🌿 สุขภาวะ
 คำแนะนำเฉพาะบุคคล และข้อมูลโภชนาการ
 
 </td>
-</tr>
-<tr>
-<td valign="top">
+<td width="50%" valign="top">
 
 #### 🎮 มินิเกม
 เกมจับคู่ความจำ และเกมเรียงตัวเลข
 
 </td>
-<td valign="top">
+</tr>
+<tr>
+<td colspan="2" valign="top">
 
 #### 🔐 บัญชีผู้ใช้
 สมัครและล็อกอินด้วยอีเมลกับรหัสผ่าน ผ่าน Supabase Auth
@@ -146,8 +139,8 @@ sequenceDiagram
     loop ระหว่างวัด
         M-->>A: สัญญาณ EEG 4 ช่อง
         A->>A: กรองสัญญาณ + FFT แยกย่านความถี่
-        A->>A: ตรวจจับอารมณ์ (TFLite / สูตร)
     end
+    A->>A: คำนวณดัชนี EEG และระดับความเครียด
     A->>S: บันทึกผลและรายงาน
     A-->>U: แสดงผล คำแนะนำ และส่งออก PDF
 ```
@@ -160,9 +153,8 @@ flowchart LR
 
     subgraph App["📱 Smart Brain (Flutter)"]
         EEG["EEG Preprocess + FFT"]
-        Emotion["Emotion Detection<br/>TFLite / Heuristics"]
         UI["Screens & Reports"]
-        EEG --> Emotion --> UI
+        EEG --> UI
     end
 
     subgraph Supabase["☁️ Supabase"]
@@ -183,10 +175,8 @@ flowchart LR
 |---|---|
 | 📱 แอป | Flutter, Dart, `fl_chart`, `google_fonts` |
 | 📡 Bluetooth | `flutter_blue_plus` (รองรับ Web Bluetooth) |
-| 🧩 โมเดล | `tflite_flutter` — TSception |
 | ☁️ Backend | Supabase (Auth, Postgres, Storage, Edge Functions) |
 | 🤖 AI | OpenAI ผ่าน `supabase/functions/openai-proxy` |
-| 🐍 Python | FastAPI (`emotion_api/`) สำหรับ API ตรวจจับอารมณ์ และสคริปต์เทรน/แปลงโมเดล |
 
 <details>
 <summary><b>📁 โครงสร้างโปรเจกต์</b></summary>
@@ -195,21 +185,18 @@ flowchart LR
 
 ```text
 ├── lib/
-│   ├── emotion_detection/   # ตรวจจับอารมณ์ (TFLite / heuristics)
 │   ├── screens/             # หน้าจอ แยกตามฟีเจอร์
 │   │   ├── auth/  home/  eeg/  assessment/
 │   │   └── wellness/  games/  reports/  profile/
 │   ├── services/            # muse, eeg, ai, speech, supabase
 │   ├── widgets/             # วิดเจ็ตที่ใช้ร่วมกัน
 │   └── theme/  utils/  models/
-├── assets/models/           # โมเดล TFLite และ scaler
+├── assets/images/           # รูปภาพในแอป
 ├── docs/screenshots/        # ภาพหน้าจอที่ใช้ใน README
-├── emotion_api/             # FastAPI + สคริปต์โมเดล (Python)
 ├── supabase/
 │   ├── functions/           # Edge Function: openai-proxy
 │   └── migrations/          # SQL schema และ RLS
 ├── test/                    # Flutter widget tests
-├── tests/                   # pytest ของโค้ด Python
 └── env/                     # supabase.example.json
 ```
 
@@ -263,34 +250,11 @@ supabase functions deploy openai-proxy
 > [!CAUTION]
 > ถ้า key เดิมเคยอยู่ใน `.env` ที่ build เป็นแอปหรือเว็บไปแล้ว ให้ยกเลิก key นั้นที่ OpenAI แล้วสร้างใหม่
 
-## 🐍 Emotion API (Python)
-
-API ตรวจจับอารมณ์จากคลื่นสมอง เขียนด้วย FastAPI ใช้ Python 3.10–3.12
-
-```bash
-cd emotion_api
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-python main.py        # เปิดที่ http://localhost:8000  ดูเอกสาร API ที่ /docs
-```
-
-| Method | Path | ใช้ทำอะไร |
-|:-:|---|---|
-| `GET` | `/` , `/health` | เช็กสถานะ API และโมเดล |
-| `POST` | `/predict` | ทำนายอารมณ์จากข้อมูล 1 ชุด |
-| `POST` | `/predict/batch` | ทำนายจากหลายชุดแล้วรวมผล |
-
 ## 🧪 ทดสอบ
 
 ```bash
-# Flutter
 flutter analyze
 flutter test
-
-# Python (ไม่ต้องติดตั้ง TensorFlow)
-python3 -m venv .venv
-.venv/bin/pip install -r requirements-dev.txt
-.venv/bin/pytest --cov
 ```
 
 ## 🌐 Deploy เว็บ
@@ -303,7 +267,7 @@ npx vercel deploy build/web --prod
 
 **เช็กลิสต์หลัง deploy**
 
-- [ ] เพิ่ม URL ของเว็บใน Supabase → Authentication → URL Configuration (Site URL และ Redirect URLs) เพื่อให้ลิงก์ยืนยันอีเมลและลิงก์ตั้งรหัสผ่านใหม่พากลับมาที่เว็บได้
+- [ ] เพิ่ม URL ของเว็บใน Supabase → Authentication → URL Configuration (Site URL และ Redirect URLs) เพื่อให้ลิงก์ยืนยันอีเมลพากลับมาที่เว็บได้
 - [ ] เปิด RLS ให้ครบทุกตาราง เพราะ anon key อยู่ในตัวเว็บ
 
 ## 📡 Muse บนเว็บ
@@ -318,7 +282,6 @@ npx vercel deploy build/web --prod
 > [!NOTE]
 > - ต้องเปิดผ่าน HTTPS หรือ `localhost`
 > - กดปุ่มเชื่อมต่อแล้วเลือกอุปกรณ์ในหน้าต่างของเบราว์เซอร์
-> - การตรวจอารมณ์บนเว็บใช้สูตรจากสัดส่วนคลื่นสมอง (`emotion_heuristics.dart`) เพราะ TFLite ใช้บนเว็บไม่ได้
 > - โหมดจำลองให้ดูหน้าจอได้ แต่ไม่บันทึกผลลงประวัติ
 
 ---

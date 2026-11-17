@@ -1,8 +1,0 @@
-{
-  "classes": ["Relaxed", "Neutral", "Concentrating"],
-  "index_to_label": {
-    "0": "Relaxed",
-    "1": "Neutral",
-    "2": "Concentrating"
-  }
-}

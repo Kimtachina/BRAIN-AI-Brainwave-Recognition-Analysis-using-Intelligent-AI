@@ -6,8 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../models/user.dart';
 import '../../services/eeg/eeg_assessment_service.dart';
 import '../../services/eeg/eeg_pdf_service.dart';
-import '../../emotion_detection/services/emotion_detection_service.dart';
-import '../../emotion_detection/models/emotion_type.dart';
 import 'eeg_risk_gauge.dart';
 import 'eeg_topographic_map.dart';
 import '../../theme/app_theme.dart';
@@ -38,17 +36,17 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
   late Map<String, dynamic> _localSummary;
 
   // === Design Tokens ===
-  TextStyle get _h1 => GoogleFonts.notoSansThai(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textDark);
-  TextStyle get _h2 => GoogleFonts.notoSansThai(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textDark);
-  TextStyle get _body => GoogleFonts.notoSansThai(fontSize: 12, color: AppColors.textGray, height: 1.5);
-  TextStyle get _caption => GoogleFonts.notoSansThai(fontSize: 10, color: AppColors.textLight, height: 1.4);
+  TextStyle get _h1 => GoogleFonts.ibmPlexSansThai(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.ink);
+  TextStyle get _h2 => GoogleFonts.ibmPlexSansThai(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink);
+  TextStyle get _body => GoogleFonts.ibmPlexSansThai(fontSize: 12, color: AppColors.inkSoft, height: 1.5);
+  TextStyle get _caption => GoogleFonts.ibmPlexSansThai(fontSize: 10, color: AppColors.inkFaint, height: 1.4);
   TextStyle get _mono => GoogleFonts.jetBrainsMono(fontSize: 18, fontWeight: FontWeight.w700);
 
   Color _softenColor(Color c) {
-    if (c == const Color(0xFF4CAF50) || c == const Color(0xFF43A047) || c == Colors.green) return AppColors.primaryGreen;
+    if (c == const Color(0xFF4CAF50) || c == const Color(0xFF43A047) || c == Colors.green) return AppColors.secondary;
     if (c == const Color(0xFFFF9800) || c == const Color(0xFFF57C00) || c == Colors.orange) return AppColors.warning;
     if (c == const Color(0xFFF44336) || c == const Color(0xFFE53935) || c == Colors.red) return AppColors.error;
-    if (c == const Color(0xFF2196F3) || c == Colors.blue) return AppColors.primaryBlue;
+    if (c == const Color(0xFF5B4BC4) || c == Colors.blue) return AppColors.primary;
     return c;
   }
 
@@ -63,43 +61,6 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
   void initState() {
     super.initState();
     _localSummary = Map<String, dynamic>.from(widget.summary);
-    _checkAndPredictMentalState();
-  }
-
-  Future<void> _checkAndPredictMentalState() async {
-    if (_localSummary['tfliteMentalStateLabel'] == null) {
-      try {
-        final service = EmotionDetectionService();
-        await service.loadModel();
-        final sessionEegData = {
-          'alpha': (_localSummary['avgAlpha'] as num? ?? 0.0).toDouble(),
-          'beta': (_localSummary['avgBeta'] as num? ?? 0.0).toDouble(),
-          'theta': (_localSummary['avgTheta'] as num? ?? 0.0).toDouble(),
-          'delta': (_localSummary['avgDelta'] as num? ?? 0.0).toDouble(),
-          'gamma': (_localSummary['avgGamma'] as num? ?? 0.0).toDouble(),
-        };
-        final results = await service.detectFromEEG(sessionEegData);
-        final tfliteResult = results['tflite'];
-        final tsceptionResult = results['tsception'];
-        if (mounted) {
-          setState(() {
-            if (tfliteResult != null) {
-              _localSummary['tfliteMentalState'] = tfliteResult.emotionType;
-              _localSummary['tfliteMentalStateLabel'] = EmotionType.fromString(tfliteResult.emotionType).label;
-              _localSummary['tfliteMentalStateConfidence'] = tfliteResult.confidence;
-            }
-            if (tsceptionResult != null) {
-              _localSummary['tsceptionMentalState'] = tsceptionResult.emotionType;
-              _localSummary['tsceptionMentalStateLabel'] = EmotionType.fromString(tsceptionResult.emotionType).label;
-              _localSummary['tsceptionMentalStateConfidence'] = tsceptionResult.confidence;
-            }
-          });
-        }
-        service.dispose();
-      } catch (e) {
-        debugPrint('❌ Error predicting mental state on-the-fly: $e');
-      }
-    }
   }
 
   Future<Uint8List?> _capturePng(GlobalKey key) async {
@@ -132,14 +93,14 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const CircularProgressIndicator(color: AppColors.primaryBlue),
+              const CircularProgressIndicator(color: AppColors.primary),
               const SizedBox(height: 16),
               Text(
                 'กำลังบันทึกรายงาน PDF...',
-                style: GoogleFonts.notoSansThai(
+                style: GoogleFonts.ibmPlexSansThai(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textDark,
+                  color: AppColors.ink,
                   decoration: TextDecoration.none,
                 ),
               ),
@@ -172,7 +133,7 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
           SnackBar(
             content: Text(
               'เกิดข้อผิดพลาดในการบันทึก PDF: $e',
-              style: GoogleFonts.notoSansThai(),
+              style: GoogleFonts.ibmPlexSansThai(),
             ),
             backgroundColor: AppColors.error,
           ),
@@ -269,17 +230,17 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
   // === Header ===
   Widget _header() {
     return _card(
-      gradient: const [AppColors.primaryBlue],
+      gradient: const [AppColors.primary],
       padding: const EdgeInsets.all(20),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withValues(alpha: 0.15),
+              color: AppColors.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(Icons.psychology_rounded, color: AppColors.primaryBlue, size: 36),
+            child: const Icon(Icons.psychology_rounded, color: AppColors.primary, size: 36),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -288,7 +249,7 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
               children: [
                 Text('ใบสรุปประเมินความเครียด', style: _h1.copyWith(fontSize: 18)),
                 const SizedBox(height: 2),
-                Text('จากการทดสอบสัญญาณสมอง (qEEG)', style: _body.copyWith(color: AppColors.primaryBlue, fontWeight: FontWeight.w600)),
+                Text('จากการทดสอบสัญญาณสมอง (qEEG)', style: _body.copyWith(color: AppColors.primary, fontWeight: FontWeight.w600)),
                 Text('Quantitative EEG Analysis', style: _caption),
               ],
             ),
@@ -332,8 +293,8 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
     return Row(children: [
       Container(
         padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(color: AppColors.primaryBlue.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-        child: Icon(icon, size: 16, color: AppColors.primaryBlue),
+        decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+        child: Icon(icon, size: 16, color: AppColors.primary),
       ),
       const SizedBox(width: 8),
       Text(title, style: _h2),
@@ -372,7 +333,7 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
             border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
           ),
           child: Row(children: [
-            _legendDot(AppColors.primaryGreen, 'ปกติ'),
+            _legendDot(AppColors.secondary, 'ปกติ'),
             const SizedBox(width: 12),
             _legendDot(AppColors.warning, 'ควรติดตาม'),
             const SizedBox(width: 12),
@@ -396,14 +357,14 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
             children: [
               Text(
                 'เกณฑ์เปรียบเทียบมาตรฐานการวิจัย:',
-                style: _caption.copyWith(fontWeight: FontWeight.w700, color: AppColors.textGray),
+                style: _caption.copyWith(fontWeight: FontWeight.w700, color: AppColors.inkSoft),
               ),
               const SizedBox(height: 4),
               Text(
                 '• Z-Score ปกติอยู่ระหว่าง -1.0 ถึง +1.0 เกินกว่านี้สะท้อนภาวะตึงเครียดหรือสมองล้าสะสม\n'
                 '• ความสมดุลสมอง (Alpha Asymmetry) ค่าปกติควรใกล้เคียง 0 (เกณฑ์ปกติอยู่ในช่วง -0.5 ถึง +0.5)\n'
                 '• อัตราส่วนสมาธิและภาวะความเครียด (Beta/Theta Ratio) ค่าปกติควรน้อยกว่า 1.5',
-                style: _caption.copyWith(fontSize: 9.5, height: 1.4, color: AppColors.textGray),
+                style: _caption.copyWith(fontSize: 9.5, height: 1.4, color: AppColors.inkSoft),
               ),
             ],
           ),
@@ -503,7 +464,7 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
         FittedBox(
           fit: BoxFit.scaleDown,
           child: Text(_localSummary['riskLevel'] as String? ?? '-',
-              style: GoogleFonts.notoSansThai(fontSize: 22, fontWeight: FontWeight.w800, color: softColor)),
+              style: GoogleFonts.ibmPlexSansThai(fontSize: 22, fontWeight: FontWeight.w800, color: softColor)),
         ),
         Text(_localSummary['riskLevelEn'] as String? ?? '-', style: _caption.copyWith(color: softColor, fontWeight: FontWeight.w500)),
         const SizedBox(height: 14),
@@ -528,7 +489,7 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
         ),
         const SizedBox(height: 10),
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          _riskChip('0–28 ต่ำ', AppColors.primaryGreen),
+          _riskChip('0–28 ต่ำ', AppColors.secondary),
           const SizedBox(width: 6),
           _riskChip('29–48 กลาง', AppColors.warning),
           const SizedBox(width: 6),
@@ -555,16 +516,16 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
             decoration: AppTheme.glassDecoration(
-              color: AppColors.primaryBlue,
+              color: AppColors.primary,
               opacity: 0.12,
-              borderColor: AppColors.primaryBlue.withValues(alpha: 0.2),
+              borderColor: AppColors.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              const Icon(Icons.map_rounded, color: AppColors.primaryBlue, size: 16),
+              const Icon(Icons.map_rounded, color: AppColors.primary, size: 16),
               const SizedBox(width: 6),
               Text('แผนที่การทำงานของสมอง (Topographic Map)',
-                  style: _h2.copyWith(color: AppColors.textDark, fontSize: 12)),
+                  style: _h2.copyWith(color: AppColors.ink, fontSize: 12)),
             ]),
           ),
           const SizedBox(height: 14),
@@ -612,69 +573,11 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
 
   // === Clinical / Observations / Recommendations ===
   Widget _clinicalSection() {
-    final tfliteLabel = _localSummary['tfliteMentalStateLabel'] as String?;
-    final tfliteConf = _localSummary['tfliteMentalStateConfidence'] as double?;
-    final tfliteConfPercent = tfliteConf != null ? ' (${(tfliteConf * 100).toStringAsFixed(0)}%)' : '';
-
     return _card(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         _sectionTitle(Icons.medical_information_rounded, 'สรุปความหมายเชิงคลินิก'),
         const SizedBox(height: 12),
 
-        if (tfliteLabel != null) ...[
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: AppTheme.glassDecoration(
-              color: const Color(0xFF0D47A1),
-              opacity: 0.08,
-              borderColor: const Color(0xFF0D47A1).withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.psychology_rounded, color: Color(0xFF0D47A1), size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  'โมเดลที่ 1 (3 คลาส):',
-                  style: _body.copyWith(fontWeight: FontWeight.bold, color: const Color(0xFF0D47A1), fontSize: 11),
-                ),
-                const Spacer(),
-                Text(
-                  '$tfliteLabel$tfliteConfPercent',
-                  style: _body.copyWith(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 11),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-        ],
-        if (_localSummary['tsceptionMentalStateLabel'] != null) ...[
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: AppTheme.glassDecoration(
-              color: const Color(0xFF4F46E5),
-              opacity: 0.08,
-              borderColor: const Color(0xFF4F46E5).withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.psychology_rounded, color: Color(0xFF4F46E5), size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  'โมเดลที่ 2 (4 คลาส):',
-                  style: _body.copyWith(fontWeight: FontWeight.bold, color: const Color(0xFF4F46E5), fontSize: 11),
-                ),
-                const Spacer(),
-                Text(
-                  '${_localSummary['tsceptionMentalStateLabel']}${_localSummary['tsceptionMentalStateConfidence'] != null ? ' (${((_localSummary['tsceptionMentalStateConfidence'] as double) * 100).toStringAsFixed(0)}%)' : ''}',
-                  style: _body.copyWith(fontWeight: FontWeight.bold, color: AppColors.textDark, fontSize: 11),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-        ],
         Text(EegAssessmentService.clinicalSummary(_localSummary), style: _body),
         const SizedBox(height: 10),
         Container(
@@ -720,12 +623,12 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
                   width: 22,
                   height: 22,
                   decoration: BoxDecoration(
-                    color: checklist ? AppColors.primaryBlue.withValues(alpha: 0.15) : AppColors.warning.withValues(alpha: 0.2),
+                    color: checklist ? AppColors.primary.withValues(alpha: 0.15) : AppColors.warning.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: Center(
                     child: checklist
-                        ? const Icon(Icons.check_rounded, size: 13, color: AppColors.primaryBlue)
+                        ? const Icon(Icons.check_rounded, size: 13, color: AppColors.primary)
                         : Text('${e.key + 1}', style: _caption.copyWith(fontSize: 9, color: AppColors.warning, fontWeight: FontWeight.w700)),
                   ),
                 ),
@@ -740,7 +643,7 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
   // === Footer ===
   Widget _footerDisclaimer() {
     return _card(
-      gradient: const [AppColors.primaryBlue],
+      gradient: const [AppColors.primary],
       padding: const EdgeInsets.all(16),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Container(
@@ -752,7 +655,7 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
         Expanded(
           child: Text(
             'หมายเหตุ: ผลการทดสอบนี้ไม่สามารถใช้วินิจฉัยภาวะความเครียดสะสมได้โดยลำพัง ต้องนำผลไปประกอบการพิจารณาร่วมกับการประเมินทางคลินิกโดยผู้เชี่ยวชาญเท่านั้น',
-            style: GoogleFonts.notoSansThai(fontSize: 10, color: AppColors.textGray, height: 1.5),
+            style: GoogleFonts.ibmPlexSansThai(fontSize: 10, color: AppColors.inkSoft, height: 1.5),
           ),
         ),
       ]),
@@ -782,7 +685,7 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
           icon: const Icon(Icons.print_rounded, color: Colors.white, size: 18),
           label: Text('พิมพ์รายงาน', style: _body.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryBlue,
+            backgroundColor: AppColors.primary,
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             elevation: 0,

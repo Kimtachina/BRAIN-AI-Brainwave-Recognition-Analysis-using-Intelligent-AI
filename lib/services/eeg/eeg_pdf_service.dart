@@ -32,10 +32,6 @@ class EegPdfService {
     final age = EegAssessmentService.ageFromBirthDate(user.birthDate);
     final recordedAtStr = EegAssessmentService.formatDate(s['recordedAt'] as String?);
 
-    final tfliteLabel = s['tfliteMentalStateLabel'] as String?;
-    final tfliteConf = s['tfliteMentalStateConfidence'] as double?;
-    final tfliteConfPercent = tfliteConf != null ? ' (${(tfliteConf * 100).toStringAsFixed(0)}%)' : '';
-
     // ==========================================
     // PAGE 1: Executive Summary & Z-Score Table
     // ==========================================
@@ -138,7 +134,7 @@ class EegPdfService {
             _buildZScoreTable(font, fontBold, s),
             pw.SizedBox(height: 10),
 
-            // Alpha Asymmetry + Beta/Theta + PyTorch AI + TFLite AI
+            // Alpha Asymmetry + Beta/Theta
             pw.Row(
               children: [
                 pw.Expanded(
@@ -160,19 +156,6 @@ class EegPdfService {
                     (s['betaThetaRatio'] as num? ?? 0.0).toDouble().toStringAsFixed(2),
                     (s['betaThetaRatio'] as num? ?? 0.0).toDouble() > 1.5 ? 'สูงกว่าปกติ' : 'ปกติ',
                     (s['betaThetaRatio'] as num? ?? 0.0).toDouble() > 1.5 ? PdfColors.orange : PdfColors.green,
-                  ),
-                ),
-                pw.SizedBox(width: 6),
-                pw.Expanded(
-                  child: _buildMetricBox(
-                    font,
-                    fontBold,
-                    'การประเมินสภาวะอารมณ์',
-                    tfliteLabel ?? 'ไม่มีข้อมูล',
-                    tfliteConfPercent.isNotEmpty ? 'มั่นใจ$tfliteConfPercent' : 'สภาวะอารมณ์',
-                    tfliteLabel == 'สภาวะเป็นลบ' || tfliteLabel == 'Negative' || tfliteLabel == 'Stressed'
-                        ? PdfColors.red
-                        : (tfliteLabel == 'ปกติ' || tfliteLabel == 'Neutral' || tfliteLabel == 'Relaxed' || tfliteLabel == 'สภาวะเป็นบวก' ? PdfColors.green : PdfColors.orange),
                   ),
                 ),
               ],
@@ -289,31 +272,6 @@ class EegPdfService {
             pw.Text('สรุปความหมายเชิงคลินิก', style: pw.TextStyle(font: fontBold, fontSize: 12, color: PdfColor.fromHex('#0F1B4C'))),
             pw.SizedBox(height: 4),
 
-            if (tfliteLabel != null) ...[
-              pw.Container(
-                width: double.infinity,
-                padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                decoration: pw.BoxDecoration(
-                  color: PdfColor.fromHex('#E0F2FE'),
-                  border: pw.Border.all(color: PdfColor.fromHex('#BAE6FD')),
-                  borderRadius: pw.BorderRadius.circular(6),
-                ),
-                child: pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Text(
-                      'การวิเคราะห์สภาวะอารมณ์ (Emotion State):',
-                      style: pw.TextStyle(font: fontBold, fontSize: 9.0, color: PdfColor.fromHex('#0284C7')),
-                    ),
-                    pw.Text(
-                      '$tfliteLabel$tfliteConfPercent',
-                      style: pw.TextStyle(font: fontBold, fontSize: 9.0, color: PdfColor.fromHex('#0F1B4C')),
-                    ),
-                  ],
-                ),
-              ),
-              pw.SizedBox(height: 6),
-            ],
             pw.Container(
               width: double.infinity,
               padding: const pw.EdgeInsets.all(10),

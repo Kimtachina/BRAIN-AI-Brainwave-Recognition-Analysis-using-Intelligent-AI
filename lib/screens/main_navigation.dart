@@ -1,14 +1,18 @@
-import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/user.dart';
 import 'home/home_screen.dart';
 import 'assessment/phq9_tab_screen.dart';
 import 'wellness/recommendation_screen.dart';
 import 'profile/profile_screen.dart';
-// ลบ ActivitiesDashboardScreen ออกตามความต้องการของผู้ใช้ที่ให้เอาหน้ากิจกรรมออก
+import 'search/app_search_screen.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_page.dart';
 
+/// โครงหลักหลังล็อกอิน
+/// จอแคบ: แถบเมนูขาวติดขอบล่าง แสดงชื่อทุกเมนู เมนูที่เลือกอยู่มีขีดสีหลักด้านบน
+/// จอกว้าง: แถบเมนูแนวตั้งด้านซ้าย พร้อมชื่อแอปและเส้นคลื่นสมอง
 class MainNavigation extends StatefulWidget {
   final User user;
 
@@ -17,6 +21,20 @@ class MainNavigation extends StatefulWidget {
   @override
   State<MainNavigation> createState() => _MainNavigationState();
 }
+
+class _NavItem {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  const _NavItem(this.icon, this.activeIcon, this.label);
+}
+
+const _items = [
+  _NavItem(Icons.monitor_heart_outlined, Icons.monitor_heart_rounded, 'วันนี้'),
+  _NavItem(Icons.checklist_rounded, Icons.checklist_rtl_rounded, 'แบบประเมิน'),
+  _NavItem(Icons.forum_outlined, Icons.forum_rounded, 'ผู้ช่วย'),
+  _NavItem(Icons.person_outline_rounded, Icons.person_rounded, 'บัญชี'),
+];
 
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
@@ -28,145 +46,243 @@ class _MainNavigationState extends State<MainNavigation> {
     _currentUser = widget.user;
   }
 
-  void _onUserUpdated(User updatedUser) {
-    setState(() => _currentUser = updatedUser);
+  void _onUserUpdated(User updatedUser) => setState(() => _currentUser = updatedUser);
+
+  void _select(int index) => setState(() => _currentIndex = index);
+
+  bool _searchOpen = false;
+
+  /// เปิดหน้าค้นหาทั้งแอป (ปุ่มค้นหา หรือ Ctrl/⌘ + K บนเว็บ)
+  Future<void> _openSearch() async {
+    if (_searchOpen) return;
+    _searchOpen = true;
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AppSearchScreen(user: _currentUser, onSelectTab: _select, onUserUpdated: _onUserUpdated),
+      ),
+    );
+    _searchOpen = false;
   }
 
-  // ลิสต์ของหน้าจอหลักแต่ละแท็บที่เปิดใช้งานในแถบเมนูด้านล่าง (ถอดหน้ากิจกรรมออก เหลือ 4 หน้า)
   List<Widget> get _screens => [
-    // หน้าแรก (Home Screen) สำหรับแสดงข้อมูลทั่วไป ค่าสถานะการเชื่อมต่อ และปุ่มบันทึกข้อมูลอารมณ์
-    HomeScreen(
-      user: _currentUser,
-      onTabSelected: (index) {
-        setState(() => _currentIndex = index);
-      },
-    ),
-    // หน้าแบบประเมินสุขภาพจิต PHQ-9
-    Phq9TabScreen(user: _currentUser),
-    // หน้าคำแนะนำสุขภาพจิตและแนวทางดูแลสมอง
-    RecommendationScreen(user: _currentUser),
-    // หน้าข้อมูลส่วนตัวและการตั้งค่าโปรไฟล์ผู้ใช้งาน
-    ProfileScreen(user: _currentUser, onUserUpdated: _onUserUpdated),
-  ];
+        HomeScreen(user: _currentUser, onTabSelected: _select, onSearch: _openSearch),
+        Phq9TabScreen(user: _currentUser),
+        RecommendationScreen(user: _currentUser),
+        ProfileScreen(
+          user: _currentUser,
+          onUserUpdated: _onUserUpdated,
+          onSearch: _openSearch,
+          onSelectTab: _select,
+        ),
+      ];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true, // Allows body to scroll behind the floating nav bar
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
-      bottomNavigationBar: Container(
-        // จอกว้าง: แถบเมนูกว้างไม่เกิน 560 และอยู่กึ่งกลางจอ
-        margin: EdgeInsets.only(
-          left: AppLayout.gutter(context, maxWidth: 560, min: 16),
-          right: AppLayout.gutter(context, maxWidth: 560, min: 16),
-          bottom: 24,
-        ),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(32),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primaryBlue.withValues(alpha: 0.3),
-              blurRadius: 24,
-              offset: const Offset(0, 10),
-            ),
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.keyK, meta: true): _openSearch,
+        const SingleActivator(LogicalKeyboardKey.keyK, control: true): _openSearch,
+      },
+      child: Focus(autofocus: true, child: _buildShell(context)),
+    );
+  }
+
+  Widget _buildShell(BuildContext context) {
+    final body = IndexedStack(index: _currentIndex, children: _screens);
+
+    if (AppLayout.isWide(context)) {
+      return Scaffold(
+        backgroundColor: AppColors.paper,
+        body: Row(
+          children: [
+            _SideRail(current: _currentIndex, onSelect: _select, onSearch: _openSearch),
+            const VerticalDivider(width: 1, thickness: 1, color: AppColors.line),
+            Expanded(child: body),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(32),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.primaryBlue.withValues(alpha: 0.85),
-                    AppColors.accentBlue.withValues(alpha: 0.85),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  width: 1,
-                ),
-              ),
-              child: SafeArea(
-                top: false,
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      // สร้างปุ่มนำทางสำหรับหน้าแรก (ดัชนี 0)
-                      _buildNavItem(0, Icons.home_rounded, 'หน้าแรก'),
-                      // สร้างปุ่มนำทางสำหรับหน้า PHQ-9 (ดัชนี 1)
-                      _buildNavItem(1, Icons.quiz_rounded, 'PHQ-9'),
-                      // สร้างปุ่มนำทางสำหรับหน้าคำแนะนำ (ดัชนี 2)
-                      _buildNavItem(2, Icons.chat_bubble_rounded, 'คำแนะนำ'),
-                      // สร้างปุ่มนำทางสำหรับหน้าโปรไฟล์ (ดัชนี 3) - เปลี่ยนจาก 4 เป็น 3 เนื่องจากถอดเมนูกิจกรรมออก
-                      _buildNavItem(3, Icons.person_rounded, 'โปรไฟล์'),
-                    ],
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.paper,
+      body: body,
+      bottomNavigationBar: DecoratedBox(
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          border: Border(top: BorderSide(color: AppColors.line)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 64,
+            child: Row(
+              children: [
+                for (var i = 0; i < _items.length; i++)
+                  Expanded(
+                    child: _BottomItem(
+                      item: _items[i],
+                      active: i == _currentIndex,
+                      onTap: () => _select(i),
+                    ),
                   ),
-                ),
-              ),
+              ],
             ),
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildNavItem(int index, IconData icon, String label) {
-    final isActive = _currentIndex == index;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () {
-        setState(() => _currentIndex = index);
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOutBack,
-        padding: EdgeInsets.symmetric(
-          horizontal: isActive ? 16 : 8,
-          vertical: 8,
-        ),
-        decoration: BoxDecoration(
-          color: isActive ? Colors.white.withValues(alpha: 0.25) : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-        ),
+class _BottomItem extends StatelessWidget {
+  final _NavItem item;
+  final bool active;
+  final VoidCallback onTap;
+
+  const _BottomItem({required this.item, required this.active, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = active ? AppColors.ink : AppColors.inkFaint;
+    return Semantics(
+      selected: active,
+      child: Pressable(
+        onTap: onTap,
+        pressedScale: 0.94,
+        semanticLabel: item.label,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            AnimatedScale(
-              scale: isActive ? 1.1 : 1.0,
-              duration: const Duration(milliseconds: 200),
-              child: Icon(
-                icon,
-                color: Colors.white,
-                size: 24,
+            // ขีดบอกเมนูที่เลือก ยืดจากกลางออกไปทั้งสองข้าง
+            AnimatedContainer(
+              duration: AppMotion.quick,
+              curve: AppMotion.easeOut,
+              height: 2,
+              width: active ? 28 : 0,
+              decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(1)),
+            ),
+            const Spacer(),
+            Icon(active ? item.activeIcon : item.icon, size: 22, color: color),
+            const SizedBox(height: 3),
+            Text(
+              item.label,
+              style: AppTextStyles.caption.copyWith(
+                color: color,
+                fontWeight: active ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
-            const SizedBox(height: 4),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 200),
-              child: isActive
-                ? Text(
-                    label,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      letterSpacing: 0.5,
-                    ),
-                  )
-                : const SizedBox.shrink(), // Hide label when inactive for cleaner look
-            ),
+            const Spacer(),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SideRail extends StatelessWidget {
+  final int current;
+  final ValueChanged<int> onSelect;
+  final VoidCallback onSearch;
+
+  const _SideRail({required this.current, required this.onSelect, required this.onSearch});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 232,
+      color: AppColors.surface,
+      padding: const EdgeInsets.fromLTRB(16, 28, 16, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text('Smart Brain', style: AppTextStyles.heading.copyWith(fontSize: 19, letterSpacing: -0.3)),
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(12, 6, 12, 20),
+            child: BrainLine(height: 22, strokeWidth: 1.2),
+          ),
+          // ช่องค้นหาแบบ command palette (GitHub / Notion / Linear) พร้อมคีย์ลัด
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Semantics(
+              button: true,
+              label: 'ค้นหา',
+              child: Material(
+                color: AppColors.paper,
+                borderRadius: BorderRadius.circular(AppRadius.control),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(AppRadius.control),
+                  onTap: onSearch,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(AppRadius.control),
+                      border: Border.all(color: AppColors.line),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.search_rounded, size: 18, color: AppColors.inkFaint),
+                        const SizedBox(width: 10),
+                        Expanded(child: Text('ค้นหา', style: AppTextStyles.small.copyWith(color: AppColors.inkFaint))),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(5),
+                            border: Border.all(color: AppColors.line),
+                          ),
+                          child: Text(
+                            defaultTargetPlatform == TargetPlatform.macOS || defaultTargetPlatform == TargetPlatform.iOS
+                                ? '⌘K'
+                                : 'Ctrl K',
+                            style: AppTextStyles.caption.copyWith(fontSize: 11),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          for (var i = 0; i < _items.length; i++)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Semantics(
+                selected: i == current,
+                child: Material(
+                  color: i == current ? AppColors.primarySoft : Colors.transparent,
+                  borderRadius: BorderRadius.circular(AppRadius.control),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(AppRadius.control),
+                    onTap: () => onSelect(i),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+                      child: Row(
+                        children: [
+                          Icon(
+                            i == current ? _items[i].activeIcon : _items[i].icon,
+                            size: 20,
+                            color: i == current ? AppColors.primaryDeep : AppColors.inkSoft,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            _items[i].label,
+                            style: AppTextStyles.small.copyWith(
+                              fontSize: 14.5,
+                              color: i == current ? AppColors.primaryDeep : AppColors.inkSoft,
+                              fontWeight: i == current ? FontWeight.w600 : FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

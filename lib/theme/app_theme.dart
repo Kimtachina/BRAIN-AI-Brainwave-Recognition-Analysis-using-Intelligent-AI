@@ -1,239 +1,361 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Class AppColors เก็บค่าชุดสีหลักที่ใช้งานภายในแอปพลิเคชัน
-/// โดยเน้นชุดสีทางการแพทย์ที่สว่าง สะอาด และมีความน่าเชื่อถือ (Medical Palette)
+/// ชุดสี "Alpha" — ห้องแล็บที่สงบ
+/// พื้นกระดาษเทาอมม่วง ตัวหนังสือสีหมึกม่วงเข้ม สีหลักม่วงตามคลื่น Alpha (ภาวะผ่อนคลาย)
+/// สีรองเขียวอมฟ้าตามคลื่น Theta ใช้กับสถานะดี/ปกติ สีอำพันใช้เตือน
+/// ไม่มีกระจก ไม่มีเงา แยกชั้นด้วยเส้นขอบบางแทน
 class AppColors {
-  // สีน้ำเงินหลัก โรงพยาบาล CGH
-  static const Color primaryBlue = Color(0xFF046BD2);
-  static const Color accentBlue = Color(0xFF045CB4);
+  // สีหลัก: ปุ่มหลัก ลิงก์ ตัวเลือกที่เลือกอยู่
+  static const Color primary = Color(0xFF5B4BC4);
+  static const Color primaryDeep = Color(0xFF4636A8); // ตอนกด / ข้อความบนพื้นสีหลักอ่อน
+  static const Color primarySoft = Color(0xFFECE9FA); // พื้นของสิ่งที่เลือกอยู่
 
-  // สีเขียวทางการแพทย์เสริมความสงบ ผ่อนคลาย
-  static const Color primaryGreen = Color(0xFF00A79D);
+  // สีรอง: สถานะปกติ เชื่อมต่อแล้ว สำเร็จ
+  static const Color secondary = Color(0xFF1E8A7A);
+  static const Color secondarySoft = Color(0xFFE3F2EF);
 
-  // สีพื้นหลังแยกตามอารมณ์/สภาวะสมอง
-  static const Color bgBlue = Color(0xFFF0F5FA);
+  // พื้นผิว
+  static const Color paper = Color(0xFFF5F4F8); // พื้นหลังทั้งแอป
+  static const Color surface = Color(0xFFFFFFFF); // แผ่นเนื้อหา
+  static const Color line = Color(0xFFE4E1EC); // เส้นขอบและเส้นคั่น
 
-  // สีของฟอนต์ตัวอักษร
-  static const Color textDark = Color(0xFF1E293B);  // ตัวหนังสือสีเข้มหลัก
-  static const Color textGray = Color(0xFF64748B);  // ตัวหนังสือสีเทารอง
-  static const Color textLight = Color(0xFF94A3B8); // ตัวหนังสือสีเทาอ่อนอธิบายขยายความ
+  // ตัวหนังสือ
+  static const Color ink = Color(0xFF1D1B2E); // หลัก
+  static const Color inkSoft = Color(0xFF5E5A73); // รอง
+  static const Color inkFaint = Color(0xFF9A96AB); // คำอธิบาย ตัวยึดตำแหน่ง
 
-  static const Color warning = Color(0xFFF5B041);  // คำเตือน
-  static const Color error = Color(0xFFEC7063);    // เกิดข้อผิดพลาด
-  static const Color orange = Color(0xFFE67E22);   // ส้มเตือนเฝ้าระวัง
+  // สถานะ
+  static const Color warning = Color(0xFFE39B2D);
+  static const Color error = Color(0xFFC94A4A);
+  static const Color orange = Color(0xFFD9772B);
 
-  // สีสะท้อนแสงสำหรับหน้าสแกนคลื่นสมองสมจริง (Telemetry HUD)
-  static const Color deepSpaceBlue = Color(0xFF090D1A);
-  static const Color electricCyan = Color(0xFF00E5FF);
-  static const Color neonGreen = Color(0xFF00E676);
+  // ใช้ในกราฟคลื่นสด (เดิมเป็นโทนนีออน ตอนนี้กลับมาอยู่ในชุดสีเดียวกัน)
+  static const Color deepSpaceBlue = ink;
+  static const Color electricCyan = primary;
+  static const Color neonGreen = secondary;
 }
 
-/// Class AppGradients สำหรับไล่โทนเฉดสี (Gradients) ในส่วนหัวหรือการ์ดแบบพรีเมียม
+/// เหลือไล่สีไว้เฉพาะจุดที่โค้ดเดิมยังเรียกใช้ ทุกตัวไล่แค่ในโทนเดียวกัน ไม่ใช่ลายประดับ
 class AppGradients {
-  static const LinearGradient primaryBlue = LinearGradient(
-    colors: [Color(0xFF046BD2), Color(0xFF045CB4)],
+  static const LinearGradient primary = LinearGradient(
+    colors: [AppColors.primary, AppColors.primaryDeep],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient memoryGame = LinearGradient(
-    colors: [Color(0xFF85929E), Color(0xFF34495E)],
+    colors: [Color(0xFF6E6A86), Color(0xFF3D3953)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient triviaGame = LinearGradient(
-    colors: [Color(0xFF76D7C4), Color(0xFF48C9B0)],
+    colors: [Color(0xFF3FA796), AppColors.secondary],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
+  /// พื้นหลังทั้งแอปเป็นสีเรียบ เก็บชื่อเดิมไว้ให้โค้ดที่ยังอ้างถึงทำงานได้
   static const LinearGradient glassBackgroundGradient = LinearGradient(
-    colors: [Color(0xFFF0F5FA), Color(0xFFFFFFFF), Color(0xFFEBF5FB)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
+    colors: [AppColors.paper, AppColors.paper],
   );
 }
 
-/// Class AppTextStyles เก็บสไตล์แบบอักษรสำเร็จรูปเพื่อการนำไปใช้ซ้ำในจุดต่าง ๆ
+/// จังหวะการเคลื่อนไหว (ตามแนวทางของ Emil Kowalski)
+/// ease-out แบบแรงสำหรับสิ่งที่ตอบสนองการกด, ease-in-out สำหรับของที่เคลื่อนบนจอ, ไม่ใช้ ease-in
+class AppMotion {
+  static const Curve easeOut = Cubic(0.23, 1, 0.32, 1);
+  static const Curve easeInOut = Cubic(0.77, 0, 0.175, 1);
+  static const Duration press = Duration(milliseconds: 120);
+  static const Duration quick = Duration(milliseconds: 200);
+  static const Duration reveal = Duration(milliseconds: 1100);
+
+  /// ผู้ใช้ตั้งเครื่องให้ลดการเคลื่อนไหวไว้หรือไม่
+  static bool reduced(BuildContext context) => MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+}
+
+/// ขนาดตัวอักษร: หัวข้อใหญ่บีบระยะตัวอักษรเข้า ตัวเล็กปล่อยระยะปกติ ระยะบรรทัดหลวมขึ้นเมื่อตัวเล็กลง
 class AppTextStyles {
-  static const TextStyle heroTitle = TextStyle(
-    fontSize: 28,
-    fontWeight: FontWeight.w800,
-    color: AppColors.primaryBlue,
-    letterSpacing: -0.5,
-  );
+  static TextStyle get display => GoogleFonts.ibmPlexSansThai(
+        fontSize: 34,
+        height: 1.18,
+        fontWeight: FontWeight.w600,
+        letterSpacing: -0.8,
+        color: AppColors.ink,
+      );
+
+  static TextStyle get title => GoogleFonts.ibmPlexSansThai(
+        fontSize: 24,
+        height: 1.25,
+        fontWeight: FontWeight.w600,
+        letterSpacing: -0.4,
+        color: AppColors.ink,
+      );
+
+  static TextStyle get heading => GoogleFonts.ibmPlexSansThai(
+        fontSize: 17,
+        height: 1.35,
+        fontWeight: FontWeight.w600,
+        letterSpacing: -0.1,
+        color: AppColors.ink,
+      );
+
+  static TextStyle get body => GoogleFonts.ibmPlexSansThai(
+        fontSize: 15,
+        height: 1.6,
+        color: AppColors.inkSoft,
+      );
+
+  static TextStyle get small => GoogleFonts.ibmPlexSansThai(
+        fontSize: 13,
+        height: 1.5,
+        color: AppColors.inkSoft,
+      );
+
+  static TextStyle get caption => GoogleFonts.ibmPlexSansThai(
+        fontSize: 12,
+        height: 1.45,
+        letterSpacing: 0.1,
+        color: AppColors.inkFaint,
+      );
+
+  /// ตัวเลขผลวัด: ตัวเลขกว้างเท่ากันทุกตัว ค่าเปลี่ยนแล้วไม่สั่น
+  static TextStyle get metric => GoogleFonts.ibmPlexSansThai(
+        fontSize: 44,
+        height: 1.0,
+        fontWeight: FontWeight.w500,
+        letterSpacing: -1.2,
+        color: AppColors.ink,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      );
+
+  // ชื่อเดิม ใช้ในบางหน้า
+  static TextStyle get heroTitle => title.copyWith(color: AppColors.primary);
 }
 
-/// Class AppTheme สำหรับลงทะเบียนกำหนดธีมหลักของแอปพลิเคชัน (Light Theme) ให้กับ MaterialApp
+/// รัศมีมุม: แบ่งตามลำดับชั้น ไม่ใช้ค่าเดียวทุกอย่าง
+class AppRadius {
+  static const double control = 10; // ช่องกรอก ปุ่ม
+  static const double card = 14; // แผ่นเนื้อหา
+  static const double sheet = 20; // แผ่นที่เลื่อนขึ้นจากล่าง หน้าต่างกลางจอ
+}
+
 class AppTheme {
   static ThemeData get lightTheme {
+    final base = GoogleFonts.ibmPlexSansThaiTextTheme();
+    final controlShape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.control));
+    final buttonText = GoogleFonts.ibmPlexSansThai(fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: 0);
+
+    OutlineInputBorder outline(Color color, [double width = 1]) => OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.control),
+          borderSide: BorderSide(color: color, width: width),
+        );
+
     return ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primaryBlue,
-        primary: AppColors.primaryBlue,
-        secondary: AppColors.accentBlue,
-        surface: Colors.white,
+        seedColor: AppColors.primary,
+        primary: AppColors.primary,
+        secondary: AppColors.secondary,
+        surface: AppColors.surface,
         error: AppColors.error,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
-        onSurface: AppColors.textDark,
+        onSurface: AppColors.ink,
+        outline: AppColors.line,
+        outlineVariant: AppColors.line,
       ),
-      scaffoldBackgroundColor: const Color(0xFFFAFBFF), // พื้นหลังเทาฟ้าจางสะท้อนความสะอาดตา
-      
-      // ใช้ฟอนต์ 'Prompt' จาก Google Fonts ภาษาไทยเพื่อให้ดูเป็นทางการและอ่านง่าย
-      textTheme: GoogleFonts.promptTextTheme().apply(
-        bodyColor: AppColors.textDark,
-        displayColor: AppColors.textDark,
-      ),
-      
-      // กำหนดลักษณะของแถบหัวเรื่องด้านบน (AppBar)
+      scaffoldBackgroundColor: AppColors.paper,
+      // กดแล้วไม่มีระลอกน้ำกระจายทั้งปุ่ม ใช้สีทึบขึ้นเล็กน้อยแทน
+      splashFactory: NoSplash.splashFactory,
+      highlightColor: AppColors.primary.withValues(alpha: 0.06),
+      hoverColor: AppColors.primary.withValues(alpha: 0.04),
+      dividerColor: AppColors.line,
+      dividerTheme: const DividerThemeData(color: AppColors.line, thickness: 1, space: 1),
+      textTheme: base
+          .apply(bodyColor: AppColors.ink, displayColor: AppColors.ink)
+          .copyWith(
+            bodyMedium: base.bodyMedium?.copyWith(fontSize: 15, height: 1.55, color: AppColors.ink),
+            bodySmall: base.bodySmall?.copyWith(fontSize: 13, height: 1.5, color: AppColors.inkSoft),
+          ),
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.paper,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
         elevation: 0,
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: AppColors.textDark),
-        titleTextStyle: GoogleFonts.prompt(
-          color: AppColors.textDark,
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -0.3,
+        centerTitle: false,
+        iconTheme: const IconThemeData(color: AppColors.ink),
+        titleTextStyle: GoogleFonts.ibmPlexSansThai(
+          color: AppColors.ink,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.2,
         ),
       ),
-      
-      // กำหนดธีมของการ์ด
       cardTheme: CardThemeData(
-        color: Colors.white,
+        color: AppColors.surface,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          side: const BorderSide(color: AppColors.line),
         ),
-        margin: const EdgeInsets.symmetric(vertical: 8),
+        margin: const EdgeInsets.symmetric(vertical: 6),
       ),
-      
-      // กำหนดรูปแบบปุ่มนูน (ElevatedButton)
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryBlue,
+          backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
+          disabledBackgroundColor: AppColors.line,
+          disabledForegroundColor: AppColors.inkFaint,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          textStyle: GoogleFonts.prompt(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          minimumSize: const Size(64, 50),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+          shape: controlShape,
+          textStyle: buttonText,
+        ).copyWith(
+          overlayColor: WidgetStatePropertyAll(Colors.black.withValues(alpha: 0.08)),
         ),
       ),
-      
-      // กำหนดรูปแบบปุ่มเส้นขอบ (OutlinedButton)
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          minimumSize: const Size(64, 50),
+          shape: controlShape,
+          textStyle: buttonText,
+        ),
+      ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primaryBlue,
-          side: const BorderSide(color: AppColors.primaryBlue, width: 1.5),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          textStyle: GoogleFonts.prompt(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          foregroundColor: AppColors.ink,
+          backgroundColor: AppColors.surface,
+          side: const BorderSide(color: AppColors.line),
+          minimumSize: const Size(64, 50),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+          shape: controlShape,
+          textStyle: buttonText,
         ),
       ),
-      
-      // กำหนดรูปแบบปุ่มตัวอักษรธรรมดา (TextButton)
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.primaryBlue,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          textStyle: GoogleFonts.prompt(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          foregroundColor: AppColors.primary,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          shape: controlShape,
+          textStyle: buttonText.copyWith(fontSize: 14),
         ),
       ),
-      
-      // กำหนดรูปแบบของกล่องรับข้อมูลเข้า (TextField / Input Form)
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.grey.shade200),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.grey.shade200),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.error),
-        ),
-        hintStyle: GoogleFonts.prompt(color: AppColors.textLight),
-        labelStyle: GoogleFonts.prompt(color: AppColors.textGray),
+        fillColor: AppColors.surface,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        border: outline(AppColors.line),
+        enabledBorder: outline(AppColors.line),
+        disabledBorder: outline(AppColors.line),
+        focusedBorder: outline(AppColors.primary, 1.6),
+        errorBorder: outline(AppColors.error),
+        focusedErrorBorder: outline(AppColors.error, 1.6),
+        prefixIconColor: AppColors.inkFaint,
+        suffixIconColor: AppColors.inkFaint,
+        hintStyle: GoogleFonts.ibmPlexSansThai(color: AppColors.inkFaint, fontSize: 15),
+        labelStyle: GoogleFonts.ibmPlexSansThai(color: AppColors.inkSoft),
+        errorStyle: GoogleFonts.ibmPlexSansThai(color: AppColors.error, fontSize: 12.5),
       ),
-      
-      // กำหนดรูปแบบแจ้งเตือนลอยแถบด้านล่าง (SnackBar)
+      checkboxTheme: CheckboxThemeData(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+        side: const BorderSide(color: AppColors.inkFaint, width: 1.4),
+        fillColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected) ? AppColors.primary : Colors.transparent,
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sheet)),
+        titleTextStyle: GoogleFonts.ibmPlexSansThai(fontSize: 19, fontWeight: FontWeight.w600, color: AppColors.ink),
+        contentTextStyle: GoogleFonts.ibmPlexSansThai(fontSize: 15, height: 1.55, color: AppColors.inkSoft),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.sheet))),
+      ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        backgroundColor: AppColors.textDark,
-        contentTextStyle: GoogleFonts.prompt(color: Colors.white),
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.control)),
+        backgroundColor: AppColors.ink,
+        contentTextStyle: GoogleFonts.ibmPlexSansThai(color: Colors.white, fontSize: 14),
       ),
-      
-      // กำหนดแถบด้านล่างแบบดั้งเดิม (ยิง fallback ถ้าจำเป็น)
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.primary,
+        linearTrackColor: AppColors.primarySoft,
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: const WidgetStatePropertyAll(Colors.white),
+        trackColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected) ? AppColors.secondary : AppColors.line,
+        ),
+        trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: AppColors.surface,
+        selectedColor: AppColors.primarySoft,
+        side: const BorderSide(color: AppColors.line),
+        shape: const StadiumBorder(),
+        labelStyle: GoogleFonts.ibmPlexSansThai(fontSize: 13, color: AppColors.ink),
+      ),
+      tabBarTheme: TabBarThemeData(
+        labelColor: AppColors.ink,
+        unselectedLabelColor: AppColors.inkFaint,
+        indicatorColor: AppColors.primary,
+        dividerColor: AppColors.line,
+        labelStyle: GoogleFonts.ibmPlexSansThai(fontWeight: FontWeight.w600, fontSize: 14),
+        unselectedLabelStyle: GoogleFonts.ibmPlexSansThai(fontSize: 14),
+      ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: Colors.white,
-        elevation: 20,
-        selectedItemColor: AppColors.primaryBlue,
-        unselectedItemColor: AppColors.textLight,
-        selectedLabelStyle: GoogleFonts.prompt(fontWeight: FontWeight.w600, fontSize: 12),
-        unselectedLabelStyle: GoogleFonts.prompt(fontWeight: FontWeight.w400, fontSize: 12),
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        selectedItemColor: AppColors.ink,
+        unselectedItemColor: AppColors.inkFaint,
+        selectedLabelStyle: GoogleFonts.ibmPlexSansThai(fontWeight: FontWeight.w600, fontSize: 12),
+        unselectedLabelStyle: GoogleFonts.ibmPlexSansThai(fontSize: 12),
         type: BottomNavigationBarType.fixed,
       ),
     );
   }
 
-  // เงาของการ์ดสไตล์กระจก
-  static List<BoxShadow> get glassShadow => [
-    BoxShadow(
-      color: Colors.black.withValues(alpha: 0.03),
-      blurRadius: 24,
-      offset: const Offset(0, 8),
-    ),
-    BoxShadow(
-      color: Colors.black.withValues(alpha: 0.01),
-      blurRadius: 8,
-      offset: const Offset(0, 2),
-    ),
-  ];
+  /// เดิมเป็นเงาแบบกระจก ตอนนี้ระบบไม่ใช้เงาแล้ว
+  static List<BoxShadow> get glassShadow => const [];
 
-  /// ตัวสร้างกล่องดีไซน์แบบ Glassmorphic (กระจกกึ่งโปร่งแสงเรียบหรู)
-  /// ใช้แต่งการ์ดแสดงผล ป้ายบอกสถานะ และปุ่มให้สวยงามตามเทรนด์หน้าจอยุคใหม่
+  /// แผ่นเนื้อหาเรียบ: พื้นทึบ เส้นขอบบาง มุม 14 ไม่มีเงา ไม่เบลอ
+  /// ถ้าส่งสีมา (ไม่ใช่ขาว) จะเป็นแผ่นสีอ่อนของสีนั้น ใช้กับกล่องเตือนหรือกล่องสถานะ
+  /// รับพารามิเตอร์ชื่อเดิมไว้ เพื่อให้ทุกหน้าที่เคยใช้กระจกเปลี่ยนตามได้ทันที
   static BoxDecoration glassDecoration({
     BorderRadiusGeometry? borderRadius,
     Color? color,
     double opacity = 0.65,
     Color? borderColor,
   }) {
+    final isPlain = color == null || color == Colors.white || color.toARGB32() == 0xFFFFFFFF;
+    final fill = isPlain
+        ? AppColors.surface
+        : Color.alphaBlend(color.withValues(alpha: (opacity * 0.9).clamp(0.05, 0.14)), AppColors.surface);
+    final edge = isPlain ? AppColors.line : Color.alphaBlend(color.withValues(alpha: 0.28), AppColors.surface);
     return BoxDecoration(
-      color: (color ?? Colors.white).withValues(alpha: opacity),
-      borderRadius: borderRadius ?? BorderRadius.circular(24),
-      border: Border.all(
-        color: (borderColor ?? Colors.white).withValues(alpha: 0.35),
-        width: 1.2,
-      ),
-      boxShadow: glassShadow,
+      color: fill,
+      borderRadius: BorderRadius.circular(AppRadius.card),
+      border: Border.all(color: borderColor == null ? edge : Color.alphaBlend(edge, AppColors.surface)),
     );
   }
+
+  /// แผ่นเนื้อหามาตรฐาน
+  static BoxDecoration panel({Color color = AppColors.surface, double radius = AppRadius.card}) => BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(color: AppColors.line),
+      );
 }

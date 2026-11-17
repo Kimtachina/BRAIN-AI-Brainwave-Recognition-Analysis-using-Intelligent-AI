@@ -21,7 +21,7 @@ extension _QuizView on _TestScreenState {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.primaryBlue,
+                    color: AppColors.primary,
                   ),
                 ),
                 Text(
@@ -34,7 +34,7 @@ extension _QuizView on _TestScreenState {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.primaryBlue,
+                    color: AppColors.primary,
                   ),
                 ),
               ],
@@ -45,7 +45,7 @@ extension _QuizView on _TestScreenState {
               child: LinearProgressIndicator(
                 value: progress,
                 backgroundColor: Colors.grey[200],
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                 minHeight: 8,
               ),
             ),
@@ -82,10 +82,10 @@ extension _QuizView on _TestScreenState {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withValues(alpha: 0.05),
+                color: AppColors.primary.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.15),
+                  color: AppColors.primary.withValues(alpha: 0.15),
                 ),
               ),
               child: Column(
@@ -96,7 +96,7 @@ extension _QuizView on _TestScreenState {
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textDark,
+                      color: AppColors.ink,
                       height: 1.6,
                     ),
                   ),
@@ -124,7 +124,7 @@ extension _QuizView on _TestScreenState {
                 margin: const EdgeInsets.only(bottom: 12),
                 child: Material(
                   color: isSelected
-                    ? AppColors.primaryBlue.withValues(alpha: 0.1)
+                    ? AppColors.primary.withValues(alpha: 0.1)
                     : Colors.white,
                   borderRadius: BorderRadius.circular(14),
                   child: InkWell(
@@ -136,7 +136,7 @@ extension _QuizView on _TestScreenState {
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                           color: isSelected
-                            ? AppColors.primaryBlue
+                            ? AppColors.primary
                             : Colors.grey.shade300,
                           width: isSelected ? 2 : 1,
                         ),
@@ -148,7 +148,7 @@ extension _QuizView on _TestScreenState {
                             height: 32,
                             decoration: BoxDecoration(
                               color: isSelected
-                                ? AppColors.primaryBlue
+                                ? AppColors.primary
                                 : Colors.grey.shade100,
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -170,12 +170,12 @@ extension _QuizView on _TestScreenState {
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                                color: isSelected ? AppColors.primaryBlue : AppColors.textDark,
+                                color: isSelected ? AppColors.primary : AppColors.ink,
                               ),
                             ),
                           ),
                           if (isSelected)
-                            Icon(Icons.check_circle, color: AppColors.primaryBlue, size: 24),
+                            Icon(Icons.check_circle, color: AppColors.primary, size: 24),
                         ],
                       ),
                     ),
