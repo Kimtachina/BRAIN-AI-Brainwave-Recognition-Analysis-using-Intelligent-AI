@@ -166,7 +166,7 @@ npx vercel deploy build/web --prod
 > - โหมดจำลองให้ดูหน้าจอได้ แต่ไม่บันทึกผลลงประวัติ
 
 ---
-
+กหดหดหดหดห
 <div align="center">
 
 สร้างด้วย 💙 Flutter และ Supabase
