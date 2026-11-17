@@ -567,9 +567,9 @@ class _RecommendationScreenState extends State<RecommendationScreen>
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: AppTheme.glassDecoration(
-                            color: AppColors.primaryBlue,
+                            color: AppColors.primary,
                             opacity: 0.1,
-                            borderColor: AppColors.primaryBlue.withValues(alpha: 0.3),
+                            borderColor: AppColors.primary.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Stack(
@@ -577,7 +577,7 @@ class _RecommendationScreenState extends State<RecommendationScreen>
                             children: [
                               const Icon(
                                 Icons.psychology_outlined,
-                                color: AppColors.primaryBlue,
+                                color: AppColors.primary,
                                 size: 26,
                               ),
                               // Small Pulse Online Indicator
@@ -612,10 +612,10 @@ class _RecommendationScreenState extends State<RecommendationScreen>
                                 children: [
                                   Text(
                                     'สมาร์ทเบรน AI',
-                                    style: GoogleFonts.prompt(
+                                    style: GoogleFonts.ibmPlexSansThai(
                                       fontSize: 19,
                                       fontWeight: FontWeight.w800,
-                                      color: AppColors.textDark,
+                                      color: AppColors.ink,
                                       letterSpacing: -0.3,
                                     ),
                                   ),
@@ -623,19 +623,19 @@ class _RecommendationScreenState extends State<RecommendationScreen>
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: (_isVoiceMode ? AppColors.error : AppColors.primaryGreen).withValues(alpha: 0.1),
+                                      color: (_isVoiceMode ? AppColors.error : AppColors.secondary).withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(10),
                                       border: Border.all(
-                                        color: (_isVoiceMode ? AppColors.error : AppColors.primaryGreen).withValues(alpha: 0.3),
+                                        color: (_isVoiceMode ? AppColors.error : AppColors.secondary).withValues(alpha: 0.3),
                                         width: 1,
                                       ),
                                     ),
                                     child: Text(
                                       _isVoiceMode ? 'LISTENING' : 'ONLINE',
-                                      style: GoogleFonts.prompt(
+                                      style: GoogleFonts.ibmPlexSansThai(
                                         fontSize: 9,
                                         fontWeight: FontWeight.w700,
-                                        color: _isVoiceMode ? AppColors.error : AppColors.primaryGreen,
+                                        color: _isVoiceMode ? AppColors.error : AppColors.secondary,
                                         letterSpacing: 0.5,
                                       ),
                                     ),
@@ -644,8 +644,8 @@ class _RecommendationScreenState extends State<RecommendationScreen>
                               ),
                               Text(
                                 _isVoiceMode ? 'กำลังประมวลผลสัญญาณเสียง...' : 'ระบบวิเคราะห์สภาวะจิตใจและคลื่นสมอง',
-                                style: GoogleFonts.prompt(
-                                  color: _isVoiceMode ? AppColors.error : AppColors.textGray,
+                                style: GoogleFonts.ibmPlexSansThai(
+                                  color: _isVoiceMode ? AppColors.error : AppColors.inkSoft,
                                   fontSize: 12,
                                   fontWeight: _isVoiceMode ? FontWeight.w600 : FontWeight.w400,
                                 ),
@@ -667,7 +667,7 @@ class _RecommendationScreenState extends State<RecommendationScreen>
                                   ],
                                 ),
                                 duration: const Duration(seconds: 1),
-                                backgroundColor: _autoSpeak ? AppColors.primaryGreen : AppColors.textGray,
+                                backgroundColor: _autoSpeak ? AppColors.secondary : AppColors.inkSoft,
                                 behavior: SnackBarBehavior.floating,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               ),
@@ -675,7 +675,7 @@ class _RecommendationScreenState extends State<RecommendationScreen>
                           },
                           icon: Icon(
                             _autoSpeak ? Icons.volume_up_rounded : Icons.volume_off_rounded,
-                            color: _autoSpeak ? AppColors.primaryBlue : AppColors.textLight,
+                            color: _autoSpeak ? AppColors.primary : AppColors.inkFaint,
                           ),
                         ),
                         // Settings
@@ -697,7 +697,7 @@ class _RecommendationScreenState extends State<RecommendationScreen>
                             ),
                             child: const Icon(
                               Icons.settings_outlined,
-                              color: AppColors.textDark,
+                              color: AppColors.ink,
                               size: 22,
                             ),
                           ),
@@ -729,10 +729,10 @@ class _RecommendationScreenState extends State<RecommendationScreen>
                         Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                            color: AppColors.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: Icon(Icons.psychology, color: AppColors.primaryBlue, size: 14),
+                          child: Icon(Icons.psychology, color: AppColors.primary, size: 14),
                         ),
                         const SizedBox(width: 8),
                         Text(
@@ -749,7 +749,7 @@ class _RecommendationScreenState extends State<RecommendationScreen>
                           height: 12,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: AppColors.primaryBlue,
+                            color: AppColors.primary,
                           ),
                         ),
                       ],

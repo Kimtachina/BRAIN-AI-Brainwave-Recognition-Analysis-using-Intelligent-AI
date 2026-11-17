@@ -16,7 +16,7 @@ extension _HealthSummarySection on _HomeScreenState {
         _latestEegReport?['risk_level'] as String?;
     final riskColor = _latestEegReport != null 
         ? EegAssessmentService.riskColor(eegSummary)
-        : AppColors.textGray;
+        : AppColors.inkSoft;
     final recordedAt = _latestEegReport?['recorded_at']?.toString() ??
         eegSummary['recordedAt'] as String?;
 
@@ -26,7 +26,7 @@ extension _HealthSummarySection on _HomeScreenState {
       decoration: AppTheme.glassDecoration(
         color: Colors.white,
         opacity: 0.75,
-        borderColor: AppColors.primaryBlue.withValues(alpha: 0.15),
+        borderColor: AppColors.primary.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
@@ -37,16 +37,16 @@ extension _HealthSummarySection on _HomeScreenState {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.analytics_outlined, color: AppColors.primaryBlue, size: 20),
+                child: const Icon(Icons.analytics_outlined, color: AppColors.primary, size: 20),
               ),
               const SizedBox(width: 10),
               const Expanded(
                 child: Text(
                   'บันทึกวิเคราะห์สุขภาพสมองล่าสุด',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.ink),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -79,7 +79,7 @@ extension _HealthSummarySection on _HomeScreenState {
                           const Expanded(
                             child: Text(
                               'ระดับความเครียด',
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textGray),
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.inkSoft),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -95,7 +95,7 @@ extension _HealthSummarySection on _HomeScreenState {
                         _latestTestResult != null
                             ? 'PHQ-9: ${stressScore ?? depressionScore ?? '-'}/27 คะแนน'
                             : 'ยังไม่มีประวัติการประเมิน',
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textGray),
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.inkSoft),
                       ),
                       if (_latestTestResult?['test_date'] != null) ...[
                         const SizedBox(height: 8),
@@ -114,21 +114,21 @@ extension _HealthSummarySection on _HomeScreenState {
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.04),
+                    color: AppColors.primary.withValues(alpha: 0.04),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.1), width: 1),
+                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.1), width: 1),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.psychology_outlined, color: AppColors.primaryBlue, size: 18),
+                          const Icon(Icons.psychology_outlined, color: AppColors.primary, size: 18),
                           const SizedBox(width: 6),
                           const Expanded(
                             child: Text(
                               'สถานะสัญญาณสมอง',
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textGray),
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.inkSoft),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -138,7 +138,7 @@ extension _HealthSummarySection on _HomeScreenState {
                       if (_latestEegReport != null) ...[
                         Text(
                           'EEG Index: ${eegIndex?.toStringAsFixed(0) ?? "0"}/100',
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.ink),
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -180,17 +180,17 @@ extension _HealthSummarySection on _HomeScreenState {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                                  color: AppColors.primary.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.visibility_outlined, size: 12, color: AppColors.primaryBlue),
+                                    Icon(Icons.visibility_outlined, size: 12, color: AppColors.primary),
                                     SizedBox(width: 4),
                                     Text(
                                       'ดูผลสรุป',
-                                      style: TextStyle(fontSize: 10, color: AppColors.primaryBlue, fontWeight: FontWeight.w600),
+                                      style: TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.w600),
                                     ),
                                   ],
                                 ),
@@ -211,14 +211,14 @@ extension _HealthSummarySection on _HomeScreenState {
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          const CircularProgressIndicator(color: AppColors.primaryBlue),
+                                          const CircularProgressIndicator(color: AppColors.primary),
                                           const SizedBox(height: 16),
                                           Text(
                                             'กำลังสร้าง PDF...',
-                                            style: GoogleFonts.prompt(
+                                            style: GoogleFonts.ibmPlexSansThai(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w600,
-                                              color: AppColors.textDark,
+                                              color: AppColors.ink,
                                               decoration: TextDecoration.none,
                                             ),
                                           ),
@@ -269,12 +269,12 @@ extension _HealthSummarySection on _HomeScreenState {
                       ] else ...[
                         const Text(
                           'ไม่พบประวัติคลื่นสมอง',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textGray),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.inkSoft),
                         ),
                         const SizedBox(height: 4),
                         const Text(
                           'เชื่อมต่อ Muse เพื่อเริ่มวิเคราะห์คลื่นสมองรายบุคคล',
-                          style: TextStyle(fontSize: 10, color: AppColors.textLight),
+                          style: TextStyle(fontSize: 10, color: AppColors.inkFaint),
                         ),
                       ],
                     ],
@@ -291,7 +291,7 @@ extension _HealthSummarySection on _HomeScreenState {
   Map<String, dynamic> _getStressDisplay(String? stressLevel, int? score) {
     switch (stressLevel) {
       case 'normal':
-        return {'label': 'ปกติ', 'emoji': '😊', 'color': const Color(0xFF00A79D)};
+        return {'label': 'ปกติ', 'emoji': '😊', 'color': const Color(0xFF1E8A7A)};
       case 'mild':
         return {'label': 'ความเครียดเล็กน้อย', 'emoji': '😐', 'color': const Color(0xFFF5B041)};
       case 'moderate':
@@ -303,127 +303,6 @@ extension _HealthSummarySection on _HomeScreenState {
       default:
         return {'label': 'ยังไม่ได้ทดสอบ', 'emoji': '❓', 'color': Colors.grey};
     }
-  }
-
-  Widget _buildModelPredictionSubcard({
-    required String title,
-    required EmotionResult? emotion,
-    required bool isPyTorch,
-  }) {
-    final emotionType = emotion != null ? EmotionType.fromString(emotion.emotionType) : null;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isPyTorch ? const Color(0xFF4F46E5).withValues(alpha: 0.04) : AppColors.primaryBlue.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: (isPyTorch ? const Color(0xFF4F46E5) : AppColors.primaryBlue).withValues(alpha: 0.12),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: isPyTorch ? const Color(0xFF4F46E5) : AppColors.primaryBlue,
-              letterSpacing: 0.3,
-            ),
-          ),
-          const SizedBox(height: 12),
-          if (emotion != null && emotionType != null) ...[
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 10,
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    emotionType.emoji,
-                    style: const TextStyle(fontSize: 26),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            emotionType.label,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textDark,
-                            ),
-                          ),
-                          const Spacer(),
-                          Text(
-                            'ความแม่นยำ ${(emotion.confidence * 100).toStringAsFixed(1)}%',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: emotion.confidence >= 0.7
-                                  ? Colors.green
-                                  : emotion.confidence >= 0.4
-                                      ? Colors.orange
-                                      : Colors.red,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: emotion.confidence.clamp(0.0, 1.0),
-                          minHeight: 6,
-                          backgroundColor: Colors.black12,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            emotion.confidence >= 0.7
-                                ? Colors.green
-                                : emotion.confidence >= 0.4
-                                    ? Colors.orange
-                                    : Colors.red,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ] else ...[
-            Row(
-              children: [
-                const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primaryBlue),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  'กำลังวิเคราะห์สัญญาณประสาทเพื่อระบุระดับความเครียด...',
-                  style: TextStyle(fontSize: 11, color: Colors.grey[600], fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
-    );
   }
 
   String _formatDate(String? dateStr) {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart'; // สำหรับสร้าง UI ด้วยองค์ประกอบ Material Design
 import 'package:flutter/services.dart'; // TextInput.finishAutofillContext ให้เบราว์เซอร์บันทึกรหัสผ่าน
-import 'package:google_fonts/google_fonts.dart'; // สำหรับใช้ฟอนต์สวยงามจาก Google Fonts
 import 'package:shared_preferences/shared_preferences.dart'; // สำหรับบันทึกอีเมลล่าสุดไว้ในเครื่อง (Remember Me)
 import '../../theme/app_theme.dart'; // เรียกใช้ชุดสีและดีไซน์หลักของแอป
 import '../../services/auth_service.dart'; // เชื่อมต่อระบบล็อกอิน (Supabase Auth)
@@ -12,7 +11,7 @@ import '../../utils/password_validator.dart'; // ตรวจรูปแบบ�
 
 /// LoginScreen เป็นหน้าจอล็อกอินสำหรับการเข้าสู่ระบบผู้ใช้งาน
 /// เข้าสู่ระบบด้วย Email + Password (ผ่าน Supabase Auth)
-/// มีระบบจดจำ Email ผ่าน SharedPreferences และฟังก์ชันลืมรหัสผ่าน
+/// มีระบบจดจำ Email ผ่าน SharedPreferences
 ///
 /// แนวทางของฟอร์ม (web.dev Sign-in form best practices, OWASP Authentication Cheat Sheet):
 ///   - ฟอร์มหน้าเดียว มี autofill hints ให้ตัวจัดการรหัสผ่านกรอกและบันทึกได้
@@ -166,360 +165,167 @@ class _LoginScreenState extends State<LoginScreen> {
     _showBanner(result['message'] ?? '', isError: result['success'] != true);
   }
 
-  /// แสดง Dialog สำหรับกรอก email เพื่อรีเซ็ตรหัสผ่าน
-  Future<void> _showForgotPasswordDialog() async {
-    final emailController = TextEditingController(text: _emailController.text.trim());
-    final dialogFormKey = GlobalKey<FormState>();
-
-    final email = await showDialog<String>(
-      context: context,
-      builder: (context) {
-        void submit() {
-          if (dialogFormKey.currentState!.validate()) {
-            Navigator.pop(context, emailController.text.trim());
-          }
-        }
-
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text(
-            'ลืมรหัสผ่าน',
-            style: GoogleFonts.prompt(fontWeight: FontWeight.bold, color: AppColors.textDark),
-          ),
-          content: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 380),
-            child: Form(
-              key: dialogFormKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'กรอกอีเมลที่ใช้สมัครสมาชิก เราจะส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ไปให้',
-                    style: GoogleFonts.prompt(fontSize: 13, color: AppColors.textGray, height: 1.5),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: emailController,
-                    autofocus: true,
-                    keyboardType: TextInputType.emailAddress,
-                    autofillHints: const [AutofillHints.email],
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (_) => submit(),
-                    validator: _validateEmail,
-                    style: GoogleFonts.prompt(fontSize: 15),
-                    decoration: InputDecoration(
-                      hintText: 'name@example.com',
-                      prefixIcon: const Icon(Icons.email_outlined),
-                      hintStyle: GoogleFonts.prompt(color: AppColors.textLight),
-                      errorStyle: GoogleFonts.prompt(fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('ยกเลิก', style: GoogleFonts.prompt(color: AppColors.textGray)),
-            ),
-            ElevatedButton(
-              onPressed: submit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryBlue,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              child: Text('ส่งลิงก์', style: GoogleFonts.prompt(fontWeight: FontWeight.bold)),
-            ),
-          ],
-        );
-      },
-    );
-
-    // รอให้ dialog ปิดสนิทก่อนค่อยทิ้ง controller
-    WidgetsBinding.instance.addPostFrameCallback((_) => emailController.dispose());
-
-    if (email == null || !mounted) return;
-    final result = await AuthService.sendPasswordResetEmail(email);
-    if (mounted) {
-      _showBanner(result['message'] ?? '', isError: result['success'] != true);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return AppBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textDark),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: Text(
-            'เข้าสู่ระบบ',
-            style: GoogleFonts.prompt(
-              color: AppColors.textDark,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          centerTitle: true,
-        ),
-        body: SizedBox(
-          height: double.infinity,
-          child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: AuthCard(child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: AppLayout.isWide(context) ? 16 : 0),
-          child: Form(
-            key: _formKey,
-            // ยังไม่เตือนระหว่างพิมพ์ครั้งแรก เตือนเมื่อกดส่ง แล้วหลังจากนั้นตรวจทันทีที่แก้
-            autovalidateMode:
-                _submitted ? AutovalidateMode.onUserInteraction : AutovalidateMode.disabled,
-            // AutofillGroup ให้เบราว์เซอร์และตัวจัดการรหัสผ่านเห็นอีเมลกับรหัสผ่านเป็นชุดเดียวกัน
-            child: AutofillGroup(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 12),
-              Text(
-                'ยินดีต้อนรับกลับมา',
-                style: GoogleFonts.prompt(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.primaryBlue,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'กรุณาเข้าสู่ระบบเพื่อใช้งานฟีเจอร์ต่างๆ และเริ่มต้นตรวจสอบวิเคราะห์สถานะสมองของคุณ',
-                style: GoogleFonts.prompt(
-                  fontSize: 13,
-                  color: AppColors.textGray,
-                  height: 1.5,
-                ),
-              ),
-
-              const SizedBox(height: 28),
-
-              // ข้อความแจ้งผล (ล็อกอินไม่ผ่าน / ส่งอีเมลแล้ว) แสดงค้างไว้เหนือฟอร์ม
-              if (_bannerMessage != null) ...[
-                AuthMessageBanner(
-                  message: _bannerMessage!,
-                  isError: _bannerIsError,
-                  actionLabel: _canResendVerification
-                      ? (_isResending ? 'กำลังส่ง...' : 'ส่งอีเมลยืนยันอีกครั้ง')
-                      : null,
-                  onAction: _isResending ? null : _resendVerification,
-                ),
-                const SizedBox(height: 20),
-              ],
-
-              // ช่อง Email
-              _buildLabel('อีเมล'),
-              _buildTextField(
-                controller: _emailController,
-                hintText: 'name@example.com',
-                keyboardType: TextInputType.emailAddress,
-                prefixIcon: const Icon(Icons.email_outlined, size: 20),
-                autofillHints: const [AutofillHints.username, AutofillHints.email],
-                textInputAction: TextInputAction.next,
-                autofocus: AppLayout.isWide(context),
-                validator: _validateEmail,
-              ),
-
-              const SizedBox(height: 20),
-
-              // ช่องรหัสผ่าน
-              _buildLabel('รหัสผ่าน'),
-              _buildTextField(
-                controller: _passwordController,
-                focusNode: _passwordFocus,
-                hintText: 'ระบุรหัสผ่านของคุณ',
-                obscureText: _obscurePassword,
-                prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
-                autofillHints: const [AutofillHints.password],
-                textInputAction: TextInputAction.done,
-                // กด Enter ในช่องรหัสผ่าน = กดปุ่มเข้าสู่ระบบ
-                onSubmitted: (_) => _loginWithEmail(),
-                validator: (value) =>
-                    (value == null || value.isEmpty) ? 'กรุณากรอกรหัสผ่าน' : null,
-                suffixIcon: IconButton(
-                  tooltip: _obscurePassword ? 'แสดงรหัสผ่าน' : 'ซ่อนรหัสผ่าน',
-                  icon: Icon(
-                    _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                    color: AppColors.textGray,
-                  ),
-                  onPressed: () {
-                    setState(() => _obscurePassword = !_obscurePassword);
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              // จดจำรหัสผ่าน + ลืมรหัสผ่าน
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: Checkbox(
-                          value: _rememberMe,
-                          onChanged: _busy
-                              ? null
-                              : (value) {
-                                  setState(() {
-                                    _rememberMe = value ?? false;
-                                  });
-                                },
-                          activeColor: AppColors.primaryBlue,
-                          side: const BorderSide(color: AppColors.textLight, width: 1.5),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'จดจำอีเมล',
-                        style: GoogleFonts.prompt(
-                          fontSize: 13,
-                          color: AppColors.textGray,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                  TextButton(
-                    onPressed: _busy ? null : _showForgotPasswordDialog,
-                    child: Text(
-                      'ลืมรหัสผ่าน?',
-                      style: GoogleFonts.prompt(
-                        color: AppColors.primaryBlue,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 28),
-
-              // ปุ่มเข้าสู่ระบบด้วย Email
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: _busy ? null : _loginWithEmail,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2.5,
-                          ),
-                        )
-                      : Text(
-                          'เข้าสู่ระบบ',
-                          style: GoogleFonts.prompt(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                ),
-              ),
-
-              const SizedBox(height: 28),
-
-              // ลิงก์ไปหน้าสมัครสมาชิก
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'ยังไม่มีบัญชีใช่ไหม? ',
-                    style: GoogleFonts.prompt(color: AppColors.textGray, fontSize: 13.5),
-                  ),
-                  // InkWell ให้กด Tab มาถึงและกด Enter ได้ (GestureDetector รับโฟกัสคีย์บอร์ดไม่ได้)
-                  InkWell(
-                    borderRadius: BorderRadius.circular(6),
-                    onTap: _busy
-                        ? null
-                        : () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                            );
-                          },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                      child: Text(
-                        'สมัครสมาชิก',
-                        style: GoogleFonts.prompt(
-                          color: AppColors.primaryBlue,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13.5,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-            ),
-          ),
-          )),
+    return Scaffold(
+      backgroundColor: AppColors.paper,
+      appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'ย้อนกลับ',
+          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.ink),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
-    ),
-  );
-  }
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 4, 24, 32),
+          child: AuthCard(
+            child: Form(
+              key: _formKey,
+              // ยังไม่เตือนระหว่างพิมพ์ครั้งแรก เตือนเมื่อกดส่ง แล้วหลังจากนั้นตรวจทันทีที่แก้
+              autovalidateMode: _submitted ? AutovalidateMode.onUserInteraction : AutovalidateMode.disabled,
+              // AutofillGroup ให้เบราว์เซอร์และตัวจัดการรหัสผ่านเห็นอีเมลกับรหัสผ่านเป็นชุดเดียวกัน
+              child: AutofillGroup(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('เข้าสู่ระบบ', style: AppTextStyles.title.copyWith(fontSize: 28)),
+                    const SizedBox(height: 6),
+                    Text('ใช้อีเมลและรหัสผ่านที่สมัครไว้', style: AppTextStyles.body),
+                    const SizedBox(height: 28),
 
-  /// สร้างป้ายชื่อเหนือช่องกรอกข้อมูล
-  Widget _buildLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        text,
-        style: GoogleFonts.prompt(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textDark,
+                    // ข้อความแจ้งผล (ล็อกอินไม่ผ่าน / ส่งอีเมลยืนยันแล้ว) แสดงค้างไว้เหนือฟอร์ม
+                    if (_bannerMessage != null) ...[
+                      AuthMessageBanner(
+                        message: _bannerMessage!,
+                        isError: _bannerIsError,
+                        actionLabel: _canResendVerification
+                            ? (_isResending ? 'กำลังส่ง...' : 'ส่งอีเมลยืนยันอีกครั้ง')
+                            : null,
+                        onAction: _isResending ? null : _resendVerification,
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+
+                    _buildLabel('อีเมล'),
+                    _buildTextField(
+                      controller: _emailController,
+                      hintText: 'name@example.com',
+                      keyboardType: TextInputType.emailAddress,
+                      autofillHints: const [AutofillHints.username, AutofillHints.email],
+                      textInputAction: TextInputAction.next,
+                      autofocus: AppLayout.isWide(context),
+                      validator: _validateEmail,
+                    ),
+                    const SizedBox(height: 18),
+
+                    _buildLabel('รหัสผ่าน'),
+                    _buildTextField(
+                      controller: _passwordController,
+                      focusNode: _passwordFocus,
+                      hintText: 'รหัสผ่านของคุณ',
+                      obscureText: _obscurePassword,
+                      autofillHints: const [AutofillHints.password],
+                      textInputAction: TextInputAction.done,
+                      // กด Enter ในช่องรหัสผ่าน = กดปุ่มเข้าสู่ระบบ
+                      onSubmitted: (_) => _loginWithEmail(),
+                      validator: (value) => (value == null || value.isEmpty) ? 'กรุณากรอกรหัสผ่าน' : null,
+                      suffixIcon: IconButton(
+                        tooltip: _obscurePassword ? 'แสดงรหัสผ่าน' : 'ซ่อนรหัสผ่าน',
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                          size: 20,
+                        ),
+                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+
+                    // จดจำอีเมล: กดได้ทั้งแถว
+                    InkWell(
+                      borderRadius: BorderRadius.circular(AppRadius.control),
+                      onTap: _busy ? null : () => setState(() => _rememberMe = !_rememberMe),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: Checkbox(
+                                value: _rememberMe,
+                                onChanged: _busy ? null : (value) => setState(() => _rememberMe = value ?? false),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text('จดจำอีเมลในเครื่องนี้', style: AppTextStyles.small),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _busy ? null : _loginWithEmail,
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.2),
+                              )
+                            : const Text('เข้าสู่ระบบ'),
+                      ),
+                    ),
+
+                    const SizedBox(height: 28),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text('ยังไม่มีบัญชี', style: AppTextStyles.small),
+                        const SizedBox(width: 4),
+                        // TextButton ให้กด Tab มาถึงและกด Enter ได้
+                        TextButton(
+                          onPressed: _busy
+                              ? null
+                              : () => Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                                  ),
+                          child: const Text('สร้างบัญชีใหม่'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
   }
 
-  /// สร้างช่องกรอกข้อมูลพร้อมไอคอน ข้อความตรวจสอบแสดงใต้ช่อง
+  /// ป้ายชื่อเหนือช่องกรอก
+  Widget _buildLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(text, style: AppTextStyles.small.copyWith(fontWeight: FontWeight.w600, color: AppColors.ink)),
+    );
+  }
+
+  /// ช่องกรอกข้อมูล ข้อความตรวจสอบแสดงใต้ช่อง หน้าตามาจากธีมกลาง
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,
     bool obscureText = false,
     bool autofocus = false,
     Widget? suffixIcon,
-    Widget? prefixIcon,
     TextInputType? keyboardType,
     FocusNode? focusNode,
     Iterable<String>? autofillHints,
@@ -542,13 +348,8 @@ class _LoginScreenState extends State<LoginScreen> {
       validator: validator,
       onChanged: (_) => _clearBanner(),
       onFieldSubmitted: onSubmitted,
-      style: GoogleFonts.prompt(fontSize: 15, color: AppColors.textDark),
-      decoration: InputDecoration(
-        hintText: hintText,
-        suffixIcon: suffixIcon,
-        prefixIcon: prefixIcon,
-        errorStyle: GoogleFonts.prompt(fontSize: 12),
-      ),
+      style: AppTextStyles.body.copyWith(color: AppColors.ink, fontSize: 16),
+      decoration: InputDecoration(hintText: hintText, suffixIcon: suffixIcon),
     );
   }
 }

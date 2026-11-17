@@ -1,6 +1,0 @@
-[run]
-source =
-    emotion_api
-omit =
-    tests/*
-    .venv/*

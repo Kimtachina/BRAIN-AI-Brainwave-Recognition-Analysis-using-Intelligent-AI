@@ -6,6 +6,7 @@ import '../../services/auth_service.dart';
 import '../../utils/password_validator.dart';
 import 'login_screen.dart';
 import '../../widgets/app_page.dart';
+import '../../widgets/policy_content.dart';
 
 part 'register_sections/form_fields.dart';
 part 'register_sections/password_strength.dart';
@@ -87,13 +88,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: AppColors.primaryBlue,
+              primary: AppColors.primary,
               onPrimary: Colors.white,
               onSurface: Colors.black,
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                foregroundColor: AppColors.primaryBlue,
+                foregroundColor: AppColors.primary,
               ),
             ),
           ),
@@ -124,7 +125,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     // ตรวจสอบรูปแบบอีเมล
     if (!PasswordValidator.isValidEmail(_emailController.text.trim())) {
-      _showError('กรุณากรอกอีเมลให้ถูกต้อง เช่น example@gmail.com');
+      _showError('กรุณากรอกอีเมลให้ถูกต้อง เช่น name@example.com');
       return;
     }
 
@@ -173,7 +174,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบเพื่อใช้งาน', style: GoogleFonts.prompt()),
+            content: Text('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบเพื่อใช้งาน', style: GoogleFonts.ibmPlexSansThai()),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 3),
           ),
@@ -204,259 +205,190 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AppBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textDark),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: Text(
-            'สร้างบัญชีใหม่',
-            style: GoogleFonts.prompt(
-              color: AppColors.textDark,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          centerTitle: true,
-        ),
-        body: SizedBox(
-          height: double.infinity,
-          child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: AuthCard(child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: AppLayout.isWide(context) ? 16 : 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // อีเมล
-              _buildLabel('อีเมล'),
-              _buildTextField(
-                controller: _emailController,
-                hintText: 'ระบุอีเมลของคุณ เช่น example@gmail.com',
-                keyboardType: TextInputType.emailAddress,
-                prefixIcon: const Icon(Icons.email_outlined, size: 20),
-              ),
-
-              const SizedBox(height: 16),
-
-              // รหัสผ่าน
-              _buildLabel('รหัสผ่าน'),
-              _buildTextField(
-                controller: _passwordController,
-                hintText: 'ตั้งรหัสผ่านอย่างน้อย 8 ตัวอักษร',
-                obscureText: _obscurePassword,
-                prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                    color: AppColors.textGray,
-                  ),
-                  onPressed: () {
-                    setState(() => _obscurePassword = !_obscurePassword);
-                  },
-                ),
-              ),
-
-              // แถบความแข็งแรงของรหัสผ่าน
-              if (_passwordController.text.isNotEmpty && _passwordResult != null)
-                _buildPasswordStrengthIndicator(),
-
-              const SizedBox(height: 16),
-
-              // ยืนยันรหัสผ่าน
-              _buildLabel('ยืนยันรหัสผ่าน'),
-              _buildTextField(
-                controller: _confirmPasswordController,
-                hintText: 'กรอกรหัสผ่านอีกครั้ง',
-                obscureText: _obscureConfirmPassword,
-                prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                    color: AppColors.textGray,
-                  ),
-                  onPressed: () {
-                    setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // ชื่อ-นามสกุล
-              _buildLabel('ชื่อ-นามสกุล'),
-              _buildTextField(
-                controller: _fullNameController,
-                hintText: 'ระบุชื่อและนามสกุลจริง',
-                prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
-              ),
-
-              const SizedBox(height: 16),
-
-              // เบอร์โทรศัพท์
-              _buildLabel('เบอร์โทรศัพท์'),
-              _buildTextField(
-                controller: _phoneController,
-                hintText: 'ระบุเบอร์โทรศัพท์ 10 หลัก',
-                keyboardType: TextInputType.phone,
-                maxLength: 10,
-                prefixIcon: const Icon(Icons.phone_outlined, size: 20),
-              ),
-
-              const SizedBox(height: 16),
-
-              // วันเกิด
-              _buildLabel('วัน/เดือน/ปีเกิด'),
-              _buildTextField(
-                controller: _birthDateController,
-                hintText: 'เลือกวัน/เดือน/ปีเกิดของคุณ',
-                readOnly: true,
-                onTap: _selectDate,
-                prefixIcon: const Icon(Icons.cake_outlined, size: 20),
-                suffixIcon: Icon(
-                  Icons.calendar_today_outlined,
-                  color: AppColors.primaryBlue,
-                  size: 20,
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // ข้อตกลงการใช้งาน
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: Checkbox(
-                      value: _agreeToTerms,
-                      onChanged: (value) {
-                        setState(() {
-                          _agreeToTerms = value ?? false;
-                        });
-                      },
-                      activeColor: AppColors.primaryBlue,
-                      side: const BorderSide(color: AppColors.textLight, width: 1.5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: RichText(
-                      text: TextSpan(
-                        style: GoogleFonts.prompt(
-                          fontSize: 12,
-                          color: AppColors.textGray,
-                          height: 1.5,
-                        ),
-                        children: [
-                          const TextSpan(text: 'ฉันยอมรับ '),
-                          TextSpan(
-                            text: 'เงื่อนไขการใช้งาน',
-                            style: GoogleFonts.prompt(
-                              color: AppColors.primaryBlue,
-                              fontWeight: FontWeight.bold,
-                              decoration: TextDecoration.underline,
-                            ),
-                            recognizer: _termsRecognizer,
-                          ),
-                          const TextSpan(text: ' และ '),
-                          TextSpan(
-                            text: 'นโยบายความเป็นส่วนตัว',
-                            style: GoogleFonts.prompt(
-                              color: AppColors.primaryBlue,
-                              fontWeight: FontWeight.bold,
-                              decoration: TextDecoration.underline,
-                            ),
-                            recognizer: _privacyRecognizer,
-                          ),
-                          const TextSpan(text: ' ของแอปพลิเคชัน'),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-
-              // ปุ่มสมัครสมาชิก
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _register,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2.5,
-                          ),
-                        )
-                      : Text(
-                          'สมัครบัญชีใช้งาน',
-                          style: GoogleFonts.prompt(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // ลิงก์ไปหน้าเข้าสู่ระบบ
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'มีบัญชีอยู่แล้วใช่ไหม? ',
-                    style: GoogleFonts.prompt(color: AppColors.textGray, fontSize: 13.5),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      );
-                    },
-                    child: Text(
-                      'เข้าสู่ระบบ',
-                      style: GoogleFonts.prompt(
-                        color: AppColors.primaryBlue,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13.5,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
-          )),
+    return Scaffold(
+      backgroundColor: AppColors.paper,
+      appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'ย้อนกลับ',
+          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.ink),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
-    ),
-  );
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 4, 24, 32),
+          child: AuthCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('สร้างบัญชีใหม่', style: AppTextStyles.title.copyWith(fontSize: 28)),
+                const SizedBox(height: 6),
+                Text('ใช้เวลาไม่ถึงนาที ข้อมูลส่วนตัวใช้ในรายงานผลของคุณเท่านั้น', style: AppTextStyles.body),
+
+                const SectionLabel('บัญชี'),
+                _buildLabel('อีเมล'),
+                _buildTextField(
+                  controller: _emailController,
+                  hintText: 'name@example.com',
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: 16),
+                _buildLabel('รหัสผ่าน'),
+                _buildTextField(
+                  controller: _passwordController,
+                  hintText: 'อย่างน้อย 8 ตัวอักษร',
+                  obscureText: _obscurePassword,
+                  suffixIcon: IconButton(
+                    tooltip: _obscurePassword ? 'แสดงรหัสผ่าน' : 'ซ่อนรหัสผ่าน',
+                    icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20),
+                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  ),
+                ),
+                // แถบความแข็งแรงของรหัสผ่าน
+                if (_passwordController.text.isNotEmpty && _passwordResult != null)
+                  _buildPasswordStrengthIndicator(),
+                const SizedBox(height: 16),
+                _buildLabel('ยืนยันรหัสผ่าน'),
+                _buildTextField(
+                  controller: _confirmPasswordController,
+                  hintText: 'พิมพ์รหัสผ่านอีกครั้ง',
+                  obscureText: _obscureConfirmPassword,
+                  suffixIcon: IconButton(
+                    tooltip: _obscureConfirmPassword ? 'แสดงรหัสผ่าน' : 'ซ่อนรหัสผ่าน',
+                    icon: Icon(
+                      _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                      size: 20,
+                    ),
+                    onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                  ),
+                ),
+
+                const SectionLabel('ข้อมูลส่วนตัว'),
+                _buildLabel('ชื่อ-นามสกุล'),
+                _buildTextField(controller: _fullNameController, hintText: 'ชื่อและนามสกุลจริง'),
+                const SizedBox(height: 16),
+                // จอกว้าง: เบอร์โทรกับวันเกิดอยู่แถวเดียวกัน
+                LayoutBuilder(
+                  builder: (context, c) {
+                    final phone = Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildLabel('เบอร์โทรศัพท์'),
+                        _buildTextField(
+                          controller: _phoneController,
+                          hintText: '10 หลัก',
+                          keyboardType: TextInputType.phone,
+                          maxLength: 10,
+                        ),
+                      ],
+                    );
+                    final birth = Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildLabel('วันเกิด'),
+                        _buildTextField(
+                          controller: _birthDateController,
+                          hintText: 'เลือกวันที่',
+                          readOnly: true,
+                          onTap: _selectDate,
+                          suffixIcon: const Icon(Icons.calendar_today_outlined, size: 18),
+                        ),
+                      ],
+                    );
+                    if (c.maxWidth < 380) {
+                      return Column(children: [phone, const SizedBox(height: 16), birth]);
+                    }
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [Expanded(child: phone), const SizedBox(width: 12), Expanded(child: birth)],
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 24),
+                // ข้อตกลงการใช้งาน: กดได้ทั้งแถว ลิงก์ในข้อความเปิดเนื้อหาเต็ม
+                InkWell(
+                  borderRadius: BorderRadius.circular(AppRadius.control),
+                  onTap: () => setState(() => _agreeToTerms = !_agreeToTerms),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: Checkbox(
+                            value: _agreeToTerms,
+                            onChanged: (value) => setState(() => _agreeToTerms = value ?? false),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: RichText(
+                            text: TextSpan(
+                              style: AppTextStyles.small,
+                              children: [
+                                const TextSpan(text: 'ฉันยอมรับ'),
+                                TextSpan(
+                                  text: 'เงื่อนไขการใช้งาน',
+                                  style: const TextStyle(color: AppColors.primaryDeep, fontWeight: FontWeight.w600),
+                                  recognizer: _termsRecognizer,
+                                ),
+                                const TextSpan(text: 'และ'),
+                                TextSpan(
+                                  text: 'นโยบายความเป็นส่วนตัว',
+                                  style: const TextStyle(color: AppColors.primaryDeep, fontWeight: FontWeight.w600),
+                                  recognizer: _privacyRecognizer,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 22),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _register,
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.2),
+                          )
+                        : const Text('สร้างบัญชี'),
+                  ),
+                ),
+
+                const SizedBox(height: 28),
+                const Divider(),
+                const SizedBox(height: 16),
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text('มีบัญชีอยู่แล้ว', style: AppTextStyles.small),
+                    const SizedBox(width: 4),
+                    TextButton(
+                      onPressed: () => Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      ),
+                      child: const Text('เข้าสู่ระบบ'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   // ═══════════════════════════════════════════

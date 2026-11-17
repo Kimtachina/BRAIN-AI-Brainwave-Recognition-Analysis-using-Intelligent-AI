@@ -14,8 +14,8 @@ extension _StartView on _TestScreenState {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppColors.primaryBlue,
-                  AppColors.primaryBlue.withValues(alpha: 0.8),
+                  AppColors.primary,
+                  AppColors.primary.withValues(alpha: 0.8),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -23,7 +23,7 @@ extension _StartView on _TestScreenState {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                  color: AppColors.primary.withValues(alpha: 0.3),
                   blurRadius: 15,
                   offset: const Offset(0, 8),
                 ),
@@ -89,14 +89,14 @@ extension _StartView on _TestScreenState {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.info_outline, color: AppColors.primaryBlue, size: 20),
+                    Icon(Icons.info_outline, color: AppColors.primary, size: 20),
                     const SizedBox(width: 8),
                     Text(
                       'เกี่ยวกับแบบทดสอบ',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.primaryBlue,
+                        color: AppColors.primary,
                       ),
                     ),
                   ],
@@ -156,13 +156,13 @@ extension _StartView on _TestScreenState {
             child: ElevatedButton(
               onPressed: _startTest,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryBlue,
+                backgroundColor: AppColors.primary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
                 elevation: 4,
-                shadowColor: AppColors.primaryBlue.withValues(alpha: 0.4),
+                shadowColor: AppColors.primary.withValues(alpha: 0.4),
               ),
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,

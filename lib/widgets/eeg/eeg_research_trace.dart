@@ -69,7 +69,7 @@ class EegResearchTracePainter extends CustomPainter {
       final name = channelNames[i];
       final yOffset = i * channelHeight;
       final yCenter = yOffset + channelHeight / 2;
-      final chColor = channelColors[name] ?? const Color(0xFF1565C0);
+      final chColor = channelColors[name] ?? const Color(0xFF4636A8);
 
       // วาดพื้นหลังสลับสีเพื่อแยกบรรทัดแต่ละแชลแนล (Alternating background)
       if (i % 2 == 1) {

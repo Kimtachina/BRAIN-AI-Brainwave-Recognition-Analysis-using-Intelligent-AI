@@ -66,14 +66,14 @@ class _EegReportHistoryScreenState extends State<EegReportHistoryScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const CircularProgressIndicator(color: AppColors.primaryBlue),
+              const CircularProgressIndicator(color: AppColors.primary),
               const SizedBox(height: 16),
               Text(
                 'กำลังสร้าง PDF...',
-                style: GoogleFonts.prompt(
+                style: GoogleFonts.ibmPlexSansThai(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textDark,
+                  color: AppColors.ink,
                   decoration: TextDecoration.none,
                 ),
               ),

@@ -258,12 +258,8 @@ class RAGService {
       for (final context in response) {
         if (context['brainwave_avg'] != null) {
           final avg = context['brainwave_avg'] as Map<String, dynamic>;
-          buffer.writeln('📊 คลื่นสมองเฉลี่ย 7 วันล่าสุด:');
-          buffer.writeln('   - Alpha: ${(avg['alpha'] ?? 0).toStringAsFixed(1)}%');
-          buffer.writeln('   - Beta: ${(avg['beta'] ?? 0).toStringAsFixed(1)}%');
-          buffer.writeln('   - Theta: ${(avg['theta'] ?? 0).toStringAsFixed(1)}%');
-          buffer.writeln('   - Attention: ${(avg['attention'] ?? 0).toStringAsFixed(1)}');
-          buffer.writeln('   - Meditation: ${(avg['meditation'] ?? 0).toStringAsFixed(1)}');
+          final index = (avg['eeg_index'] as num?)?.toStringAsFixed(0) ?? '-';
+          buffer.writeln('📊 ดัชนีคลื่นสมองเฉลี่ย 7 วันล่าสุด: $index/100 (วัด ${avg['reports'] ?? 0} ครั้ง)');
         }
 
         if (context['stress_level'] != null) {

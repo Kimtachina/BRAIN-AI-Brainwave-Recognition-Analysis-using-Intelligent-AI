@@ -99,7 +99,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.primary,
                 ),
               ),
               const SizedBox(height: 20),
@@ -109,11 +109,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                    color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child:
-                      Icon(Icons.photo_library, color: AppColors.primaryBlue),
+                      Icon(Icons.photo_library, color: AppColors.primary),
                 ),
                 title: const Text('เลือกจากแกลเลอรี่'),
                 subtitle: Text(
@@ -211,13 +211,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: AppColors.primaryBlue,
+              primary: AppColors.primary,
               onPrimary: Colors.white,
               onSurface: Colors.black,
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                foregroundColor: AppColors.primaryBlue,
+                foregroundColor: AppColors.primary,
               ),
             ),
           ),
@@ -363,11 +363,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       height: 100,
                       decoration: BoxDecoration(
                         color:
-                            AppColors.primaryBlue.withValues(alpha: 0.1),
+                            AppColors.primary.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                         border: Border.all(
                           color:
-                              AppColors.primaryBlue.withValues(alpha: 0.3),
+                              AppColors.primary.withValues(alpha: 0.3),
                           width: 3,
                         ),
                         image: _getAvatarDecoration(),
@@ -382,7 +382,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: AppColors.primaryBlue,
+                          color: AppColors.primary,
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 2),
                         ),
@@ -425,7 +425,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 child: Text(
                   'แก้ไขรูปโปรไฟล์',
                   style: TextStyle(
-                    color: AppColors.primaryBlue,
+                    color: AppColors.primary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -469,7 +469,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               onTap: _selectBirthDate,
               suffixIcon: Icon(
                 Icons.calendar_today,
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
               ),
             ),
 
@@ -481,7 +481,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _updateProfile,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
+                    backgroundColor: AppColors.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -538,7 +538,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Icon(
       Icons.person,
       size: 50,
-      color: AppColors.primaryBlue,
+      color: AppColors.primary,
     );
   }
 
@@ -587,7 +587,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.primaryBlue, width: 2),
+          borderSide: BorderSide(color: AppColors.primary, width: 2),
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 16),

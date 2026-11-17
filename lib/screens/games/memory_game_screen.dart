@@ -126,7 +126,7 @@ class _MemoryGameScreenState extends State<MemoryGameScreen> {
               Navigator.pop(context);
               setState(() => _initGame());
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryBlue),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             child: const Text('เล่นอีกครั้ง', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -150,7 +150,7 @@ class _MemoryGameScreenState extends State<MemoryGameScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('จำนวนการเปิด: $moves', style: TextStyle(fontSize: 16, color: Colors.grey[700])),
-                Text('จับคู่ได้: $matchedPairs/6', style: TextStyle(fontSize: 16, color: AppColors.primaryBlue, fontWeight: FontWeight.bold)),
+                Text('จับคู่ได้: $matchedPairs/6', style: TextStyle(fontSize: 16, color: AppColors.primary, fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 20),
@@ -170,7 +170,7 @@ class _MemoryGameScreenState extends State<MemoryGameScreen> {
                       decoration: BoxDecoration(
                         color: matched[index]
                             ? Colors.green.withValues(alpha: 0.3)
-                            : (revealed[index] ? AppColors.primaryBlue.withValues(alpha: 0.1) : AppColors.primaryBlue),
+                            : (revealed[index] ? AppColors.primary.withValues(alpha: 0.1) : AppColors.primary),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Center(
@@ -191,7 +191,7 @@ class _MemoryGameScreenState extends State<MemoryGameScreen> {
             ElevatedButton(
               onPressed: () => setState(() => _initGame()),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryBlue,
+                backgroundColor: AppColors.primary,
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
               ),
               child: const Text('เริ่มใหม่', style: TextStyle(color: Colors.white)),

@@ -7,12 +7,11 @@ import 'package:printing/printing.dart';
 import '../../theme/app_theme.dart';
 import '../../models/user.dart';
 import '../../services/api_service.dart';
-import '../../services/supabase_service.dart';
 import '../../services/ai/chatgpt_service.dart';
 import '../../widgets/app_page.dart';
 
 /// WeeklyReportScreen เป็นหน้าจอสรุปสถิติและแนวโน้มสภาวะจิตใจรายสัปดาห์ (AI Weekly Report)
-/// ดึงประวัติการบันทึกอารมณ์ ค่าคลื่นสมอง และคะแนน PHQ-9 ย้อนหลัง 7 วัน
+/// ดึงรายงานคลื่นสมอง (eeg_assessment_reports) และคะแนน PHQ-9 ย้อนหลัง 7 วัน
 /// เพื่อให้ AI Chatbot สังเคราะห์บทวิเคราะห์แนวโน้มสุขภาพจิตและส่งออกรายงาน PDF
 class WeeklyReportScreen extends StatefulWidget {
   final User? user;
@@ -27,8 +26,7 @@ class _WeeklyReportScreenState extends State<WeeklyReportScreen> {
   bool _isLoading = true;
   bool _isGeneratingAI = false;
 
-  Map<String, dynamic> _emotionSummary = {};
-  List<dynamic> _eegSessions = [];
+  List<dynamic> _eegReports = []; // รายงานคลื่นสมองใน 7 วันล่าสุด
   List<dynamic> _phq9Results = [];
 
   List<FlSpot> _chartSpots = [];
@@ -37,22 +35,14 @@ class _WeeklyReportScreenState extends State<WeeklyReportScreen> {
   String _aiReport = '';
   String _errorMessage = '';
 
-  double get _avgStressIndex {
-    final logs = _emotionSummary['logs'] as List? ?? [];
-    if (logs.isEmpty) return 0.0;
-
-    double totalWeighted = 0;
-    for (final log in logs) {
-      final type = (log['emotion_type'] as String? ?? 'happy').toLowerCase();
-      final intensity = (log['intensity'] as num?)?.toDouble() ?? 5.0;
-      if (type == 'sad' || type == 'anxious' || type == 'angry') {
-        totalWeighted += intensity;
-      } else {
-        totalWeighted += 1.0; // Low stress/depression contribution for happy/calm
-      }
-    }
-    return totalWeighted / logs.length;
+  /// ดัชนีคลื่นสมองเฉลี่ยของสัปดาห์ (0-100: ≤30 ผ่อนคลาย, ≤60 ปกติ, มากกว่านั้นเครียด)
+  double? get _avgEegIndex {
+    final values = _eegReports.map((r) => (r['eeg_index'] as num?)?.toDouble()).whereType<double>().toList();
+    if (values.isEmpty) return null;
+    return values.reduce((a, b) => a + b) / values.length;
   }
+
+  static DateTime? _date(dynamic v) => v == null ? null : DateTime.tryParse(v.toString())?.toLocal();
 
   @override
   void initState() {
@@ -77,19 +67,16 @@ class _WeeklyReportScreenState extends State<WeeklyReportScreen> {
     try {
       final userId = widget.user!.id;
 
-      // 1. Fetch emotion summary (last 7 days)
-      final emotionRes = await ApiService.getEmotionSummary(userId);
-      if (emotionRes['success'] == true) {
-        _emotionSummary = emotionRes;
-      }
-
-      // 2. Fetch EEG sessions (last 7 days)
-      final eegRes = await SupabaseService.getEEGSessions(userId, limit: 10);
+      // 1. รายงานคลื่นสมองใน 7 วันล่าสุด
+      final weekAgo = DateTime.now().subtract(const Duration(days: 7));
+      final eegRes = await ApiService.getEegAssessmentReports(userId);
       if (eegRes['success'] == true) {
-        _eegSessions = eegRes['sessions'] ?? [];
+        _eegReports = (eegRes['reports'] as List? ?? [])
+            .where((r) => _date(r['recorded_at'])?.isAfter(weekAgo) ?? false)
+            .toList();
       }
 
-      // 3. Fetch PHQ-9 test results (last 7 days)
+      // 2. ผลแบบประเมิน PHQ-9
       final phqRes = await ApiService.getTestResults(userId);
       if (phqRes['success'] == true) {
         _phq9Results = phqRes['results'] ?? [];
@@ -118,29 +105,21 @@ class _WeeklyReportScreenState extends State<WeeklyReportScreen> {
     // Generate last 7 dates (from 6 days ago to today)
     final days = List.generate(7, (index) => now.subtract(Duration(days: 6 - index)));
 
-    final logs = _emotionSummary['logs'] as List? ?? [];
-
     for (int i = 0; i < days.length; i++) {
       final day = days[i];
-      final dayStr = '${day.day}/${day.month}';
-      dates.add(dayStr);
+      dates.add('${day.day}/${day.month}');
 
-      // Find logs on this date
-      final dayLogs = logs.where((log) {
-        final createdAt = log['created_at'];
-        if (createdAt == null) return false;
-        final logDate = DateTime.parse(createdAt.toString()).toLocal();
-        return logDate.year == day.year && logDate.month == day.month && logDate.day == day.day;
-      }).toList();
+      final values = _eegReports
+          .where((r) {
+            final d = _date(r['recorded_at']);
+            return d != null && d.year == day.year && d.month == day.month && d.day == day.day;
+          })
+          .map((r) => (r['eeg_index'] as num?)?.toDouble())
+          .whereType<double>()
+          .toList();
 
-      if (dayLogs.isNotEmpty) {
-        // Average intensity
-        final avgInt = dayLogs.map((l) => (l['intensity'] as num?)?.toDouble() ?? 5.0).reduce((a, b) => a + b) / dayLogs.length;
-        spots.add(FlSpot(i.toDouble(), avgInt));
-      } else {
-        // Default to a middle baseline (e.g. 5.0) or skip
-        spots.add(FlSpot(i.toDouble(), 0)); // 0 represents no log recorded
-      }
+      // 0 = วันนั้นไม่ได้วัด
+      spots.add(FlSpot(i.toDouble(), values.isEmpty ? 0 : values.reduce((a, b) => a + b) / values.length));
     }
 
     _chartSpots = spots;
@@ -178,18 +157,15 @@ class _WeeklyReportScreenState extends State<WeeklyReportScreen> {
       _isGeneratingAI = true;
     });
 
-    final emotionCounts = _emotionSummary['emotion_counts']?.toString() ?? 'ไม่มีการบันทึก';
-    final avgIntensity = _avgStressIndex.toStringAsFixed(1);
-    final totalLogs = _emotionSummary['total_logs'] ?? 0;
-
+    final avg = _avgEegIndex;
     String eegSessionsStr = '';
-    if (_eegSessions.isNotEmpty) {
-      eegSessionsStr = _eegSessions.take(5).map((s) {
-        final date = DateTime.parse(s['started_at'].toString()).toLocal();
-        return '- วันที่ ${date.day}/${date.month}/${date.year} | สมาธิ: ${s['avg_attention_score'] ?? 0}, ผ่อนคลาย: ${s['avg_relaxation_score'] ?? 0}, ความเครียด: ${s['avg_stress_score'] ?? 0}';
+    if (_eegReports.isNotEmpty) {
+      eegSessionsStr = _eegReports.take(7).map((r) {
+        final date = _date(r['recorded_at']) ?? DateTime.now();
+        return '- วันที่ ${date.day}/${date.month}/${date.year} | ดัชนีคลื่นสมอง: ${(r['eeg_index'] as num?)?.toStringAsFixed(0) ?? '-'}/100 (${r['risk_level'] ?? '-'})';
       }).join('\n');
     } else {
-      eegSessionsStr = 'ไม่มีประวัติคลื่นสมอง EEG ในสัปดาห์นี้';
+      eegSessionsStr = 'ไม่มีการวัดคลื่นสมองในสัปดาห์นี้';
     }
 
     String phq9Str = '';
@@ -203,18 +179,17 @@ class _WeeklyReportScreenState extends State<WeeklyReportScreen> {
     }
 
     final prompt = '''
-ข้อมูลการบันทึกสุขภาพผู้ใช้ในรอบ 7 วันที่ผ่านมา:
-- บันทึกอารมณ์: ทั้งหมด $totalLogs ครั้ง
-- สรุปประเภทอารมณ์ที่รู้สึก: $emotionCounts
-- ความเข้มข้นอารมณ์เฉลี่ย (ระดับความเครียดเฉลี่ย 1-10): $avgIntensity
+ข้อมูลสุขภาพผู้ใช้ในรอบ 7 วันที่ผ่านมา:
+- วัดคลื่นสมอง: ทั้งหมด ${_eegReports.length} ครั้ง
+- ดัชนีคลื่นสมองเฉลี่ย (0-100, ยิ่งสูงยิ่งเครียด): ${avg == null ? 'ไม่มีข้อมูล' : avg.toStringAsFixed(0)}
 
-บันทึกสถิติคลื่นสมอง EEG (ย้อนหลัง):
+ผลวัดคลื่นสมองรายครั้ง:
 $eegSessionsStr
 
 ผลประเมินความเครียดและสุขภาพจิต PHQ-9 (ย้อนหลัง):
 $phq9Str
 
-ช่วยเขียนรายงานภาพรวมสุขภาพจิต การวิเคราะห์อารมณ์/พฤติกรรม วิเคราะห์คลื่นสมอง และให้คำแนะนำฟื้นฟูเฉพาะบุคคลในภาษาไทยที่สุภาพ อบอุ่น และเข้าใจง่ายหน่อยครับ
+ช่วยเขียนรายงานภาพรวมสุขภาพจิต วิเคราะห์คลื่นสมอง และให้คำแนะนำฟื้นฟูเฉพาะบุคคลในภาษาไทยที่สุภาพ อบอุ่น และเข้าใจง่ายหน่อยครับ
 ''';
 
     final result = await ChatGPTService.generateWeeklyReport(promptContent: prompt);
@@ -259,7 +234,7 @@ $phq9Str
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 pw.Text(
-                  'รายงานสุขภาพและอารมณ์รายสัปดาห์ (AI Weekly Report)',
+                  'รายงานสุขภาพรายสัปดาห์ (AI Weekly Report)',
                   style: pw.TextStyle(font: fontBold, fontSize: 18, color: PdfColors.blue800),
                 ),
                 pw.SizedBox(height: 8),
@@ -268,8 +243,7 @@ $phq9Str
                 pw.SizedBox(height: 16),
                 
                 pw.Text('1. สรุปข้อมูลดิบรายสัปดาห์', style: pw.TextStyle(font: fontBold, fontSize: 13, color: PdfColors.blue900)),
-                pw.Bullet(text: 'บันทึกอารมณ์รวม: ${_emotionSummary['total_logs'] ?? 0} ครั้ง (เฉลี่ยระดับความเครียด: ${_avgStressIndex.toStringAsFixed(1)}/10)', style: pw.TextStyle(font: font, fontSize: 10)),
-                pw.Bullet(text: 'จำนวน session คลื่นสมอง: ${_eegSessions.length} ครั้ง', style: pw.TextStyle(font: font, fontSize: 10)),
+                pw.Bullet(text: 'วัดคลื่นสมอง: ${_eegReports.length} ครั้ง (ดัชนีเฉลี่ย: ${_avgEegIndex?.toStringAsFixed(0) ?? '-'}/100)', style: pw.TextStyle(font: font, fontSize: 10)),
                 pw.Bullet(text: 'จำนวนประวัติ PHQ-9: ${_phq9Results.length} ครั้ง', style: pw.TextStyle(font: font, fontSize: 10)),
                 
                 pw.SizedBox(height: 20),
@@ -331,9 +305,8 @@ $phq9Str
   }
 
   Widget _buildQuickStatsCard() {
-    final totalLogs = _emotionSummary['total_logs'] ?? 0;
-    final avgIntensity = _avgStressIndex;
-    final eegCount = _eegSessions.length;
+    final avg = _avgEegIndex;
+    final eegCount = _eegReports.length;
     final phq9Count = _phq9Results.length;
 
     return Container(
@@ -345,22 +318,21 @@ $phq9Str
         children: [
           const Row(
             children: [
-              Icon(Icons.analytics_outlined, color: AppColors.primaryBlue, size: 24),
+              Icon(Icons.analytics_outlined, color: AppColors.primary, size: 24),
               SizedBox(width: 8),
               Text(
                 'สรุปสถิติประจำสัปดาห์',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.ink),
               ),
             ],
           ),
-          const Divider(height: 24, thickness: 1, color: Color(0xFFE2E8F0)),
+          const Divider(height: 24, thickness: 1, color: Color(0xFFE4E1EC)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildStatItem('บันทึกอารมณ์', '$totalLogs ครั้ง', Colors.blue),
-              _buildStatItem('ระดับความเครียด', '${avgIntensity.toStringAsFixed(1)}/10', Colors.red),
-              _buildStatItem('ตรวจคลื่นสมอง', '$eegCount ครั้ง', Colors.teal),
-              _buildStatItem('แบบทดสอบ', '$phq9Count ครั้ง', Colors.orange),
+              _buildStatItem('วัดคลื่นสมอง', '$eegCount ครั้ง', AppColors.secondary),
+              _buildStatItem('ดัชนีเฉลี่ย', avg == null ? '–' : '${avg.toStringAsFixed(0)}/100', AppColors.primary),
+              _buildStatItem('แบบประเมิน', '$phq9Count ครั้ง', AppColors.warning),
             ],
           ),
         ],
@@ -378,7 +350,7 @@ $phq9Str
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(fontSize: 11, color: AppColors.textGray),
+          style: const TextStyle(fontSize: 11, color: AppColors.inkSoft),
         ),
       ],
     );
@@ -396,26 +368,26 @@ $phq9Str
         children: [
           const Row(
             children: [
-              Icon(Icons.show_chart, color: AppColors.primaryBlue, size: 24),
+              Icon(Icons.show_chart, color: AppColors.primary, size: 24),
               SizedBox(width: 8),
               Text(
-                'แนวโน้มสภาวะจิตใจ (ย้อนหลัง 7 วัน)',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                'แนวโน้มคลื่นสมอง (ย้อนหลัง 7 วัน)',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.ink),
               ),
             ],
           ),
           const SizedBox(height: 4),
           const Text(
-            'ระดับความเข้มข้นความเครียดเฉลี่ยในแต่ละวัน (1 = ปกติ/มีความสุข, 10 = เครียดมาก)',
-            style: TextStyle(fontSize: 11, color: AppColors.textGray),
+            'ดัชนีคลื่นสมองเฉลี่ยรายวัน (0–30 ผ่อนคลาย · 31–60 ปกติ · 61–100 เครียด)',
+            style: TextStyle(fontSize: 11, color: AppColors.inkSoft),
           ),
           const SizedBox(height: 24),
           SizedBox(
             height: 180,
             child: activeSpots.isEmpty
                 ? const Center(
-                    child: Text('ยังไม่มีข้อมูลบันทึกอารมณ์เพียงพอในสัปดาห์นี้',
-                        style: TextStyle(color: AppColors.textGray, fontSize: 13)),
+                    child: Text('สัปดาห์นี้ยังไม่ได้วัดคลื่นสมอง',
+                        style: TextStyle(color: AppColors.inkSoft, fontSize: 13)),
                   )
                 : LineChart(
                     LineChartData(
@@ -435,15 +407,15 @@ $phq9Str
                           sideTitles: SideTitles(
                             showTitles: true,
                             getTitlesWidget: (value, meta) {
-                              if (value == 1 || value == 5 || value == 10) {
+                              if (value == 0 || value == 50 || value == 100) {
                                 return Text(
                                   value.toInt().toString(),
-                                  style: const TextStyle(color: AppColors.textGray, fontSize: 10),
+                                  style: const TextStyle(color: AppColors.inkSoft, fontSize: 10),
                                 );
                               }
                               return const SizedBox();
                             },
-                            reservedSize: 20,
+                            reservedSize: 28,
                           ),
                         ),
                         bottomTitles: AxisTitles(
@@ -456,7 +428,7 @@ $phq9Str
                                   padding: const EdgeInsets.only(top: 8.0),
                                   child: Text(
                                     _chartDates[idx],
-                                    style: const TextStyle(color: AppColors.textGray, fontSize: 9),
+                                    style: const TextStyle(color: AppColors.inkSoft, fontSize: 9),
                                   ),
                                 );
                               }
@@ -470,18 +442,18 @@ $phq9Str
                       minX: 0,
                       maxX: 6,
                       minY: 0,
-                      maxY: 10,
+                      maxY: 100,
                       lineBarsData: [
                         LineChartBarData(
-                          spots: _chartSpots,
+                          spots: activeSpots,
                           isCurved: true,
-                          color: AppColors.primaryBlue,
+                          color: AppColors.primary,
                           barWidth: 3,
                           isStrokeCapRound: true,
                           dotData: const FlDotData(show: true),
                           belowBarData: BarAreaData(
                             show: true,
-                            color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                            color: AppColors.primary.withValues(alpha: 0.1),
                           ),
                         ),
                       ],
@@ -506,23 +478,23 @@ $phq9Str
             children: [
               const Row(
                 children: [
-                  Icon(Icons.psychology, color: AppColors.primaryBlue, size: 24),
+                  Icon(Icons.psychology, color: AppColors.primary, size: 24),
                   SizedBox(width: 8),
                   Text(
                     'บทวิเคราะห์สุขภาพจิตโดย AI',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.ink),
                   ),
                 ],
               ),
               if (_aiReport.isNotEmpty)
                 IconButton(
                   onPressed: _exportToPDF,
-                  icon: const Icon(Icons.share, color: AppColors.primaryBlue, size: 20),
+                  icon: const Icon(Icons.share, color: AppColors.primary, size: 20),
                   tooltip: 'ส่งออกเป็น PDF',
                 ),
             ],
           ),
-          const Divider(height: 24, thickness: 1, color: Color(0xFFE2E8F0)),
+          const Divider(height: 24, thickness: 1, color: Color(0xFFE4E1EC)),
           if (_isGeneratingAI)
             const Center(
               child: Padding(
@@ -532,7 +504,7 @@ $phq9Str
                     CircularProgressIndicator(),
                     SizedBox(height: 16),
                     Text('สมาร์ทเบรน AI กำลังวิเคราะห์ข้อมูลสุขภาพประจำสัปดาห์...',
-                        style: TextStyle(fontSize: 13, color: AppColors.textGray, fontStyle: FontStyle.italic)),
+                        style: TextStyle(fontSize: 13, color: AppColors.inkSoft, fontStyle: FontStyle.italic)),
                   ],
                 ),
               ),
@@ -546,14 +518,14 @@ $phq9Str
                     const Icon(Icons.description_outlined, size: 48, color: Colors.grey),
                     const SizedBox(height: 12),
                     const Text('ยังไม่มีบทสรุปสำหรับสัปดาห์นี้',
-                        style: TextStyle(color: AppColors.textGray, fontSize: 14)),
+                        style: TextStyle(color: AppColors.inkSoft, fontSize: 14)),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
                       onPressed: _generateAIReport,
                       icon: const Icon(Icons.auto_awesome, size: 18, color: Colors.white),
                       label: const Text('วิเคราะห์สุขภาพด้วย AI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryBlue,
+                        backgroundColor: AppColors.primary,
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
@@ -570,7 +542,7 @@ $phq9Str
                   _aiReport,
                   style: const TextStyle(
                     fontSize: 14,
-                    color: AppColors.textDark,
+                    color: AppColors.ink,
                     height: 1.6,
                   ),
                 ),
@@ -580,10 +552,10 @@ $phq9Str
                   children: [
                     ElevatedButton.icon(
                       onPressed: _generateAIReport,
-                      icon: const Icon(Icons.refresh, size: 18, color: AppColors.primaryBlue),
-                      label: const Text('อัปเดต / วิเคราะห์ซ้ำ', style: TextStyle(color: AppColors.primaryBlue)),
+                      icon: const Icon(Icons.refresh, size: 18, color: AppColors.primary),
+                      label: const Text('อัปเดต / วิเคราะห์ซ้ำ', style: TextStyle(color: AppColors.primary)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
+                        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),

@@ -49,7 +49,7 @@ extension _PasswordStrength on _RegisterScreenState {
               const SizedBox(width: 12),
               Text(
                 strengthLabel,
-                style: GoogleFonts.prompt(
+                style: GoogleFonts.ibmPlexSansThai(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: strengthColor,
@@ -84,9 +84,9 @@ extension _PasswordStrength on _RegisterScreenState {
           const SizedBox(width: 8),
           Text(
             label,
-            style: GoogleFonts.prompt(
+            style: GoogleFonts.ibmPlexSansThai(
               fontSize: 12,
-              color: passed ? Colors.green.shade700 : AppColors.textGray,
+              color: passed ? Colors.green.shade700 : AppColors.inkSoft,
               fontWeight: passed ? FontWeight.w500 : FontWeight.w400,
             ),
           ),

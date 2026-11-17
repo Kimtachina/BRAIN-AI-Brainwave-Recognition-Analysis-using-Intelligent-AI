@@ -1,116 +1,7 @@
 part of '../home_screen.dart';
 
-/// 6–7. ตรวจจับอารมณ์, นับถอยหลังเก็บข้อมูล EEG และแบนเนอร์ผลประเมินล่าสุด
+/// นับถอยหลังเก็บข้อมูล EEG และแบนเนอร์ผลประเมินล่าสุด
 extension _EegRecordingSection on _HomeScreenState {
-  Widget _buildEmotionDetectionCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: AppTheme.glassDecoration(
-        color: Colors.white,
-        opacity: 0.7,
-        borderColor: const Color(0xFF667eea).withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF667eea).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.psychology_outlined, color: Color(0xFF667eea), size: 20),
-              ),
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Text(
-                  'ระบบวิเคราะห์สภาวะทางอารมณ์ด้วย AI',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textDark),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 8),
-              // เมนูสำหรับเลือกเปลี่ยนประเภทโมเดล AI ในการประมวลผล (Model Selection Menu)
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.tune_rounded, color: Color(0xFF667eea), size: 20),
-                tooltip: 'เลือกโมเดลตรวจจับ',
-                onSelected: (String modelType) {
-                  _refresh(() {
-                    _selectedModel = modelType;
-                  });
-                },
-                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                  PopupMenuItem<String>(
-                    value: 'tflite',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.check_rounded,
-                          color: _selectedModel == 'tflite' ? const Color(0xFF667eea) : Colors.transparent,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 8),
-                        const Text('โมเดล 3 คลาส (หลัก)', style: TextStyle(fontSize: 12)),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem<String>(
-                    value: 'tsception',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.check_rounded,
-                          color: _selectedModel == 'tsception' ? const Color(0xFF667eea) : Colors.transparent,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 8),
-                        const Text('โมเดล 4 คลาส (รอง)', style: TextStyle(fontSize: 12)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 8),
-              if (_isDetectingEmotion)
-                const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF667eea)),
-                )
-              else
-                GestureDetector(
-                  onTap: _autoDetectEmotion,
-                  child: const Icon(Icons.refresh, color: Color(0xFF667eea), size: 20),
-                ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'โมเดลการเรียนรู้เชิงลึกวิเคราะห์จำแนกคลื่นสมองและอารมณ์แบบเรียลไทม์',
-            style: TextStyle(fontSize: 11, color: AppColors.textGray),
-          ),
-          const SizedBox(height: 16),
-          if (_selectedModel == 'tflite')
-            _buildModelPredictionSubcard(
-              title: 'โครงข่ายหลัก (3 คลาส): สงบ / ปกติ / มีสมาธิ (Deep Neural Network)',
-              emotion: _tfliteEmotion,
-              isPyTorch: false,
-            )
-          else
-            _buildModelPredictionSubcard(
-              title: 'โครงข่ายรอง TSception (4 คลาส): โกรธ-กลัว / สุข / สงบ / เศร้า (Temporal-Spatial CNN)',
-              emotion: _tsceptionEmotion,
-              isPyTorch: true,
-            ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildEegCountdownCard() {
     final minutes = _eegCountdownSeconds ~/ 60;
     final seconds = _eegCountdownSeconds % 60;
@@ -122,7 +13,7 @@ extension _EegRecordingSection on _HomeScreenState {
       decoration: AppTheme.glassDecoration(
         color: Colors.white,
         opacity: 0.7,
-        borderColor: const Color(0xFF1a237e).withValues(alpha: 0.18),
+        borderColor: const Color(0xFF1D1B2E).withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
@@ -133,16 +24,16 @@ extension _EegRecordingSection on _HomeScreenState {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1a237e).withValues(alpha: 0.1),
+                  color: const Color(0xFF1D1B2E).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.analytics_rounded, color: Color(0xFF1a237e), size: 20),
+                child: const Icon(Icons.analytics_rounded, color: Color(0xFF1D1B2E), size: 20),
               ),
               const SizedBox(width: 10),
               const Expanded(
                 child: Text(
                   'เกณฑ์การวิเคราะห์คลื่นสมองมาตรฐาน qEEG',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.ink),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -172,7 +63,7 @@ extension _EegRecordingSection on _HomeScreenState {
           const SizedBox(height: 6),
           const Text(
             'บันทึกข้อมูลคลื่นสมองต่อเนื่อง 1.5 นาที เพื่อประเมินค่าดัชนีความเครียดและความผ่อนคลาย (DEAP Protocol)',
-            style: TextStyle(fontSize: 11, color: AppColors.textGray),
+            style: TextStyle(fontSize: 11, color: AppColors.inkSoft),
           ),
           const SizedBox(height: 20),
 
@@ -187,7 +78,7 @@ extension _EegRecordingSection on _HomeScreenState {
                   color: const Color(0xFF1B2A4A),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF1a237e).withValues(alpha: 0.25),
+                      color: const Color(0xFF1D1B2E).withValues(alpha: 0.25),
                       blurRadius: 24,
                       spreadRadius: 2,
                     ),
@@ -237,11 +128,11 @@ extension _EegRecordingSection on _HomeScreenState {
               children: [
                 Text(
                   'เก็บข้อมูลตัวอย่างได้: ${_eegSamples.length} samples',
-                  style: const TextStyle(fontSize: 10, color: AppColors.textGray, fontWeight: FontWeight.w500),
+                  style: const TextStyle(fontSize: 10, color: AppColors.inkSoft, fontWeight: FontWeight.w500),
                 ),
                 Text(
                   'ความคืบหน้า: ${(progress * 100).toStringAsFixed(0)}%',
-                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1a237e)),
+                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1D1B2E)),
                 ),
               ],
             ),
@@ -267,7 +158,7 @@ extension _EegRecordingSection on _HomeScreenState {
                 icon: const Icon(Icons.play_circle_fill_rounded, color: Colors.white, size: 20),
                 label: const Text('เริ่มการประเมิน qEEG รายบุคคล', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1a237e),
+                  backgroundColor: const Color(0xFF1D1B2E),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   elevation: 0,
@@ -279,13 +170,13 @@ extension _EegRecordingSection on _HomeScreenState {
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: _openEegReportHistory,
-                icon: const Icon(Icons.history_edu_rounded, color: Color(0xFF1a237e), size: 18),
+                icon: const Icon(Icons.history_edu_rounded, color: Color(0xFF1D1B2E), size: 18),
                 label: const Text(
                   'เปิดดูประวัติและใบประเมินแพทย์ย้อนหลัง',
-                  style: TextStyle(color: Color(0xFF1a237e), fontWeight: FontWeight.w600, fontSize: 13),
+                  style: TextStyle(color: Color(0xFF1D1B2E), fontWeight: FontWeight.w600, fontSize: 13),
                 ),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFF1a237e), width: 1.5),
+                  side: const BorderSide(color: Color(0xFF1D1B2E), width: 1.5),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),

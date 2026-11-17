@@ -22,7 +22,7 @@ extension _MessageBubble on _RecommendationScreenState {
                   ? AppTheme.glassDecoration(
                       color: Colors.white,
                       opacity: 0.9,
-                      borderColor: AppColors.primaryBlue.withValues(alpha: 0.15),
+                      borderColor: AppColors.primary.withValues(alpha: 0.15),
                       borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(20),
                         topRight: Radius.circular(20),
@@ -31,9 +31,9 @@ extension _MessageBubble on _RecommendationScreenState {
                       ),
                     )
                   : AppTheme.glassDecoration(
-                      color: AppColors.primaryBlue,
+                      color: AppColors.primary,
                       opacity: 0.9,
-                      borderColor: AppColors.primaryBlue.withValues(alpha: 0.3),
+                      borderColor: AppColors.primary.withValues(alpha: 0.3),
                       borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(20),
                         topRight: Radius.circular(20),
@@ -49,14 +49,14 @@ extension _MessageBubble on _RecommendationScreenState {
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.android_rounded, size: 12, color: AppColors.primaryGreen),
+                        const Icon(Icons.android_rounded, size: 12, color: AppColors.secondary),
                         const SizedBox(width: 4),
                         Text(
                           'AI CLINICAL ADVISOR',
-                          style: GoogleFonts.prompt(
+                          style: GoogleFonts.ibmPlexSansThai(
                             fontSize: 9,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.primaryGreen,
+                            color: AppColors.secondary,
                             letterSpacing: 0.5,
                           ),
                         ),
@@ -66,8 +66,8 @@ extension _MessageBubble on _RecommendationScreenState {
                   ],
                   Text(
                     message.text,
-                    style: GoogleFonts.prompt(
-                      color: message.isBot ? AppColors.textDark : Colors.white,
+                    style: GoogleFonts.ibmPlexSansThai(
+                      color: message.isBot ? AppColors.ink : Colors.white,
                       fontSize: 14.5,
                       height: 1.55,
                       fontWeight: message.isBot ? FontWeight.w500 : FontWeight.w500,
@@ -97,14 +97,14 @@ extension _MessageBubble on _RecommendationScreenState {
                       icon: const Icon(Icons.rocket_launch_rounded, size: 14, color: Colors.white),
                       label: Text(
                         'ไปทันที',
-                        style: GoogleFonts.prompt(
+                        style: GoogleFonts.ibmPlexSansThai(
                           color: Colors.white,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryBlue,
+                        backgroundColor: AppColors.primary,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                         elevation: 0,
@@ -123,8 +123,8 @@ extension _MessageBubble on _RecommendationScreenState {
                 children: [
                   Text(
                     message.time,
-                    style: GoogleFonts.prompt(
-                      color: AppColors.textLight,
+                    style: GoogleFonts.ibmPlexSansThai(
+                      color: AppColors.inkFaint,
                       fontSize: 9.5,
                       fontWeight: FontWeight.w400,
                     ),
@@ -138,11 +138,11 @@ extension _MessageBubble on _RecommendationScreenState {
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
                           color: isSpeaking
-                              ? AppColors.primaryGreen.withValues(alpha: 0.15)
+                              ? AppColors.secondary.withValues(alpha: 0.15)
                               : Colors.grey.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(10),
                           border: isSpeaking
-                              ? Border.all(color: AppColors.primaryGreen.withValues(alpha: 0.4), width: 1)
+                              ? Border.all(color: AppColors.secondary.withValues(alpha: 0.4), width: 1)
                               : null,
                         ),
                         child: Row(
@@ -151,15 +151,15 @@ extension _MessageBubble on _RecommendationScreenState {
                             Icon(
                               isSpeaking ? Icons.stop_circle_outlined : Icons.volume_up_outlined,
                               size: 14,
-                              color: isSpeaking ? AppColors.primaryGreen : AppColors.textLight,
+                              color: isSpeaking ? AppColors.secondary : AppColors.inkFaint,
                             ),
                             if (isSpeaking) ...[
                               const SizedBox(width: 4),
                               Text(
                                 'กำลังอ่านออกเสียง',
-                                style: GoogleFonts.prompt(
+                                style: GoogleFonts.ibmPlexSansThai(
                                   fontSize: 9,
-                                  color: AppColors.primaryGreen,
+                                  color: AppColors.secondary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),

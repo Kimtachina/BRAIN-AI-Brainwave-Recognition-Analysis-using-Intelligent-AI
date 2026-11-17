@@ -9,7 +9,7 @@ extension _MuseConnectionSection on _HomeScreenState {
       decoration: AppTheme.glassDecoration(
         color: Colors.white,
         opacity: 0.75,
-        borderColor: (_museService.isConnected ? AppColors.primaryGreen : AppColors.primaryBlue).withValues(alpha: 0.2),
+        borderColor: (_museService.isConnected ? AppColors.secondary : AppColors.primary).withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
@@ -21,12 +21,12 @@ extension _MuseConnectionSection on _HomeScreenState {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: (_museService.isConnected ? AppColors.primaryGreen : AppColors.primaryBlue).withValues(alpha: 0.1),
+                  color: (_museService.isConnected ? AppColors.secondary : AppColors.primary).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
                   _museService.isConnected ? Icons.bluetooth_connected_rounded : Icons.bluetooth_rounded,
-                  color: _museService.isConnected ? AppColors.primaryGreen : AppColors.primaryBlue,
+                  color: _museService.isConnected ? AppColors.secondary : AppColors.primary,
                   size: 24,
                 ),
               ),
@@ -39,14 +39,14 @@ extension _MuseConnectionSection on _HomeScreenState {
                       children: [
                         const Text(
                           'อุปกรณ์ตรวจจับ Muse S',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.ink),
                         ),
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: _museService.isConnected
-                                ? AppColors.primaryGreen.withValues(alpha: 0.1)
+                                ? AppColors.secondary.withValues(alpha: 0.1)
                                 : Colors.grey.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
@@ -55,7 +55,7 @@ extension _MuseConnectionSection on _HomeScreenState {
                             style: TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.bold,
-                              color: _museService.isConnected ? AppColors.primaryGreen : Colors.grey[600],
+                              color: _museService.isConnected ? AppColors.secondary : Colors.grey[600],
                             ),
                           ),
                         ),
@@ -64,7 +64,7 @@ extension _MuseConnectionSection on _HomeScreenState {
                     const SizedBox(height: 2),
                     Text(
                       _museService.status,
-                      style: const TextStyle(fontSize: 12, color: AppColors.textGray),
+                      style: const TextStyle(fontSize: 12, color: AppColors.inkSoft),
                     ),
                   ],
                 ),
@@ -76,17 +76,17 @@ extension _MuseConnectionSection on _HomeScreenState {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withValues(alpha: 0.05),
+                color: AppColors.primary.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.developer_board, size: 14, color: AppColors.primaryBlue),
+                  const Icon(Icons.developer_board, size: 14, color: AppColors.primary),
                   const SizedBox(width: 6),
                   Text(
                     'ฮาร์ดแวร์: ${_museService.deviceName}',
-                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primaryBlue),
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary),
                   ),
                 ],
               ),
@@ -158,7 +158,7 @@ extension _MuseConnectionSection on _HomeScreenState {
                           height: 16,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: _museService.isConnected ? Colors.white : AppColors.primaryBlue,
+                            color: _museService.isConnected ? Colors.white : AppColors.primary,
                           ),
                         )
                       : Icon(
@@ -177,7 +177,7 @@ extension _MuseConnectionSection on _HomeScreenState {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _museService.isConnected ? AppColors.error : AppColors.primaryBlue,
+                    backgroundColor: _museService.isConnected ? AppColors.error : AppColors.primary,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     elevation: 0,
@@ -216,7 +216,7 @@ extension _MuseConnectionSection on _HomeScreenState {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(fontSize: 8, color: AppColors.textGray, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 8, color: AppColors.inkSoft, fontWeight: FontWeight.bold),
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 1),
@@ -248,7 +248,7 @@ extension _MuseConnectionSection on _HomeScreenState {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  gradient: AppGradients.primaryBlue,
+                  gradient: AppGradients.primary,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(Icons.hourglass_top_rounded, color: Colors.white, size: 22),
@@ -285,12 +285,12 @@ extension _MuseConnectionSection on _HomeScreenState {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF667eea).withValues(alpha: 0.1),
+                    color: const Color(0xFF5B4BC4).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     'Packet #${_museService.packetCount}',
-                    style: const TextStyle(fontSize: 11, color: Color(0xFF667eea), fontWeight: FontWeight.w600),
+                    style: const TextStyle(fontSize: 11, color: Color(0xFF5B4BC4), fontWeight: FontWeight.w600),
                   ),
                 ),
             ],
@@ -306,8 +306,8 @@ extension _MuseConnectionSection on _HomeScreenState {
               backgroundColor: const Color(0xFFE8F0FE),
               valueColor: AlwaysStoppedAnimation<Color>(
                 _museService.isWaitingForFFT
-                    ? const Color(0xFF764ba2)
-                    : const Color(0xFF667eea),
+                    ? const Color(0xFF4636A8)
+                    : const Color(0xFF5B4BC4),
               ),
             ),
           ),
@@ -328,7 +328,7 @@ extension _MuseConnectionSection on _HomeScreenState {
                   Expanded(
                     child: Text(
                       'รอสัญญาณจริง... ตรวจสอบการสวมใส่หน้ากากวัดคลื่นสมองให้กระชับหน้าผาก',
-                      style: TextStyle(fontSize: 12, color: AppColors.textDark.withValues(alpha: 0.8)),
+                      style: TextStyle(fontSize: 12, color: AppColors.ink.withValues(alpha: 0.8)),
                     ),
                   ),
                 ],
@@ -338,21 +338,21 @@ extension _MuseConnectionSection on _HomeScreenState {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: AppTheme.glassDecoration(
-                color: AppColors.primaryBlue,
+                color: AppColors.primary,
                 opacity: 0.1,
-                borderColor: AppColors.primaryBlue.withValues(alpha: 0.25),
+                borderColor: AppColors.primary.withValues(alpha: 0.25),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.science_rounded, color: AppColors.primaryBlue, size: 18),
+                  const Icon(Icons.science_rounded, color: AppColors.primary, size: 18),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       _museService.isWaitingForFFT
                           ? 'Buffer พร้อมแล้ว กำลังแปลง Fast Fourier Transform (FFT)...'
                           : 'ต้องการสะสม 256 samples เพื่อแปลงสัญญาณความถึ่สมองได้อย่างแม่นยำ',
-                      style: const TextStyle(fontSize: 12, color: AppColors.textDark),
+                      style: const TextStyle(fontSize: 12, color: AppColors.ink),
                     ),
                   ),
                 ],
@@ -398,7 +398,7 @@ extension _MuseConnectionSection on _HomeScreenState {
               Navigator.pop(context);
               _museService.startSimulation();
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryBlue),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             child: const Text('ใช้โหมดจำลอง', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -431,14 +431,14 @@ extension _MuseConnectionSection on _HomeScreenState {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.bluetooth_searching, color: AppColors.primaryBlue),
+                    Icon(Icons.bluetooth_searching, color: AppColors.primary),
                     const SizedBox(width: 8),
                     Text(
                       'เลือกอุปกรณ์ Muse',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.primaryBlue,
+                        color: AppColors.primary,
                       ),
                     ),
                     const Spacer(),
@@ -496,8 +496,8 @@ extension _MuseConnectionSection on _HomeScreenState {
                               margin: const EdgeInsets.only(bottom: 8),
                               child: ListTile(
                                 leading: CircleAvatar(
-                                  backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
-                                  child: Icon(Icons.bluetooth, color: AppColors.primaryBlue),
+                                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                                  child: Icon(Icons.bluetooth, color: AppColors.primary),
                                 ),
                                 title: Text(
                                   device.platformName.isNotEmpty
@@ -517,7 +517,7 @@ extension _MuseConnectionSection on _HomeScreenState {
                                           await _museService.connectToDevice(device);
                                         },
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.primaryBlue,
+                                    backgroundColor: AppColors.primary,
                                     padding: const EdgeInsets.symmetric(horizontal: 16),
                                   ),
                                   child: Text(
@@ -542,11 +542,11 @@ extension _MuseConnectionSection on _HomeScreenState {
                             : () => _museService.startScan(),
                         icon: Icon(
                           _museService.isScanning ? Icons.stop : Icons.refresh,
-                          color: AppColors.primaryBlue,
+                          color: AppColors.primary,
                         ),
                         label: Text(
                           _museService.isScanning ? 'หยุดค้นหา' : 'ค้นหาใหม่',
-                          style: TextStyle(color: AppColors.primaryBlue),
+                          style: TextStyle(color: AppColors.primary),
                         ),
                       ),
                     ),

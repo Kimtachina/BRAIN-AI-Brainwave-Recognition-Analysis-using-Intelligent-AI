@@ -293,19 +293,7 @@ class EegAssessmentService {
 
   static String clinicalSummary(Map<String, dynamic> s) {
     final buf = StringBuffer();
-    final tfliteLabel = s['tfliteMentalStateLabel'] as String?;
-    final tfliteConf = s['tfliteMentalStateConfidence'] as double?;
-
-    if (tfliteLabel != null) {
-      buf.write('การวิเคราะห์ด้วย AI บ่งชี้สภาวะอารมณ์: ');
-      buf.write('ผลประเมินสภาวะอารมณ์บ่งชี้ "$tfliteLabel"');
-      if (tfliteConf != null) {
-        buf.write(' (มั่นใจ ${(tfliteConf * 100).toStringAsFixed(0)}%)');
-      }
-      buf.write(' โดยจากการตรวจวิเคราะห์ค่าสถิติ ');
-    } else {
-      buf.write('พบความผิดปกติของคลื่นสมองในช่วง ');
-    }
+    buf.write('พบความผิดปกติของคลื่นสมองในช่วง ');
 
     final tZ = (s['thetaZScore'] as num? ?? 0.0).toDouble();
     final dZ = (s['deltaZScore'] as num? ?? 0.0).toDouble();
@@ -318,9 +306,6 @@ class EegAssessmentService {
     if (aZ.abs() > 1.0) abnormal.add('Alpha');
     if (bZ.abs() > 1.0) abnormal.add('Beta');
 
-    if (tfliteLabel != null) {
-      buf.write('พบสัญญาณสมองเบี่ยงเบนในช่วง ');
-    }
     buf.write(abnormal.isEmpty ? 'ไม่มี (ปกติ)' : abnormal.join(' และ '));
     buf.write(' ');
     if (tZ > 1.0 || dZ > 1.0) buf.write('สูงกว่าค่าปกติ ร่วมกับ ');
@@ -340,13 +325,6 @@ class EegAssessmentService {
 
   static List<String> observations(Map<String, dynamic> s) {
     final obs = <String>[];
-    final tfliteLabel = s['tfliteMentalStateLabel'] as String?;
-    final tfliteConf = s['tfliteMentalStateConfidence'] as double?;
-    if (tfliteLabel != null) {
-      final confStr = tfliteConf != null ? ' (ความมั่นใจ ${(tfliteConf * 100).toStringAsFixed(0)}%)' : '';
-      obs.add('ผลประเมินสภาวะอารมณ์: $tfliteLabel$confStr');
-    }
-
     if (((s['thetaZScore'] as num? ?? 0.0).toDouble()) > 1.0) {
       obs.add('คลื่น Theta สูงกว่าปกติ สัมพันธ์กับความคิดซ้ำซาก เหนื่อยล้า');
     }
@@ -369,27 +347,6 @@ class EegAssessmentService {
   static List<String> recommendations(Map<String, dynamic> s) {
     final recs = <String>[];
     final idx = (s['eegIndex'] as num? ?? 50.0).toDouble();
-    final tfliteState = s['tfliteMentalState'] as String?;
-
-    final isNegative = tfliteState != null &&
-        (tfliteState.toLowerCase() == 'negative' ||
-            tfliteState.toLowerCase() == 'stressed' ||
-            tfliteState.toLowerCase() == 'sad' ||
-            tfliteState.toLowerCase() == 'angry');
-
-    final isPositive = tfliteState != null &&
-        (tfliteState.toLowerCase() == 'positive' ||
-            tfliteState.toLowerCase() == 'happy' ||
-            tfliteState.toLowerCase() == 'calm' ||
-            tfliteState.toLowerCase() == 'relaxed' ||
-            tfliteState.toLowerCase() == 'focused');
-
-    if (isNegative) {
-      recs.add('แนะนำกิจกรรมผ่อนคลายความเครียด เช่น ฝึกกำหนดลมหายใจช้าๆ หรือนั่งสมาธิ เพื่อปรับสมดุลสภาวะอารมณ์');
-    } else if (isPositive) {
-      recs.add('ส่งเสริมกิจกรรมที่ช่วยจรรโลงใจและสร้างความสงบสุขเพื่อรักษาจิตใจที่ดี');
-    }
-
     recs.add('พบแพทย์/นักจิตวิทยาเพื่อประเมินอาการอย่างละเอียด');
     if (idx > 50) recs.add('ฝึกสมาธิ ผ่อนคลายความเครียด นอนหลับให้เพียงพอ');
     recs.add('ออกกำลังกายสม่ำเสมอ และดูแลโภชนาการ');

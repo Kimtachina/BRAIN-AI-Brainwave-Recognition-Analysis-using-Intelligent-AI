@@ -179,7 +179,7 @@ class _TestScreenState extends State<TestScreen> with SingleTickerProviderStateM
                 );
               }
             },
-            icon: Icon(Icons.settings, color: AppColors.primaryBlue),
+            icon: Icon(Icons.settings, color: AppColors.primary),
           ),
         ],
       ),

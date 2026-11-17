@@ -57,9 +57,7 @@ dependencies:
   
   # Image Picker (เลือกรูปจากแกลเลอรี่/กล้อง)
   image_picker: ^1.1.2
-  
-  # TFLite (Emotion Detection on-device)
-  tflite_flutter: ^0.11.0
+
   pdf: ^3.12.0
   printing: ^5.14.3
   
@@ -100,7 +98,6 @@ flutter:
   # Assets
   assets:
     - assets/images/
-    - assets/models/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

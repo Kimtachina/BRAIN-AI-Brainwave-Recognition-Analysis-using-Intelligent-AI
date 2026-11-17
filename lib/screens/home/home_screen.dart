@@ -3,6 +3,8 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_page.dart';
+import '../../widgets/settings_list.dart';
 import '../../utils/responsive_helper.dart';
 import '../../models/user.dart';
 import '../../services/muse/muse_service.dart';
@@ -10,27 +12,17 @@ import '../../services/api_service.dart';
 import '../../services/supabase_service.dart';
 import '../../services/eeg/eeg_assessment_service.dart';
 import '../../services/eeg/eeg_pdf_service.dart';
-import '../../emotion_detection/emotion_detection.dart';
-import '../eeg/eeg_session_screen.dart'; // เพิ่มการนำเข้าหน้าเก็บบันทึกข้อมูลคลื่นสมอง
 import '../eeg/eeg_assessment_report_screen.dart';
 import '../eeg/eeg_report_history_screen.dart';
 import '../profile/settings_screen.dart';
-import '../games/mini_games_screen.dart';
 import '../../widgets/eeg/eeg_pipeline_visualizer.dart';
 import '../../widgets/eeg/eeg_research_waveform_card.dart';
-import 'widgets/cyber_frame_painter.dart';
 import 'widgets/electrode_placement_map.dart';
-import 'widgets/grid_pattern_painter.dart';
-import 'widgets/hover_lift.dart';
 import 'widgets/micro_wave_chart.dart';
-import 'widgets/neural_core.dart';
 import 'widgets/pulse_dot.dart';
-import 'widgets/sci_fi_scanner_overlay.dart';
 
 part 'home_sections/header_section.dart';
 part 'home_sections/health_summary_section.dart';
-part 'home_sections/brain_video_section.dart';
-part 'home_sections/quick_actions_section.dart';
 part 'home_sections/muse_connection_section.dart';
 part 'home_sections/band_power_section.dart';
 part 'home_sections/eeg_recording_section.dart';
@@ -38,8 +30,9 @@ part 'home_sections/eeg_recording_section.dart';
 class HomeScreen extends StatefulWidget {
   final User user;
   final Function(int)? onTabSelected;
+  final VoidCallback? onSearch;
 
-  const HomeScreen({super.key, required this.user, this.onTabSelected});
+  const HomeScreen({super.key, required this.user, this.onTabSelected, this.onSearch});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -141,13 +134,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  final EmotionDetectionService _emotionService = EmotionDetectionService();
-
-  EmotionResult? _tfliteEmotion;
-  EmotionResult? _tsceptionEmotion;
-  String _selectedModel = 'tflite'; // 'tflite' (Model 1) or 'tsception' (Model 2)
-  bool _isDetectingEmotion = false;
-  Timer? _emotionDetectionTimer;
   bool _isLoading = false;
 
   Map<String, dynamic>? _latestTestResult;
@@ -175,7 +161,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _museService.addListener(_onMuseDataUpdate);
     _updateOscilloscopeSubscription();
     _subscribeRealtime();
-    _initEmotionDetection();
   }
 
   void _subscribeRealtime() {
@@ -266,74 +251,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return {};
   }
 
-  Future<void> _initEmotionDetection() async {
-    await _emotionService.loadModel();
-
-    _emotionDetectionTimer = Timer.periodic(
-      const Duration(seconds: EmotionConstants.detectionIntervalSeconds),
-      (_) => _autoDetectEmotion(),
-    );
-  }
-
-  Future<void> _autoDetectEmotion() async {
-    if (!_museService.isConnected || _museService.latestData == null) return;
-    if (_isDetectingEmotion) return;
-
-    _isDetectingEmotion = true;
-    try {
-      final data = _museService.latestData!;
-      final eegData = {
-        'alpha': data.alpha,
-        'beta': data.beta,
-        'theta': data.theta,
-        'delta': data.delta,
-        'gamma': data.gamma,
-        'attention': data.attention,
-        'meditation': data.meditation,
-      };
-
-      final results = await _emotionService.detectFromEEG(eegData);
-
-      if (mounted) {
-        setState(() {
-          _tfliteEmotion = results['tflite'];
-          _tsceptionEmotion = results['tsception'];
-        });
-
-        // โหมดจำลองเป็นข้อมูลสุ่ม ห้ามบันทึกลงประวัติอารมณ์ของผู้ใช้
-        final canSave = !_museService.isSimulating;
-
-        final mainResult = results['tflite'];
-        if (canSave && mainResult != null && mainResult.confidence >= EmotionConstants.confidenceThreshold) {
-          ApiService.saveEmotionLog(
-            userId: widget.user.id,
-            emotionType: mainResult.emotionType,
-            triggerEvent: 'eeg_brainwave',
-            intensity: (mainResult.confidence * 10).round(),
-          );
-        }
-
-        final secondResult = results['tsception'];
-        if (canSave && secondResult != null && secondResult.confidence >= EmotionConstants.confidenceThreshold) {
-          ApiService.saveEmotionLog(
-            userId: widget.user.id,
-            emotionType: secondResult.emotionType,
-            triggerEvent: 'eeg_brainwave_tsception',
-            intensity: (secondResult.confidence * 10).round(),
-          );
-        }
-      }
-    } catch (e) {
-      debugPrint('❌ Emotion detection error: $e');
-    } finally {
-      _isDetectingEmotion = false;
-    }
-  }
-
   @override
   void dispose() {
-    _emotionDetectionTimer?.cancel();
-    _emotionService.dispose();
     _eegCountdownTimer?.cancel();
     _eegSampleTimer?.cancel();
 
@@ -418,32 +337,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _finishEegCountdown() async {
     final summary = EegAssessmentService.computeFromSamples(_eegSamples);
-
-    // ทำนายสภาวะทางอารมณ์/จิตใจภาพรวมโดยใช้โมเดล PyTorch Mobile บนข้อมูลค่าเฉลี่ย
-    try {
-      final sessionEegData = {
-        'alpha': summary['avgAlpha'] as double? ?? 0.0,
-        'beta': summary['avgBeta'] as double? ?? 0.0,
-        'theta': summary['avgTheta'] as double? ?? 0.0,
-        'delta': summary['avgDelta'] as double? ?? 0.0,
-        'gamma': summary['avgGamma'] as double? ?? 0.0,
-      };
-      final results = await _emotionService.detectFromEEG(sessionEegData);
-      final tfliteResult = results['tflite'];
-      if (tfliteResult != null) {
-        summary['tfliteMentalState'] = tfliteResult.emotionType;
-        summary['tfliteMentalStateLabel'] = EmotionType.fromString(tfliteResult.emotionType).label;
-        summary['tfliteMentalStateConfidence'] = tfliteResult.confidence;
-      }
-      final tsceptionResult = results['tsception'];
-      if (tsceptionResult != null) {
-        summary['tsceptionMentalState'] = tsceptionResult.emotionType;
-        summary['tsceptionMentalStateLabel'] = EmotionType.fromString(tsceptionResult.emotionType).label;
-        summary['tsceptionMentalStateConfidence'] = tsceptionResult.confidence;
-      }
-    } catch (e) {
-      debugPrint('❌ Failed to run session mental state prediction: $e');
-    }
 
     setState(() {
       _isEegCountdownRunning = false;
@@ -552,31 +445,21 @@ class _HomeScreenState extends State<HomeScreen> {
     await _museService.disconnect();
   }
 
-  /// ให้โค้ด UI ในไฟล์ part เรียกรีเฟรชหน้าจอได้
-  /// (extension เรียก setState ตรง ๆ ไม่ได้ เพราะเป็นเมธอดแบบ protected)
-  void _refresh(VoidCallback fn) => setState(fn);
-
   /// พับ/ขยายการ์ดกราฟคลื่นดิบ (เรียกจาก band_power_section.dart)
   void _toggleResearchWaves() =>
       setState(() => _isResearchWavesExpanded = !_isResearchWavesExpanded);
 
   /// หน้าหลักแบ่งเป็นส่วน ๆ ตามลำดับที่แสดงบนจอ
   /// โค้ดของแต่ละส่วนอยู่ในโฟลเดอร์ home_sections/ (part ของไฟล์นี้)
-  /// การ์ดฝั่งเนื้อหาหลัก: จอ HUD, พลังคลื่นสมอง, ตรวจจับอารมณ์ และผลประเมินล่าสุด
-  List<Widget> _buildLiveSections({required bool wide}) {
+  /// การ์ดฝั่งเนื้อหาหลัก: พลังคลื่นสมอง, ตรวจจับอารมณ์ และผลประเมินล่าสุด
+  List<Widget> _buildLiveSections() {
     return [
-      // หน้าจอ HUD สมอง (Brain HUD)
-      _buildBrainVideoHud(height: wide ? 320 : 240),
-      const SizedBox(height: 20),
-
       // พลังคลื่นสมองแต่ละย่าน (EEG Band Power)
       _buildBandPowerCard(),
       const SizedBox(height: 16),
 
-      // ตรวจจับอารมณ์และนับถอยหลังเก็บข้อมูล EEG
+      // นับถอยหลังเก็บข้อมูล EEG
       if (_museService.isConnected) ...[
-        _buildEmotionDetectionCard(),
-        const SizedBox(height: 16),
         _buildEegCountdownCard(),
         const SizedBox(height: 16),
       ],
@@ -603,123 +486,78 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
   }
 
-  /// วงแสงสีจางประดับพื้นหลังของหน้า
-  Widget _buildBackgroundGlow(Color color, double size) {
-    return IgnorePointer(
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [color.withValues(alpha: 0.16), color.withValues(alpha: 0.0)],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppGradients.glassBackgroundGradient,
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: -160,
-              right: -120,
-              child: _buildBackgroundGlow(AppColors.primaryBlue, 520),
-            ),
-            Positioned(
-              top: 380,
-              left: -200,
-              child: _buildBackgroundGlow(AppColors.primaryGreen, 520),
-            ),
-            SafeArea(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  // จอกว้าง (เว็บ/แท็บเล็ตแนวนอน) จัดเป็น 2 คอลัมน์ จอแคบเรียงลงมาคอลัมน์เดียว
-                  final wide = constraints.maxWidth >= 1000;
-                  return SingleChildScrollView(
-                    padding: const EdgeInsets.only(bottom: 24),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1280),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildHeader(wide: wide),
-                            const SizedBox(height: 14),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              child: wide ? _buildWideBody() : _buildNarrowBody(),
-                            ),
-                          ],
-                        ),
+      backgroundColor: AppColors.paper,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // จอกว้าง (เว็บ/แท็บเล็ตแนวนอน) จัดเป็น 2 คอลัมน์ จอแคบเรียงลงมาคอลัมน์เดียว
+            final wide = constraints.maxWidth >= 1000;
+            return SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: 32),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: AppLayout.wideWidth),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildHeader(wide: wide),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: wide ? 32 : 20),
+                        child: wide ? _buildWideBody() : _buildNarrowBody(),
                       ),
-                    ),
-                  );
-                },
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
   }
 
-  /// จอแคบ: เรียงการ์ดลงมาคอลัมน์เดียวตามลำดับเดิม
+  /// จอแคบ: เรียงตามขั้นตอนที่ใช้จริง ดูผลล่าสุด → เชื่อมต่ออุปกรณ์ → ดูคลื่นสดและวัด 90 วินาที
   Widget _buildNarrowBody() {
-    final live = _buildLiveSections(wide: false);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. สรุปสุขภาพ (Health Summary)
+        const SectionLabel('ผลล่าสุด'),
         _buildHealthSummaryCard(),
-        const SizedBox(height: 20),
-
-        // 2. หน้าจอ HUD สมอง (Brain HUD)
-        ...live.take(2),
-
-        // 3. เมนูลัด (Quick Actions)
-        _buildQuickActions(),
-        const SizedBox(height: 20),
-
-        // 4. การเชื่อมต่อ Muse (Muse Connection)
+        const SectionLabel('อุปกรณ์'),
         ..._buildMuseSections(),
-
-        // 5-7. พลังคลื่นสมอง ตรวจจับอารมณ์ และผลประเมินล่าสุด
-        ...live.skip(2),
+        const SectionLabel('คลื่นสมองตอนนี้'),
+        ..._buildLiveSections(),
       ],
     );
   }
 
-  /// จอกว้าง: ซ้ายเป็นข้อมูลคลื่นสมองแบบสด ขวาเป็นสรุปสุขภาพ เมนูลัด และการเชื่อมต่ออุปกรณ์
+  /// จอกว้าง: ซ้ายเป็นคลื่นสมองแบบสด ขวาเป็นผลล่าสุดและการเชื่อมต่ออุปกรณ์
   Widget _buildWideBody() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          flex: 6,
+          flex: 7,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: _buildLiveSections(wide: true),
+            children: [
+              const SectionLabel('คลื่นสมองตอนนี้'),
+              ..._buildLiveSections(),
+            ],
           ),
         ),
-        const SizedBox(width: 24),
+        const SizedBox(width: 32),
         Expanded(
           flex: 5,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SectionLabel('ผลล่าสุด'),
               _buildHealthSummaryCard(),
-              const SizedBox(height: 20),
-              _buildQuickActions(),
-              const SizedBox(height: 20),
+              const SectionLabel('อุปกรณ์'),
               ..._buildMuseSections(),
             ],
           ),

@@ -67,7 +67,7 @@ class _NutritionScreenState extends State<NutritionScreen>
             children: [
               IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back_ios_rounded, color: AppColors.textDark, size: 20),
+                icon: const Icon(Icons.arrow_back_ios_rounded, color: AppColors.ink, size: 20),
               ),
               const SizedBox(width: 8),
               const Expanded(
@@ -79,7 +79,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textDark,
+                        color: AppColors.ink,
                         letterSpacing: -0.5,
                       ),
                     ),
@@ -87,7 +87,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                       'อาหารและวิตามินที่ช่วยลดระดับ cortisol',
                       style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.textGray,
+                        color: AppColors.inkSoft,
                       ),
                     ),
                   ],
@@ -96,17 +96,17 @@ class _NutritionScreenState extends State<NutritionScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryGreen.withValues(alpha: 0.1),
+                  color: AppColors.secondary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.local_fire_department_rounded, color: AppColors.primaryGreen, size: 16),
+                    Icon(Icons.local_fire_department_rounded, color: AppColors.secondary, size: 16),
                     SizedBox(width: 4),
                     Text(
                       'ลดเครียด',
-                      style: TextStyle(color: AppColors.primaryGreen, fontSize: 12, fontWeight: FontWeight.w600),
+                      style: TextStyle(color: AppColors.secondary, fontSize: 12, fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
@@ -141,7 +141,7 @@ class _NutritionScreenState extends State<NutritionScreen>
         ),
         indicatorSize: TabBarIndicatorSize.tab,
         labelColor: Colors.white,
-        unselectedLabelColor: AppColors.textGray,
+        unselectedLabelColor: AppColors.inkSoft,
         labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
         unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
         dividerColor: Colors.transparent,
@@ -164,7 +164,7 @@ class _NutritionScreenState extends State<NutritionScreen>
         benefit: 'ลดระดับ cortisol และลดการอักเสบในสมอง',
         detail: 'กรดไขมันโอเมก้า 3 ช่วยปรับสมดุลสารเคมีในสมอง ลดระดับฮอร์โมนความเครียด (cortisol) ได้ถึง 14% เมื่อรับประทานสม่ำเสมอ กระตุ้นการสร้าง serotonin ซึ่งเป็นสารสุขในสมอง ช่วยให้อารมณ์ดีขึ้นและนอนหลับได้ดี',
         portion: 'แนะนำ 2-3 ครั้ง/สัปดาห์',
-        color: const Color(0xFF2196F3),
+        color: const Color(0xFF5B4BC4),
       ),
       _NutritionItem(
         emoji: '🥑',
@@ -267,7 +267,7 @@ class _NutritionScreenState extends State<NutritionScreen>
         'name': 'ซิงค์ (สังกะสี)',
         'benefit': 'สนับสนุนระบบประสาท ลดอาการวิตกกังวล',
         'source': 'เนื้อสัตว์, ถั่ว, เมล็ดฟักทอง, หอยนางรม',
-        'color': const Color(0xFF2196F3),
+        'color': const Color(0xFF5B4BC4),
       },
       {
         'emoji': '🟣',
@@ -288,7 +288,7 @@ class _NutritionScreenState extends State<NutritionScreen>
             icon: Icons.science_rounded,
             title: 'วิตามินและแร่ธาตุสำคัญ',
             description: 'เมื่อเครียด ร่างกายใช้วิตามินและแร่ธาตุมากขึ้น ทำให้ขาดสารอาหารที่สำคัญต่อระบบประสาท การเสริมสารอาหารเหล่านี้ช่วยฟื้นฟูสมดุลของสมอง',
-            gradientColors: [const Color(0xFF667eea), const Color(0xFF764ba2)],
+            gradientColors: [const Color(0xFF5B4BC4), const Color(0xFF4636A8)],
           );
         }
         final v = vitamins[index - 1];
@@ -352,7 +352,7 @@ class _NutritionScreenState extends State<NutritionScreen>
             icon: Icons.water_drop_rounded,
             title: 'เครื่องดื่มลดเครียด',
             description: 'เครื่องดื่มที่เลือกดื่มมีผลต่อระดับความเครียดโดยตรง ควรหลีกเลี่ยงกาแฟหลัง 14:00 น. และเลือกดื่มเครื่องดื่มที่ช่วยสงบจิตใจแทน',
-            gradientColors: [const Color(0xFF11998e), const Color(0xFF38ef7d)],
+            gradientColors: [const Color(0xFF1E8A7A), const Color(0xFF3FA796)],
           );
         }
         final d = drinks[index - 1];
