@@ -1,6 +1,6 @@
 <div align="center">
 <img src="assets/images/app_icon.png" alt="Smart Brain" width="220" />
-
+กหดก
 # 🧠 Smart Brain
 
 **BRAIN-AI — Brainwave Recognition & Analysis using Intelligent AI**
