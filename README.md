@@ -22,7 +22,7 @@
 ![Windows](https://img.shields.io/badge/Windows-0078D4?style=flat-square&logo=windows&logoColor=white)
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=flat-square&logo=linux&logoColor=black)
 
-[ฟีเจอร์](#-ฟีเจอร์) •
+[ฟีเจอร์](#-ฟีเจอร์) •กฟกฟ
 [สถาปัตยกรรม](#-สถาปัตยกรรม) •
 [เริ่มต้นใช้งาน](#-รันในเครื่อง) •dsda
 [OpenAI Proxy](#-openai-ผ่าน-supabase-edge-function) •
