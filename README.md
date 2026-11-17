@@ -4,7 +4,7 @@
 # 🧠 Smart Brain
 
 **BRAIN-AI — Brainwave Recognition & Analysis using Intelligent AI**
-
+กฟกฟกฟก
 แอป Flutter สำหรับวัดคลื่นสมองด้วย Muse (Muse 2 / Muse S)<br/>
 ประเมินสุขภาพจิต (PHQ-9) และให้คำแนะนำด้วย AI
 
