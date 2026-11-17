@@ -172,3 +172,4 @@ npx vercel deploy build/web --prod
 สร้างด้วย 💙 Flutter และ Supabase
 
 </div>
+pair
