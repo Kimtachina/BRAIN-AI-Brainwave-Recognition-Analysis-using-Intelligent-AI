@@ -27,7 +27,7 @@
 
 <br/>
 
-**[ฟีเจอร์](#-ฟีเจอร์)** · **[การทำงาน](#-การทำงาน)** · **[เริ่มต้นใช้งาน](#-เริ่มต้นใช้งาน)** · **[Emotion API](#-emotion-api-python)** · **[ทดสอบ](#-ทดสอบ)** · **[Deploy](#-deploy-เว็บ)** · **[Muse บนเว็บ](#-muse-บนเว็บ)**
+**[ภาพตัวอย่าง](#-ภาพตัวอย่าง)** · **[ฟีเจอร์](#-ฟีเจอร์)** · **[การทำงาน](#-การทำงาน)** · **[เริ่มต้นใช้งาน](#-เริ่มต้นใช้งาน)** · **[Emotion API](#-emotion-api-python)** · **[ทดสอบ](#-ทดสอบ)** · **[Deploy](#-deploy-เว็บ)** · **[Muse บนเว็บ](#-muse-บนเว็บ)**
 
 </div>
 
@@ -36,6 +36,37 @@
 > [!IMPORTANT]
 > ผลจากแอปเป็นข้อมูลประกอบ **ไม่ใช่การวินิจฉัยโรค** ควรประเมินร่วมกับแพทย์หรือนักจิตวิทยา
 > ถ้าต้องการความช่วยเหลือเร่งด่วน โทร **สายด่วนสุขภาพจิต 1323** (24 ชม.)
+
+## 📸 ภาพตัวอย่าง
+
+### 💻 บนเว็บ
+
+<table>
+<tr>
+<td colspan="2" align="center">
+<img src="docs/screenshots/web-welcome.png" alt="หน้าแรก" width="100%" /><br/>
+<sub><b>หน้าแรก</b></sub>
+</td>
+</tr>
+<tr>
+<td width="50%" align="center">
+<img src="docs/screenshots/web-login.png" alt="หน้าเข้าสู่ระบบ" width="100%" /><br/>
+<sub><b>เข้าสู่ระบบ</b> · จดจำอีเมล และลืมรหัสผ่าน</sub>
+</td>
+<td width="50%" align="center">
+<img src="docs/screenshots/web-register.png" alt="หน้าสมัครสมาชิก" width="100%" /><br/>
+<sub><b>สร้างบัญชีใหม่</b> · สมัครด้วยอีเมลและรหัสผ่าน</sub>
+</td>
+</tr>
+</table>
+
+### 📱 บนมือถือ
+
+<p align="center">
+<img src="docs/screenshots/mobile-welcome.png" alt="หน้าแรกบนมือถือ" width="260" />
+&nbsp;&nbsp;&nbsp;
+<img src="docs/screenshots/mobile-login.png" alt="หน้าเข้าสู่ระบบบนมือถือ" width="260" />
+</p>
 
 ## ✨ ฟีเจอร์
 
@@ -172,6 +203,7 @@ flowchart LR
 │   ├── widgets/             # วิดเจ็ตที่ใช้ร่วมกัน
 │   └── theme/  utils/  models/
 ├── assets/models/           # โมเดล TFLite และ scaler
+├── docs/screenshots/        # ภาพหน้าจอที่ใช้ใน README
 ├── emotion_api/             # FastAPI + สคริปต์โมเดล (Python)
 ├── supabase/
 │   ├── functions/           # Edge Function: openai-proxy
