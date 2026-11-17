@@ -1,12 +1,15 @@
 <div align="center">
+
 <img src="assets/images/app_icon.png" alt="Smart Brain" width="220" />
-กหดก
+
 # 🧠 Smart Brain
-กหกฟ
-**BRAIN-AI — Brainwave Recognition & Analysis using Intelligent AI**
-กฟกฟกฟก
-แอป Flutter สำหรับวัดคลื่นสมองด้วย Muse (Muse 2 / Muse S)<br/>
-ประเมินสุขภาพจิต (PHQ-9) และให้คำแนะนำด้วย AI
+
+### BRAIN-AI — Brainwave Recognition & Analysis using Intelligent AI
+
+แอป Flutter วัดคลื่นสมองด้วย Muse 2 / Muse S<br/>
+ประเมินสุขภาพจิตด้วย PHQ-9 และให้คำแนะนำด้วย AI
+
+<br/>
 
 ![Version](https://img.shields.io/badge/version-1.1.0-6C63FF?style=for-the-badge)
 ![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
@@ -22,30 +25,103 @@
 ![Windows](https://img.shields.io/badge/Windows-0078D4?style=flat-square&logo=windows&logoColor=white)
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=flat-square&logo=linux&logoColor=black)
 
-[ฟีเจอร์](#-ฟีเจอร์) •กฟกฟ
-[สถาปัตยกรรม](#-สถาปัตยกรรม) •
-[เริ่มต้นใช้งาน](#-รันในเครื่อง) •dsda
-[OpenAI Proxy](#-openai-ผ่าน-supabase-edge-function) •
-[Deploy เว็บ](#-deploy-เว็บ) •ดกหำดหแปแปแปแป
-[Muse บนเว็บ](#-การเชื่อมต่อ-muse-บนเว็บ)กหกหกไฟกฟก
+<br/>
 
-</div>ำหดำดหด
----
+**[ฟีเจอร์](#-ฟีเจอร์)** · **[การทำงาน](#-การทำงาน)** · **[เริ่มต้นใช้งาน](#-เริ่มต้นใช้งาน)** · **[Emotion API](#-emotion-api-python)** · **[ทดสอบ](#-ทดสอบ)** · **[Deploy](#-deploy-เว็บ)** · **[Muse บนเว็บ](#-muse-บนเว็บ)**
+
+</div>
+
+<br/>
+
+> [!IMPORTANT]
+> ผลจากแอปเป็นข้อมูลประกอบ **ไม่ใช่การวินิจฉัยโรค** ควรประเมินร่วมกับแพทย์หรือนักจิตวิทยา
+> ถ้าต้องการความช่วยเหลือเร่งด่วน โทร **สายด่วนสุขภาพจิต 1323** (24 ชม.)
 
 ## ✨ ฟีเจอร์
 
-| | ฟีเจอร์ | รายละเอียด |
-|:-:|---|---|
-| 🎧 | **วัดคลื่นสมอง (EEG)** | เชื่อมต่อ Muse 2 / Muse S ผ่าน Bluetooth แสดงคลื่นสมองแบบเรียลไทม์ พร้อม FFT และแผนที่ศีรษะ |
-| 😊 | **ตรวจจับอารมณ์** | โมเดล TSception (TFLite) ทำงานบนเครื่อง ส่วนบนเว็บใช้สูตรจากสัดส่วนคลื่นสมอง |
-| 📝 | **แบบประเมิน PHQ-9** | ประเมินภาวะซึมเศร้า และเก็บประวัติผลการประเมิน |
-| 🤖 | **ผู้ช่วย AI** | แชตพร้อม RAG, ถอดเสียง (STT) และอ่านออกเสียง (TTS) |
-| 📊 | **รายงาน** | รายงานผลการประเมิน EEG, รายงานประจำสัปดาห์ และส่งออกเป็น PDF |
-| 🌿 | **สุขภาวะ** | คำแนะนำเฉพาะบุคคล และข้อมูลโภชนาการ |
-| 🎮 | **มินิเกม** | เกมจับคู่ความจำ และเกมเรียงตัวเลข |
-| 🔐 | **บัญชีผู้ใช้** | สมัครและล็อกอินด้วยอีเมลกับรหัสผ่าน ผ่าน Supabase Auth |
+<table>
+<tr>
+<td width="50%" valign="top">
 
-## 🏗 สถาปัตยกรรม
+#### 🎧 วัดคลื่นสมอง (EEG)
+เชื่อมต่อ Muse 2 / Muse S ผ่าน Bluetooth แสดงคลื่นสมองแบบเรียลไทม์ พร้อม FFT และแผนที่ศีรษะ
+
+</td>
+<td width="50%" valign="top">
+
+#### 😊 ตรวจจับอารมณ์
+โมเดล TSception (TFLite) ทำงานบนเครื่อง ส่วนบนเว็บใช้สูตรจากสัดส่วนคลื่นสมอง
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+#### 📝 แบบประเมิน PHQ-9
+ประเมินภาวะซึมเศร้า และเก็บประวัติผลการประเมินไว้ดูย้อนหลัง
+
+</td>
+<td valign="top">
+
+#### 🤖 ผู้ช่วย AI
+แชตพร้อม RAG ถอดเสียงพูด (STT) และอ่านออกเสียง (TTS)
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+#### 📊 รายงาน
+รายงานผล EEG รายงานประจำสัปดาห์ และส่งออกเป็น PDF
+
+</td>
+<td valign="top">
+
+#### 🌿 สุขภาวะ
+คำแนะนำเฉพาะบุคคล และข้อมูลโภชนาการ
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+#### 🎮 มินิเกม
+เกมจับคู่ความจำ และเกมเรียงตัวเลข
+
+</td>
+<td valign="top">
+
+#### 🔐 บัญชีผู้ใช้
+สมัครและล็อกอินด้วยอีเมลกับรหัสผ่าน ผ่าน Supabase Auth
+
+</td>
+</tr>
+</table>
+
+## 🔄 การทำงาน
+
+### หนึ่งรอบการวัด
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as ผู้ใช้
+    participant M as 🎧 Muse
+    participant A as 📱 Smart Brain
+    participant S as ☁️ Supabase
+
+    U->>A: กดเชื่อมต่อ แล้วเลือกอุปกรณ์
+    A->>M: เชื่อมต่อผ่าน Bluetooth LE
+    loop ระหว่างวัด
+        M-->>A: สัญญาณ EEG 4 ช่อง
+        A->>A: กรองสัญญาณ + FFT แยกย่านความถี่
+        A->>A: ตรวจจับอารมณ์ (TFLite / สูตร)
+    end
+    A->>S: บันทึกผลและรายงาน
+    A-->>U: แสดงผล คำแนะนำ และส่งออก PDF
+```
+
+### สถาปัตยกรรม
 
 ```mermaid
 flowchart LR
@@ -74,14 +150,17 @@ flowchart LR
 
 | ส่วน | เทคโนโลยี |
 |---|---|
-| แอป | Flutter, Dart, `fl_chart`, `google_fonts` |
-| Bluetooth | `flutter_blue_plus` (รวม Web Bluetooth) |
-| โมเดล | `tflite_flutter` — TSception |
-| Backend | Supabase (Auth, Postgres, Storage, Edge Functions) |
-| AI | OpenAI ผ่าน `supabase/functions/openai-proxy` |
-| Python | FastAPI (`emotion_api/`) สำหรับ API ตรวจจับอารมณ์ และสคริปต์เทรน/แปลงโมเดล |
+| 📱 แอป | Flutter, Dart, `fl_chart`, `google_fonts` |
+| 📡 Bluetooth | `flutter_blue_plus` (รองรับ Web Bluetooth) |
+| 🧩 โมเดล | `tflite_flutter` — TSception |
+| ☁️ Backend | Supabase (Auth, Postgres, Storage, Edge Functions) |
+| 🤖 AI | OpenAI ผ่าน `supabase/functions/openai-proxy` |
+| 🐍 Python | FastAPI (`emotion_api/`) สำหรับ API ตรวจจับอารมณ์ และสคริปต์เทรน/แปลงโมเดล |
 
-### โครงสร้างโปรเจกต์
+<details>
+<summary><b>📁 โครงสร้างโปรเจกต์</b></summary>
+
+<br/>
 
 ```text
 ├── lib/
@@ -97,17 +176,35 @@ flowchart LR
 ├── supabase/
 │   ├── functions/           # Edge Function: openai-proxy
 │   └── migrations/          # SQL schema และ RLS
-├── tests/                   # pytest
+├── test/                    # Flutter widget tests
+├── tests/                   # pytest ของโค้ด Python
 └── env/                     # supabase.example.json
 ```
 
+</details>
+
 ---
 
-## 🚀 รันในเครื่อง
+## 🚀 เริ่มต้นใช้งาน
+
+### สิ่งที่ต้องมี
+
+| | เวอร์ชัน |
+|---|---|
+| Flutter SDK | รุ่นที่มี Dart 3.10 ขึ้นไป |
+| โปรเจกต์ Supabase | URL และ anon key |
+| Muse 2 / Muse S | ไม่บังคับ มีโหมดจำลองให้ดูหน้าจอได้ |
+
+### รันในเครื่อง
 
 ```bash
+# 1. ติดตั้งแพ็กเกจ
 flutter pub get
-cp env/supabase.example.json env/supabase.json   # ครั้งแรกครั้งเดียว แล้วใส่ URL และ anon key ของโปรเจกต์
+
+# 2. ตั้งค่า Supabase (ครั้งแรกครั้งเดียว) แล้วใส่ URL และ anon key ของโปรเจกต์
+cp env/supabase.example.json env/supabase.json
+
+# 3. รัน
 flutter run --dart-define-from-file=env/supabase.json              # มือถือที่ต่ออยู่
 flutter run -d chrome --dart-define-from-file=env/supabase.json    # เว็บ
 ```
@@ -119,12 +216,10 @@ flutter run -d chrome --dart-define-from-file=env/supabase.json    # เว็�
 > ใน VS Code กด <kbd>F5</kbd> ได้เลย เพราะ `.vscode/launch.json` ส่งไฟล์นี้ให้แล้ว<br/>
 > ถ้าลืมส่งไฟล์ แอปจะขึ้นข้อความ `ไม่พบ SUPABASE_URL / SUPABASE_ANON_KEY` ใน debug console
 
-OpenAI key อยู่ฝั่ง server (ดูหัวข้อถัดไป)
-
-## 🔑 OpenAI ผ่าน Supabase Edge Function
+### 🔑 OpenAI ผ่าน Supabase Edge Function
 
 แชต, RAG embeddings และถอดเสียง เรียก OpenAI ผ่าน `supabase/functions/openai-proxy`
-ตัว function ตรวจว่าผู้ใช้ล็อกอินแล้ว และกำหนดโมเดลกับขนาดคำขอสูงสุดไว้ฝั่ง server
+ตัว function ตรวจว่าผู้ใช้ล็อกอินแล้ว และกำหนดโมเดลกับขนาดคำขอสูงสุดไว้ฝั่ง server จึงไม่มี OpenAI key อยู่ในแอป
 
 ```bash
 supabase login
@@ -136,6 +231,36 @@ supabase functions deploy openai-proxy
 > [!CAUTION]
 > ถ้า key เดิมเคยอยู่ใน `.env` ที่ build เป็นแอปหรือเว็บไปแล้ว ให้ยกเลิก key นั้นที่ OpenAI แล้วสร้างใหม่
 
+## 🐍 Emotion API (Python)
+
+API ตรวจจับอารมณ์จากคลื่นสมอง เขียนด้วย FastAPI ใช้ Python 3.10–3.12
+
+```bash
+cd emotion_api
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python main.py        # เปิดที่ http://localhost:8000  ดูเอกสาร API ที่ /docs
+```
+
+| Method | Path | ใช้ทำอะไร |
+|:-:|---|---|
+| `GET` | `/` , `/health` | เช็กสถานะ API และโมเดล |
+| `POST` | `/predict` | ทำนายอารมณ์จากข้อมูล 1 ชุด |
+| `POST` | `/predict/batch` | ทำนายจากหลายชุดแล้วรวมผล |
+
+## 🧪 ทดสอบ
+
+```bash
+# Flutter
+flutter analyze
+flutter test
+
+# Python (ไม่ต้องติดตั้ง TensorFlow)
+python3 -m venv .venv
+.venv/bin/pip install -r requirements-dev.txt
+.venv/bin/pytest --cov
+```
+
 ## 🌐 Deploy เว็บ
 
 ```bash
@@ -144,14 +269,14 @@ flutter build web --release --dart-define-from-file=env/supabase.json
 npx vercel deploy build/web --prod
 ```
 
-**หลัง deploy**
+**เช็กลิสต์หลัง deploy**
 
 - [ ] เพิ่ม URL ของเว็บใน Supabase → Authentication → URL Configuration (Site URL และ Redirect URLs) เพื่อให้ลิงก์ยืนยันอีเมลและลิงก์ตั้งรหัสผ่านใหม่พากลับมาที่เว็บได้
 - [ ] เปิด RLS ให้ครบทุกตาราง เพราะ anon key อยู่ในตัวเว็บ
 
-## 📡 การเชื่อมต่อ Muse บนเว็บ
+## 📡 Muse บนเว็บ
 
-เว็บใช้ Web Bluetooth ผ่าน `flutter_blue_plus`
+เว็บเชื่อมต่อ Muse ด้วย Web Bluetooth ผ่าน `flutter_blue_plus`
 
 | เบราว์เซอร์ | ต่อ Muse ได้ |
 |---|:-:|
@@ -165,10 +290,11 @@ npx vercel deploy build/web --prod
 > - โหมดจำลองให้ดูหน้าจอได้ แต่ไม่บันทึกผลลงประวัติ
 
 ---
-กหดหดหดหดห
+
 <div align="center">
 
 สร้างด้วย 💙 Flutter และ Supabase
 
+<sub>ถ้ารู้สึกไม่สบายใจ โทรสายด่วนสุขภาพจิต 1323 ได้ตลอด 24 ชั่วโมง</sub>
+
 </div>
-pair
