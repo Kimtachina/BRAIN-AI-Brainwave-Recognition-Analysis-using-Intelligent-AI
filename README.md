@@ -2,7 +2,7 @@
 <img src="assets/images/app_icon.png" alt="Smart Brain" width="220" />
 
 # 🧠 Smart Brain
-
+กหดฟไ
 **BRAIN-AI — Brainwave Recognition & Analysis using Intelligent AI**
 
 แอป Flutter สำหรับวัดคลื่นสมองด้วย Muse (Muse 2 / Muse S)<br/>
