@@ -9,7 +9,7 @@
 แอป Flutter วัดคลื่นสมองด้วย Muse 2 / Muse S<br/>
 ประเมินสุขภาพจิตด้วย PHQ-9 และให้คำแนะนำด้วย AI
 
-<br/>ไ
+<br/>
 
 ![Version](https://img.shields.io/badge/version-1.1.0-6C63FF?style=for-the-badge)
 ![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
