@@ -1,79 +1,7 @@
 part of '../recommendation_screen.dart';
 
-/// ส่วนล่างของหน้าแชท: คำถามแนะนำ แถบสถานะการฟังเสียง และช่องพิมพ์ข้อความ
+/// ส่วนล่างของหน้าแชท: แถบสถานะการฟังเสียง และช่องพิมพ์ข้อความ
 extension _ChatInput on _RecommendationScreenState {
-  Widget _buildSuggestedQuestionsArea() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.tips_and_updates_outlined, color: AppColors.primary, size: 16),
-              const SizedBox(width: 8),
-              Text(
-                'คำถามแนะนำเพื่อเจาะลึก:',
-                style: GoogleFonts.ibmPlexSansThai(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.inkSoft,
-                  letterSpacing: 0.1,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            child: Row(
-              children: _suggestedQuestions.map((question) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 10.0),
-                  child: GestureDetector(
-                    onTap: () => _onSuggestionTap(question),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      decoration: AppTheme.glassDecoration(
-                        color: Colors.white,
-                        opacity: 0.9,
-                        borderColor: AppColors.primary.withValues(alpha: 0.25),
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: const BoxDecoration(
-                              color: AppColors.secondary,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            question,
-                            style: GoogleFonts.ibmPlexSansThai(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildVoiceListeningBar() {
     return AnimatedBuilder(
       animation: _waveController,
@@ -212,7 +140,7 @@ extension _ChatInput on _RecommendationScreenState {
               ),
               child: Icon(
                 _isVoiceMode ? Icons.mic_rounded : Icons.mic_none_rounded,
-                color: _isVoiceMode ? Colors.black87 : AppColors.primary,
+                color: _isVoiceMode ? AppColors.ink : AppColors.primary,
                 size: 22,
               ),
             ),
@@ -228,7 +156,7 @@ extension _ChatInput on _RecommendationScreenState {
               decoration: AppTheme.glassDecoration(
                 color: AppColors.paper,
                 opacity: 0.6,
-                borderColor: Colors.grey.shade200,
+                borderColor: AppColors.line,
                 borderRadius: BorderRadius.circular(24),
               ),
               child: TextField(
@@ -263,7 +191,7 @@ extension _ChatInput on _RecommendationScreenState {
               height: 48,
               decoration: BoxDecoration(
                 gradient: _isSending ? null : AppGradients.primary,
-                color: _isSending ? Colors.grey.shade300 : null,
+                color: _isSending ? AppColors.line : null,
                 shape: BoxShape.circle,
                 boxShadow: _isSending ? [] : [
                   BoxShadow(

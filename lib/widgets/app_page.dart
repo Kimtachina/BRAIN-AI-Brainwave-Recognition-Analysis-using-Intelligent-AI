@@ -2,31 +2,55 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
+import 'brainwave_scene.dart';
 
 /// ค่ากลางสำหรับจัดความกว้างของเนื้อหาบนจอกว้าง (เว็บ/แท็บเล็ต)
 class AppLayout {
   static const double wideWidth = 1180;
+  static const double pageWidth = wideWidth - 64; // ความกว้างเนื้อหาของหน้า "วันนี้" (1180 ลบขอบ 32 สองข้าง)
   static const double contentWidth = 920;
   static const double readingWidth = 760;
   static const double formWidth = 440;
 
   /// ระยะขอบซ้ายขวาที่ทำให้เนื้อหากว้างไม่เกิน [maxWidth] และไม่น้อยกว่า [min]
-  static double gutter(BuildContext context, {double maxWidth = contentWidth, double min = 20}) {
-    final width = MediaQuery.sizeOf(context).width;
-    return math.max(min, (width - maxWidth) / 2);
+  /// ค่าเริ่มต้นกว้างเต็มเท่าหน้า "วันนี้" คิดจากพื้นที่จริงที่เหลือหลังหักแถบเมนูซ้าย
+  static double gutter(BuildContext context, {double maxWidth = pageWidth, double? min}) {
+    final width = available(context);
+    return math.max(min ?? (isWide(context) ? 32 : 20), (width - maxWidth) / 2);
   }
+
+  /// ความกว้างที่หน้าใช้ได้จริง: ความกว้างจอ ลบแถบเมนูด้านซ้าย (ถ้าหน้าอยู่ในโครงหลัก)
+  static double available(BuildContext context) =>
+      MediaQuery.sizeOf(context).width - (ShellInset.maybeOf(context) ?? 0);
 
   static bool isWide(BuildContext context) => MediaQuery.sizeOf(context).width >= 900;
 }
 
-/// พื้นหลังของทุกหน้า: สีกระดาษเรียบ ไม่มีวงแสง ไม่ไล่สี
+/// บอกหน้าที่อยู่ในโครงหลักว่าแถบเมนูซ้ายกินพื้นที่ไปเท่าไร เพื่อคำนวณขอบให้ถูก
+class ShellInset extends InheritedWidget {
+  final double left;
+
+  const ShellInset({super.key, required this.left, required super.child});
+
+  static double? maybeOf(BuildContext context) => context.dependOnInheritedWidgetOfExactType<ShellInset>()?.left;
+
+  @override
+  bool updateShouldNotify(ShellInset old) => old.left != left;
+}
+
+/// พื้นหลังของทุกหน้า: ฉากกลางคืนเดียวกับหน้าแรก ไล่จากม่วงเข้มลงไปเกือบดำ มีแสงอุ่นจาง ๆ ด้านบน
 class AppBackground extends StatelessWidget {
   final Widget child;
 
   const AppBackground({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context) => ColoredBox(color: AppColors.paper, child: child);
+  Widget build(BuildContext context) => Stack(
+        children: [
+          const Positioned.fill(child: HeroBackdrop(horizon: 0)),
+          Positioned.fill(child: child),
+        ],
+      );
 }
 
 /// จัดเนื้อหาให้อยู่กึ่งกลางและกว้างไม่เกิน [maxWidth]
@@ -34,7 +58,7 @@ class CenteredContent extends StatelessWidget {
   final Widget child;
   final double maxWidth;
 
-  const CenteredContent({super.key, required this.child, this.maxWidth = AppLayout.contentWidth});
+  const CenteredContent({super.key, required this.child, this.maxWidth = AppLayout.pageWidth});
 
   @override
   Widget build(BuildContext context) {
@@ -119,14 +143,14 @@ class AuthMessageBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = isError ? AppColors.error : AppColors.secondary;
-    final text = isError ? const Color(0xFF8E2F2F) : const Color(0xFF145F54);
+    final text = isError ? const Color(0xFFF4B3B3) : const Color(0xFF9BE3D6);
 
     return Semantics(
       liveRegion: true,
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          color: Color.alphaBlend(accent.withValues(alpha: 0.07), AppColors.surface),
+          color: Color.alphaBlend(accent.withValues(alpha: 0.12), AppColors.surface),
           borderRadius: BorderRadius.circular(AppRadius.control),
         ),
         child: IntrinsicHeight(

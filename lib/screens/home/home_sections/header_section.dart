@@ -58,7 +58,7 @@ extension _HeaderSection on _HomeScreenState {
                   semanticLabel: 'บัญชี',
                   onTap: () {
                     if (widget.onTabSelected != null) {
-                      widget.onTabSelected!(3);
+                      widget.onTabSelected!(4);
                     } else {
                       Navigator.push(
                         context,

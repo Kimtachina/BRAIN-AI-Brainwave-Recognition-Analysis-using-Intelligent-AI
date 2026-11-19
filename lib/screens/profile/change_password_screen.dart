@@ -102,7 +102,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               'รหัสผ่านของคุณควรมีความยาวอย่างน้อย 6 ตัวอักษร โดยใช้ตัวเลขและตัวอักษรผสมกัน',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey[600],
+                color: AppColors.inkSoft,
                 height: 1.5,
               ),
             ),
@@ -143,7 +143,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _changePassword,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
@@ -154,14 +154,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
-                          color: Colors.white,
+                          color: AppColors.surface,
                           strokeWidth: 2,
                         ),
                       )
                     : const Text(
                         'สร้างรหัสผ่านใหม่',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppColors.night,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -182,7 +182,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          color: Colors.grey[700],
+          color: AppColors.inkSoft,
         ),
       ),
     );
@@ -199,9 +199,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       obscureText: obscure,
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: TextStyle(color: Colors.grey[400]),
+        hintStyle: TextStyle(color: AppColors.inkFaint),
         filled: true,
-        fillColor: const Color(0xFFF5F5F5),
+        fillColor: AppColors.surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -210,7 +210,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         suffixIcon: IconButton(
           icon: Icon(
             obscure ? Icons.visibility_off : Icons.visibility,
-            color: Colors.grey,
+            color: AppColors.inkFaint,
           ),
           onPressed: onToggle,
         ),

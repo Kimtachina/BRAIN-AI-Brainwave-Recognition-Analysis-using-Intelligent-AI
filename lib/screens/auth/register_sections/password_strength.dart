@@ -40,7 +40,7 @@ extension _PasswordStrength on _RegisterScreenState {
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: strengthProgress,
-                    backgroundColor: Colors.grey.shade200,
+                    backgroundColor: AppColors.line,
                     color: strengthColor,
                     minHeight: 6,
                   ),
@@ -79,7 +79,7 @@ extension _PasswordStrength on _RegisterScreenState {
           Icon(
             passed ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
             size: 16,
-            color: passed ? Colors.green : Colors.grey.shade400,
+            color: passed ? Colors.green : AppColors.inkFaint,
           ),
           const SizedBox(width: 8),
           Text(

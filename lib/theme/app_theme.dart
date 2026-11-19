@@ -1,37 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// ชุดสี "Alpha" — ห้องแล็บที่สงบ
-/// พื้นกระดาษเทาอมม่วง ตัวหนังสือสีหมึกม่วงเข้ม สีหลักม่วงตามคลื่น Alpha (ภาวะผ่อนคลาย)
+/// ชุดสี "Night" — ฉากกลางคืนเดียวกับหน้าแรก
+/// พื้นม่วงเกือบดำ ตัวหนังสือขาวอมม่วง สีหลักม่วงตามคลื่น Alpha (ภาวะผ่อนคลาย)
 /// สีรองเขียวอมฟ้าตามคลื่น Theta ใช้กับสถานะดี/ปกติ สีอำพันใช้เตือน
-/// ไม่มีกระจก ไม่มีเงา แยกชั้นด้วยเส้นขอบบางแทน
+/// ปุ่มหลักเป็นแคปซูลสีขาวตัวหนังสือเข้ม ไม่มีเงา แยกชั้นด้วยเส้นขอบบางแทน
 class AppColors {
-  // สีหลัก: ปุ่มหลัก ลิงก์ ตัวเลือกที่เลือกอยู่
-  static const Color primary = Color(0xFF5B4BC4);
-  static const Color primaryDeep = Color(0xFF4636A8); // ตอนกด / ข้อความบนพื้นสีหลักอ่อน
-  static const Color primarySoft = Color(0xFFECE9FA); // พื้นของสิ่งที่เลือกอยู่
+  // ฉากกลางคืน: ใช้วาดพื้นหลังและเส้นคลื่น
+  static const Color night = Color(0xFF0B0A14); // ล่างสุดของฉาก ตัวหนังสือบนปุ่มขาว
+  static const Color nightTop = Color(0xFF181530); // บนสุดของฉาก
+  static const Color theta = Color(0xFF6FD1C1);
+  static const Color alphaWave = Color(0xFFA394F7);
+  static const Color glow = Color(0xFFE9C48A); // แสงอุ่นตรงขอบฟ้า
+
+  // สีหลัก: ลิงก์ ตัวเลือกที่เลือกอยู่ ไอคอนเด่น
+  static const Color primary = Color(0xFF8E80F5);
+  static const Color primaryDeep = Color(0xFFB9AEFB); // ข้อความบนพื้นสีหลักอ่อน (บนพื้นมืดจึงสว่างกว่าสีหลัก)
+  static const Color primarySoft = Color(0xFF26214A); // พื้นของสิ่งที่เลือกอยู่
 
   // สีรอง: สถานะปกติ เชื่อมต่อแล้ว สำเร็จ
-  static const Color secondary = Color(0xFF1E8A7A);
-  static const Color secondarySoft = Color(0xFFE3F2EF);
+  static const Color secondary = Color(0xFF4FBFAE);
+  static const Color secondarySoft = Color(0xFF123330);
 
   // พื้นผิว
-  static const Color paper = Color(0xFFF5F4F8); // พื้นหลังทั้งแอป
-  static const Color surface = Color(0xFFFFFFFF); // แผ่นเนื้อหา
-  static const Color line = Color(0xFFE4E1EC); // เส้นขอบและเส้นคั่น
+  static const Color paper = Color(0xFF0E0C1A); // พื้นหลังทั้งแอป
+  static const Color surface = Color(0xFF17152A); // แผ่นเนื้อหา
+  static const Color line = Color(0xFF2C2945); // เส้นขอบและเส้นคั่น
 
   // ตัวหนังสือ
-  static const Color ink = Color(0xFF1D1B2E); // หลัก
-  static const Color inkSoft = Color(0xFF5E5A73); // รอง
-  static const Color inkFaint = Color(0xFF9A96AB); // คำอธิบาย ตัวยึดตำแหน่ง
+  static const Color ink = Color(0xFFF4F2FA); // หลัก
+  static const Color inkSoft = Color(0xFFB7B2CB); // รอง
+  static const Color inkFaint = Color(0xFF8A85A3); // คำอธิบาย ตัวยึดตำแหน่ง
 
   // สถานะ
-  static const Color warning = Color(0xFFE39B2D);
-  static const Color error = Color(0xFFC94A4A);
-  static const Color orange = Color(0xFFD9772B);
+  static const Color warning = Color(0xFFE9B04F);
+  static const Color error = Color(0xFFE46A6A);
+  static const Color orange = Color(0xFFE8894A);
 
-  // ใช้ในกราฟคลื่นสด (เดิมเป็นโทนนีออน ตอนนี้กลับมาอยู่ในชุดสีเดียวกัน)
-  static const Color deepSpaceBlue = ink;
+  // ชื่อเดิมที่กราฟคลื่นสดและช่องแชตยังเรียกใช้
+  static const Color deepSpaceBlue = surface;
   static const Color electricCyan = primary;
   static const Color neonGreen = secondary;
 }
@@ -39,26 +46,28 @@ class AppColors {
 /// เหลือไล่สีไว้เฉพาะจุดที่โค้ดเดิมยังเรียกใช้ ทุกตัวไล่แค่ในโทนเดียวกัน ไม่ใช่ลายประดับ
 class AppGradients {
   static const LinearGradient primary = LinearGradient(
-    colors: [AppColors.primary, AppColors.primaryDeep],
+    colors: [AppColors.primary, Color(0xFF6656D8)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient memoryGame = LinearGradient(
-    colors: [Color(0xFF6E6A86), Color(0xFF3D3953)],
+    colors: [Color(0xFF4A4566), Color(0xFF26223A)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient triviaGame = LinearGradient(
-    colors: [Color(0xFF3FA796), AppColors.secondary],
+    colors: [Color(0xFF2F8F80), Color(0xFF1B5A51)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  /// พื้นหลังทั้งแอปเป็นสีเรียบ เก็บชื่อเดิมไว้ให้โค้ดที่ยังอ้างถึงทำงานได้
+  /// พื้นหลังของฉาก ไล่จากม่วงเข้มด้านบนลงไปเกือบดำ
   static const LinearGradient glassBackgroundGradient = LinearGradient(
-    colors: [AppColors.paper, AppColors.paper],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [AppColors.nightTop, AppColors.paper],
   );
 }
 
@@ -142,9 +151,13 @@ class AppRadius {
 }
 
 class AppTheme {
-  static ThemeData get lightTheme {
-    final base = GoogleFonts.ibmPlexSansThaiTextTheme();
+  static ThemeData get lightTheme => darkTheme;
+
+  static ThemeData get darkTheme {
+    final base = GoogleFonts.ibmPlexSansThaiTextTheme(ThemeData(brightness: Brightness.dark).textTheme);
     final controlShape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.control));
+    // ปุ่มเป็นแคปซูลแบบหน้าแรก
+    const pillShape = StadiumBorder();
     final buttonText = GoogleFonts.ibmPlexSansThai(fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: 0);
 
     OutlineInputBorder outline(Color color, [double width = 1]) => OutlineInputBorder(
@@ -154,14 +167,19 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      brightness: Brightness.dark,
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.primary,
+        brightness: Brightness.dark,
         primary: AppColors.primary,
         secondary: AppColors.secondary,
         surface: AppColors.surface,
         error: AppColors.error,
-        onPrimary: Colors.white,
-        onSecondary: Colors.white,
+        onPrimary: AppColors.night,
+        onSecondary: AppColors.night,
+        surfaceContainerHighest: AppColors.surface,
+        surfaceContainerHigh: AppColors.surface,
+        surfaceContainer: AppColors.surface,
         onSurface: AppColors.ink,
         outline: AppColors.line,
         outlineVariant: AppColors.line,
@@ -169,8 +187,8 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.paper,
       // กดแล้วไม่มีระลอกน้ำกระจายทั้งปุ่ม ใช้สีทึบขึ้นเล็กน้อยแทน
       splashFactory: NoSplash.splashFactory,
-      highlightColor: AppColors.primary.withValues(alpha: 0.06),
-      hoverColor: AppColors.primary.withValues(alpha: 0.04),
+      highlightColor: AppColors.primary.withValues(alpha: 0.10),
+      hoverColor: AppColors.primary.withValues(alpha: 0.08),
       dividerColor: AppColors.line,
       dividerTheme: const DividerThemeData(color: AppColors.line, thickness: 1, space: 1),
       textTheme: base
@@ -205,42 +223,42 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          backgroundColor: Colors.white,
+          foregroundColor: AppColors.night,
           disabledBackgroundColor: AppColors.line,
           disabledForegroundColor: AppColors.inkFaint,
           elevation: 0,
           minimumSize: const Size(64, 50),
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-          shape: controlShape,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          shape: pillShape,
           textStyle: buttonText,
         ).copyWith(
-          overlayColor: WidgetStatePropertyAll(Colors.black.withValues(alpha: 0.08)),
+          overlayColor: WidgetStatePropertyAll(AppColors.night.withValues(alpha: 0.08)),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          backgroundColor: Colors.white,
+          foregroundColor: AppColors.night,
           minimumSize: const Size(64, 50),
-          shape: controlShape,
+          shape: pillShape,
           textStyle: buttonText,
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.ink,
-          backgroundColor: AppColors.surface,
-          side: const BorderSide(color: AppColors.line),
+          backgroundColor: Colors.transparent,
+          side: BorderSide(color: AppColors.ink.withValues(alpha: 0.28)),
           minimumSize: const Size(64, 50),
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-          shape: controlShape,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          shape: pillShape,
           textStyle: buttonText,
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.primary,
+          foregroundColor: AppColors.primaryDeep,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           shape: controlShape,
           textStyle: buttonText.copyWith(fontSize: 14),
@@ -287,8 +305,9 @@ class AppTheme {
         behavior: SnackBarBehavior.floating,
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.control)),
-        backgroundColor: AppColors.ink,
-        contentTextStyle: GoogleFonts.ibmPlexSansThai(color: Colors.white, fontSize: 14),
+        backgroundColor: Colors.white,
+        contentTextStyle: GoogleFonts.ibmPlexSansThai(color: AppColors.night, fontSize: 14),
+        actionTextColor: AppColors.night,
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: AppColors.primary,

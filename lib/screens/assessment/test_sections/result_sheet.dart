@@ -9,7 +9,7 @@ extension _ResultSheet on _TestScreenState {
 
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SingleChildScrollView(
@@ -22,7 +22,7 @@ extension _ResultSheet on _TestScreenState {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: AppColors.line,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -41,7 +41,7 @@ extension _ResultSheet on _TestScreenState {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
+                color: AppColors.line,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Text(
@@ -62,14 +62,14 @@ extension _ResultSheet on _TestScreenState {
             const SizedBox(height: 4),
             Text(
               interpretation['levelEn'],
-              style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+              style: TextStyle(fontSize: 13, color: AppColors.inkFaint),
             ),
             const SizedBox(height: 16),
 
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.grey.shade50,
+                color: AppColors.line,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -89,7 +89,7 @@ extension _ResultSheet on _TestScreenState {
                         ' / $maxScore',
                         style: TextStyle(
                           fontSize: 20,
-                          color: Colors.grey[400],
+                          color: AppColors.inkFaint,
                         ),
                       ),
                     ],
@@ -99,7 +99,7 @@ extension _ResultSheet on _TestScreenState {
                     borderRadius: BorderRadius.circular(6),
                     child: LinearProgressIndicator(
                       value: percentage,
-                      backgroundColor: Colors.grey[200],
+                      backgroundColor: AppColors.line,
                       valueColor: AlwaysStoppedAnimation<Color>(resultColor),
                       minHeight: 10,
                     ),
@@ -230,7 +230,7 @@ extension _ResultSheet on _TestScreenState {
                     },
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: BorderSide(color: Colors.grey.shade400),
+                      side: BorderSide(color: AppColors.inkFaint),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
@@ -246,7 +246,7 @@ extension _ResultSheet on _TestScreenState {
                       _startTest();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -254,7 +254,7 @@ extension _ResultSheet on _TestScreenState {
                     ),
                     child: const Text(
                       'ทดสอบอีกครั้ง',
-                      style: TextStyle(color: Colors.white, fontSize: 15),
+                      style: TextStyle(color: AppColors.night, fontSize: 15),
                     ),
                   ),
                 ),

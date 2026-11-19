@@ -47,7 +47,7 @@ extension _MuseConnectionSection on _HomeScreenState {
                           decoration: BoxDecoration(
                             color: _museService.isConnected
                                 ? AppColors.secondary.withValues(alpha: 0.1)
-                                : Colors.grey.withValues(alpha: 0.1),
+                                : AppColors.inkFaint.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -55,7 +55,7 @@ extension _MuseConnectionSection on _HomeScreenState {
                             style: TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.bold,
-                              color: _museService.isConnected ? AppColors.secondary : Colors.grey[600],
+                              color: _museService.isConnected ? AppColors.secondary : AppColors.inkSoft,
                             ),
                           ),
                         ),
@@ -98,7 +98,7 @@ extension _MuseConnectionSection on _HomeScreenState {
           // ตารางข้อมูลโทรมาตรการเชื่อมต่อ (Connection Telemetry Grid - แสดงเมื่อเชื่อมต่อสำเร็จ)
           if (_museService.isConnected) ...[
             const SizedBox(height: 16),
-            const Divider(height: 1, thickness: 0.5, color: Colors.black12),
+            const Divider(height: 1, thickness: 0.5, color: AppColors.line),
             const SizedBox(height: 16),
             Builder(
               builder: (context) {
@@ -158,35 +158,58 @@ extension _MuseConnectionSection on _HomeScreenState {
                           height: 16,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: _museService.isConnected ? Colors.white : AppColors.primary,
+                            color: _museService.isConnected ? AppColors.night : AppColors.primary,
                           ),
                         )
                       : Icon(
                           _museService.isConnected ? Icons.bluetooth_disabled_rounded : Icons.bluetooth_searching_rounded,
                           size: 18,
-                          color: Colors.white,
+                          color: AppColors.night,
                         ),
                   label: Text(
                     _museService.isConnecting
                         ? 'กำลังเชื่อมต่อ...'
-                        : (_museService.isConnected ? 'ยกเลิกเชื่อมต่ออุปกรณ์' : 'ค้นหาและเชื่อมต่อ Muse'),
+                        : _museService.isSimulating
+                            ? 'หยุดโหมดจำลอง'
+                            : (_museService.isConnected ? 'ยกเลิกเชื่อมต่ออุปกรณ์' : 'ค้นหาและเชื่อมต่อ Muse'),
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.night,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _museService.isConnected ? AppColors.error : AppColors.primary,
+                    backgroundColor: _museService.isConnected ? AppColors.error : Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     elevation: 0,
                   ),
                 ),
               ),
-
+              // ทดลองใช้งานได้โดยไม่ต้องมีอุปกรณ์ Muse: สร้างคลื่นสมองสุ่ม และไม่บันทึกผลลงประวัติ
+              if (!_museService.isConnected && !_museService.isConnecting) ...[
+                const SizedBox(width: 10),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _isLoading ? null : _museService.startSimulation,
+                    icon: const Icon(Icons.play_arrow_rounded, size: 18),
+                    label: const Text('โหมดจำลอง', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
+          if (_museService.isSimulating) ...[
+            const SizedBox(height: 8),
+            const Text(
+              'กำลังใช้ข้อมูลจำลอง ไม่ใช่สัญญาณจากอุปกรณ์จริง ผลการทดสอบจะไม่ถูกบันทึก',
+              style: TextStyle(fontSize: 11, color: AppColors.warning),
+            ),
+          ],
         ],
       ),
     );
@@ -265,7 +288,7 @@ extension _MuseConnectionSection on _HomeScreenState {
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF2D3748),
+                        color: AppColors.ink,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -275,7 +298,7 @@ extension _MuseConnectionSection on _HomeScreenState {
                           : '${_museService.bufferFillLevel}/${_museService.minBufferRequired} samples',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey[600],
+                        color: AppColors.inkSoft,
                       ),
                     ),
                   ],
@@ -285,12 +308,12 @@ extension _MuseConnectionSection on _HomeScreenState {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF5B4BC4).withValues(alpha: 0.1),
+                    color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     'Packet #${_museService.packetCount}',
-                    style: const TextStyle(fontSize: 11, color: Color(0xFF5B4BC4), fontWeight: FontWeight.w600),
+                    style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w600),
                   ),
                 ),
             ],
@@ -303,11 +326,11 @@ extension _MuseConnectionSection on _HomeScreenState {
                   ? null
                   : _museService.bufferProgress.clamp(0.0, 1.0),
               minHeight: 8,
-              backgroundColor: const Color(0xFFE8F0FE),
+              backgroundColor: AppColors.primarySoft,
               valueColor: AlwaysStoppedAnimation<Color>(
                 _museService.isWaitingForFFT
-                    ? const Color(0xFF4636A8)
-                    : const Color(0xFF5B4BC4),
+                    ? AppColors.primaryDeep
+                    : AppColors.primary,
               ),
             ),
           ),
@@ -398,8 +421,8 @@ extension _MuseConnectionSection on _HomeScreenState {
               Navigator.pop(context);
               _museService.startSimulation();
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            child: const Text('ใช้โหมดจำลอง', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
+            child: const Text('ใช้โหมดจำลอง', style: TextStyle(color: AppColors.night)),
           ),
         ],
       ),
@@ -453,7 +476,7 @@ extension _MuseConnectionSection on _HomeScreenState {
                 const SizedBox(height: 8),
                 Text(
                   _museService.status,
-                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                  style: TextStyle(fontSize: 13, color: AppColors.inkSoft),
                 ),
                 const SizedBox(height: 16),
 
@@ -466,20 +489,20 @@ extension _MuseConnectionSection on _HomeScreenState {
                               Icon(
                                 _museService.isScanning ? Icons.bluetooth_searching : Icons.bluetooth_disabled,
                                 size: 48,
-                                color: Colors.grey[400],
+                                color: AppColors.inkFaint,
                               ),
                               const SizedBox(height: 12),
                               Text(
                                 _museService.isScanning
                                     ? 'กำลังค้นหาอุปกรณ์...'
                                     : 'ไม่พบอุปกรณ์ Muse',
-                                style: TextStyle(color: Colors.grey[600]),
+                                style: TextStyle(color: AppColors.inkSoft),
                               ),
                               if (!_museService.isScanning) ...[
                                 const SizedBox(height: 8),
                                 Text(
                                   'ตรวจสอบว่า Muse S เปิดอยู่และอยู่ใกล้ๆ',
-                                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                                  style: TextStyle(fontSize: 12, color: AppColors.inkFaint),
                                 ),
                               ],
                             ],
@@ -507,7 +530,7 @@ extension _MuseConnectionSection on _HomeScreenState {
                                 ),
                                 subtitle: Text(
                                   'สัญญาณ: $rssi dBm',
-                                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                  style: TextStyle(fontSize: 12, color: AppColors.inkSoft),
                                 ),
                                 trailing: ElevatedButton(
                                   onPressed: _museService.isConnecting
@@ -517,12 +540,12 @@ extension _MuseConnectionSection on _HomeScreenState {
                                           await _museService.connectToDevice(device);
                                         },
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.primary,
+                                    backgroundColor: Colors.white,
                                     padding: const EdgeInsets.symmetric(horizontal: 16),
                                   ),
                                   child: Text(
                                     _museService.isConnecting ? 'กำลังเชื่อมต่อ...' : 'เชื่อมต่อ',
-                                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                                    style: const TextStyle(color: AppColors.night, fontSize: 12),
                                   ),
                                 ),
                               ),

@@ -15,9 +15,9 @@ class ElectrodePlacementMap extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 85),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.45),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.04), width: 1.0),
+        border: Border.all(color: AppColors.line, width: 1.0),
       ),
       child: Row(
         children: [
@@ -76,7 +76,7 @@ class ElectrodePlacementMap extends StatelessWidget {
   }
 
   Widget _buildContactStatusNode(String label, bool active) {
-    final color = active ? AppColors.secondary : Colors.grey[400]!;
+    final color = active ? AppColors.secondary : AppColors.inkFaint;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -101,7 +101,7 @@ class ElectrodePlacementMap extends StatelessWidget {
           style: TextStyle(
             fontSize: 9,
             fontWeight: FontWeight.bold,
-            color: active ? AppColors.ink : Colors.grey[600],
+            color: active ? AppColors.ink : AppColors.inkSoft,
           ),
         ),
       ],
@@ -117,7 +117,7 @@ class _HeadPlacementPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final headPaint = Paint()
-      ..color = Colors.grey[400]!.withValues(alpha: 0.8)
+      ..color = AppColors.inkFaint.withValues(alpha: 0.8)
       ..strokeWidth = 1.2
       ..style = PaintingStyle.stroke;
 
@@ -135,7 +135,7 @@ class _HeadPlacementPainter extends CustomPainter {
       ..lineTo(headCenter.dx - 4, headCenter.dy - 25)
       ..lineTo(headCenter.dx + 4, headCenter.dy - 25)
       ..close();
-    canvas.drawPath(nosePath, Paint()..color = Colors.grey[400]!..style = PaintingStyle.fill);
+    canvas.drawPath(nosePath, Paint()..color = AppColors.inkFaint..style = PaintingStyle.fill);
 
     // วาดใบหูซ้ายขวา (Ears)
     canvas.drawArc(
@@ -155,7 +155,7 @@ class _HeadPlacementPainter extends CustomPainter {
 
     // วาดเส้นแนวเชื่อมต่อสัญญาณประสาท (Connecting signal routes)
     final routePaint = Paint()
-      ..color = isConnected ? AppColors.secondary.withValues(alpha: 0.3) : Colors.grey.withValues(alpha: 0.2)
+      ..color = isConnected ? AppColors.secondary.withValues(alpha: 0.3) : AppColors.inkFaint.withValues(alpha: 0.2)
       ..strokeWidth = 0.8
       ..style = PaintingStyle.stroke;
     
@@ -165,7 +165,7 @@ class _HeadPlacementPainter extends CustomPainter {
 
     // วาดจุดอิเล็กโทรดบนศีรษะ (Draw electrodes node values)
     void drawNode(Offset pos, bool good) {
-      final nodeColor = good ? AppColors.secondary : Colors.grey[500]!;
+      final nodeColor = good ? AppColors.secondary : AppColors.inkFaint;
       
       // เส้นวงกลมเรืองแสงวงนอก (Outer glow boundary)
       final borderPaint = Paint()

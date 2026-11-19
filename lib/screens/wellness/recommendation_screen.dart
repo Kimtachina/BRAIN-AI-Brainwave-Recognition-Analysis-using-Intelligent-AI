@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
@@ -41,12 +43,6 @@ class _RecommendationScreenState extends State<RecommendationScreen>
   int? _speakingMessageIndex;
 
   bool _isVoiceMode = false;
-  List<String> _suggestedQuestions = [
-    'ขอวิธีจัดการความเครียดสะสม',
-    'ขอแนะนำอาหารบำรุงสุขภาพจิต',
-    'ตรวจคลื่นสมองมีขั้นตอนอย่างไร?',
-    'วิเคราะห์แนวโน้มสุขภาพจิตสัปดาห์นี้'
-  ];
   String _partialText = '';
 
   late AnimationController _micPulseController;
@@ -191,7 +187,7 @@ class _RecommendationScreenState extends State<RecommendationScreen>
           return ChatMessage(
             text: m['message'],
             isBot: m['is_bot'] == true || m['is_bot'] == 1,
-            time: m['sent_at']?.toString().substring(11, 16) ?? '',
+            time: _formatSentAt(m['sent_at']),
           );
         }).toList();
 
@@ -218,6 +214,13 @@ class _RecommendationScreenState extends State<RecommendationScreen>
     }
 
     _scrollToBottom();
+  }
+
+  /// เวลาจากฐานข้อมูลเป็น UTC แปลงเป็นเวลาเครื่องให้รูปแบบเดียวกับข้อความใหม่
+  String _formatSentAt(dynamic sentAt) {
+    final parsed = DateTime.tryParse(sentAt?.toString() ?? '');
+    if (parsed == null) return '';
+    return TimeOfDay.fromDateTime(parsed.toLocal()).format(context);
   }
 
   void _scrollToBottom() {
@@ -259,7 +262,6 @@ class _RecommendationScreenState extends State<RecommendationScreen>
     _messageController.clear();
 
     setState(() {
-      _suggestedQuestions = []; // Clear suggestions
       _messages.add(ChatMessage(
         text: messageText,
         isBot: false,
@@ -295,7 +297,6 @@ class _RecommendationScreenState extends State<RecommendationScreen>
           _isSending = false;
         });
         _scrollToBottom();
-        _generateSuggestedQuestions(messageText); // Generate next recommendations
 
         if (_autoSpeak) {
           setState(() => _speakingMessageIndex = _messages.length - 1);
@@ -309,6 +310,10 @@ class _RecommendationScreenState extends State<RecommendationScreen>
     await Future.delayed(const Duration(seconds: 1));
     if (mounted) {
       final fallbackResponse = _getLocalBotResponse(messageText);
+      // บันทึกคำตอบสำรองด้วย ไม่งั้นเปิดแชทใหม่จะเห็นแต่คำถามของผู้ใช้
+      if (widget.user != null) {
+        ApiService.saveBotMessage(userId: widget.user!.id, message: fallbackResponse);
+      }
       setState(() {
         _messages.add(ChatMessage(
           text: fallbackResponse,
@@ -318,7 +323,6 @@ class _RecommendationScreenState extends State<RecommendationScreen>
         _isSending = false;
       });
       _scrollToBottom();
-      _generateSuggestedQuestions(messageText); // Generate next recommendations
 
       if (_autoSpeak) {
         setState(() => _speakingMessageIndex = _messages.length - 1);
@@ -326,105 +330,6 @@ class _RecommendationScreenState extends State<RecommendationScreen>
         if (mounted) setState(() => _speakingMessageIndex = null);
       }
     }
-  }
-
-  String _extractKeyPhrase(String query) {
-    String cleaned = query
-        .replaceAll('สวัสดี', '')
-        .replaceAll('อยาก', '')
-        .replaceAll('ช่วย', '')
-        .replaceAll('แนะนำ', '')
-        .replaceAll('ขอ', '')
-        .replaceAll('หน่อย', '')
-        .replaceAll('ครับ', '')
-        .replaceAll('ค่ะ', '')
-        .replaceAll('จ้า', '')
-        .replaceAll('?', '')
-        .replaceAll('？', '')
-        .trim();
-        
-    if (cleaned.length < 2) {
-      return '';
-    }
-    return cleaned;
-  }
-
-  void _generateSuggestedQuestions(String lastQuery) {
-    final text = lastQuery.toLowerCase().trim();
-    List<String> suggestions = [];
-    final phrase = _extractKeyPhrase(lastQuery);
-
-    if (text.contains('นอน') || text.contains('sleep') || text.contains('หลับ')) {
-      final topic = phrase.isNotEmpty ? phrase : 'การนอนหลับ';
-      suggestions = [
-        'ขอวิธีช่วยให้ $topic ดีขึ้น',
-        'คลื่นสมองส่งผลต่อ $topic อย่างไร?',
-        'อาหารที่ช่วยให้ $topic สบายและหลับลึก',
-        'ขอเทคนิคผ่อนคลายเพื่อ $topic'
-      ];
-    } else if (text.contains('เครียด') || text.contains('stress') || text.contains('กังวล') || text.contains('กลัว')) {
-      final topic = phrase.isNotEmpty ? phrase : 'ความเครียด';
-      suggestions = [
-        'เมนูอาหารช่วยลด $topic',
-        'วิธีผ่อนคลายและลด $topic ใน 5 นาที',
-        'ทำแบบประเมินเช็คระดับ $topic',
-        'สถิติรายงานสุขภาพจิตเรื่อง $topic'
-      ];
-    } else if (text.contains('อาหาร') || text.contains('กิน') || text.contains('โภชนาการ') || text.contains('เมนู')) {
-      final topic = phrase.isNotEmpty ? phrase : 'อาหารและโภชนาการ';
-      suggestions = [
-        'เมนูแนะนำเพิ่มเติมเกี่ยวกับ $topic',
-        'ความสำคัญของ $topic ต่อคลื่นสมอง',
-        'อาหารประเภทไหนควรเลี่ยงเกี่ยวกับ $topic',
-        'แอปแนะนำโภชนาการ/เมนูลดเครียด'
-      ];
-    } else if (text.contains('คลื่นสมอง') || text.contains('eeg') || text.contains('muse')) {
-      final topic = phrase.isNotEmpty ? phrase : 'คลื่นสมอง';
-      suggestions = [
-        'อธิบายการทำงานของ $topic เพิ่มเติม',
-        'วิธีฝึกควบคุม $topic ด้วยตนเอง',
-        'การวิเคราะห์รายงาน $topic รายสัปดาห์',
-        'สมาธิและสติส่งผลต่อ $topic อย่างไร?'
-      ];
-    } else if (text.contains('รายงาน') || text.contains('report') || text.contains('สรุป')) {
-      final topic = phrase.isNotEmpty ? phrase : 'รายงานสุขภาพประจำสัปดาห์';
-      suggestions = [
-        'รายละเอียดข้อมูลของ $topic',
-        'วิธีอ่านค่าสถิติจาก $topic',
-        'ดาวน์โหลดไฟล์ PDF ของ $topic',
-      ];
-    } else if (text.contains('เกม') || text.contains('game') || text.contains('เล่น')) {
-      final topic = phrase.isNotEmpty ? phrase : 'เกมเสริมทักษะ';
-      suggestions = [
-        'เปิดหน้า $topic ให้ฉันหน่อย',
-        'ประโยชน์ของ $topic ต่อความจำ',
-        'คะแนนสถิติสูงสุดในการเล่น $topic',
-        'มี $topic แบบอื่นแนะนำอีกไหม?'
-      ];
-    } else if (phrase.isNotEmpty && phrase.length > 2) {
-      suggestions = [
-        'ขอคำอธิบายเพิ่มเติมเกี่ยวกับ "$phrase"',
-        'ความรู้รอบตัวเรื่อง "$phrase" กับสุขภาพจิต',
-        'มีคำแนะนำพิเศษเพิ่มเติมสำหรับ "$phrase" ไหม?',
-        'ขอเมนูอาหารหรือวิธีดูแลสุขภาพเรื่อง "$phrase"'
-      ];
-    } else {
-      suggestions = [
-        'ขอวิธีจัดการความเครียดสะสม',
-        'ขอเมนูอาหารบำรุงสมองและอารมณ์',
-        'แนะนำวิธีฝึกสมาธิด้วยคลื่นสมอง',
-        'อธิบายผลวิเคราะห์สุขภาพจิตล่าสุด'
-      ];
-    }
-
-    setState(() {
-      _suggestedQuestions = suggestions;
-    });
-  }
-
-  void _onSuggestionTap(String question) {
-    _messageController.text = question;
-    _sendMessage();
   }
 
   bool _handleActionCommands(String text) {
@@ -560,50 +465,9 @@ class _RecommendationScreenState extends State<RecommendationScreen>
                   children: [
                   // Clinic-Grade AI Telemetry Header
                   Padding(
-                    padding: EdgeInsets.fromLTRB(AppLayout.gutter(context, maxWidth: AppLayout.readingWidth), 16, AppLayout.gutter(context, maxWidth: AppLayout.readingWidth), 10),
+                    padding: EdgeInsets.fromLTRB(AppLayout.gutter(context), 16, AppLayout.gutter(context), 10),
                     child: Row(
                       children: [
-                        // Pulsing Hexagon AI Icon
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: AppTheme.glassDecoration(
-                            color: AppColors.primary,
-                            opacity: 0.1,
-                            borderColor: AppColors.primary.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              const Icon(
-                                Icons.psychology_outlined,
-                                color: AppColors.primary,
-                                size: 26,
-                              ),
-                              // Small Pulse Online Indicator
-                              Positioned(
-                                right: 0,
-                                top: 0,
-                                child: Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: _isVoiceMode ? AppColors.error : AppColors.neonGreen,
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: (_isVoiceMode ? AppColors.error : AppColors.neonGreen).withValues(alpha: 0.6),
-                                        blurRadius: 6,
-                                        spreadRadius: 1,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 14),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -710,7 +574,7 @@ class _RecommendationScreenState extends State<RecommendationScreen>
                   child: ListView.builder(
                     controller: _scrollController,
                     padding: EdgeInsets.symmetric(
-                      horizontal: AppLayout.gutter(context, maxWidth: AppLayout.readingWidth, min: 16),
+                      horizontal: AppLayout.gutter(context),
                       vertical: 16,
                     ),
                     itemCount: _messages.length,
@@ -723,7 +587,7 @@ class _RecommendationScreenState extends State<RecommendationScreen>
 
                 if (_isSending)
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context, maxWidth: AppLayout.readingWidth, min: 16)),
+                    padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context)),
                     child: Row(
                       children: [
                         Container(
@@ -738,7 +602,7 @@ class _RecommendationScreenState extends State<RecommendationScreen>
                         Text(
                           'สมาร์ทเบรน กำลังคิด...',
                           style: TextStyle(
-                            color: Colors.grey[500],
+                            color: AppColors.inkFaint,
                             fontSize: 12,
                             fontStyle: FontStyle.italic,
                           ),
@@ -756,16 +620,11 @@ class _RecommendationScreenState extends State<RecommendationScreen>
                     ),
                   ),
 
-                if (_isVoiceMode) CenteredContent(maxWidth: AppLayout.readingWidth, child: _buildVoiceListeningBar()),
-
-                if (_suggestedQuestions.isNotEmpty && !_isSending && !_isVoiceMode) ...[
-                  const SizedBox(height: 4),
-                  CenteredContent(maxWidth: AppLayout.readingWidth, child: _buildSuggestedQuestionsArea()),
-                ],
+                if (_isVoiceMode) CenteredContent(maxWidth: AppLayout.pageWidth, child: _buildVoiceListeningBar()),
 
                 const SizedBox(height: 8),
 
-                CenteredContent(maxWidth: AppLayout.readingWidth, child: _buildInputArea()),
+                CenteredContent(maxWidth: AppLayout.pageWidth, child: _buildInputArea()),
               ],
             ),
         ),

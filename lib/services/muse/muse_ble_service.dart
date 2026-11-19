@@ -93,6 +93,22 @@ class MuseService extends ChangeNotifier {
   double _frontalAlphaAsymmetry = 0;
   double get frontalAlphaAsymmetry => _frontalAlphaAsymmetry;
 
+  // === Per-Channel Relative Band Power ===
+  // สัดส่วนพลังแต่ละย่าน (%) แยกตามเซนเซอร์ 4 จุด ใช้วาดแผนที่สมอง (Topographic Map)
+  // ช่องที่สัญญาณใช้ไม่ได้ (หลุด/SQI ต่ำ) จะไม่มีใน Map
+  Map<String, Map<String, double>> _channelBands = {};
+  Map<String, Map<String, double>> get channelBands => Map.unmodifiable(_channelBands);
+
+  static const bandNames = ['delta', 'theta', 'alpha', 'beta', 'gamma'];
+
+  /// แปลงพลังของแต่ละย่านเป็นสัดส่วน % ของพลังรวม (null ถ้าไม่มีข้อมูล)
+  static Map<String, double>? relativeBands(Map<String, double> power) {
+    if (power.isEmpty) return null;
+    final total = bandNames.fold<double>(0, (sum, b) => sum + (power[b] ?? 0));
+    if (total <= 0) return null;
+    return {for (final b in bandNames) b: (power[b] ?? 0) / total * 100};
+  }
+
   // Powerline interference filter configuration (50 Hz or 60 Hz)
   double _notchFrequency = 50.0;
   double get notchFrequency => _notchFrequency;
@@ -658,6 +674,7 @@ class MuseService extends ChangeNotifier {
     _lastThroughputCheck = null;
     _frontalAlphaAsymmetry = 0;
     _channelSQI = {'TP9': 0, 'AF7': 0, 'AF8': 0, 'TP10': 0};
+    _channelBands = {};
     debugPrint('🧹 All signal buffers reset');
   }
 
@@ -709,6 +726,11 @@ class MuseService extends ChangeNotifier {
      var p2 = getPower(_af7Window, 'AF7');
      var p3 = getPower(_af8Window, 'AF8');
      var p4 = getPower(_tp10Window, 'TP10');
+
+     _channelBands = {
+       for (final (name, power, sqi) in [('TP9', p1, sqi1), ('AF7', p2, sqi2), ('AF8', p3, sqi3), ('TP10', p4, sqi4)])
+         if (sqi > 10 && relativeBands(power) != null) name: relativeBands(power)!,
+     };
 
      // === SQI-Weighted Channel Averaging ===
      // ช่องที่มี SQI สูง (Electrode แน่น) จะมีน้ำหนักมากกว่า
@@ -845,7 +867,7 @@ class MuseService extends ChangeNotifier {
      if(_isSimulating) return;
      _isSimulating = true;
      _isConnected = true;
-     _status = 'Simulation Mode';
+     _status = 'โหมดจำลอง (ข้อมูลสุ่ม)';
      _safeNotify();
 
      double alphaVal = 30.0;
@@ -854,6 +876,15 @@ class MuseService extends ChangeNotifier {
      double deltaVal = 18.0;
      double gammaVal = 7.0;
      final random = Random();
+
+     // แต่ละจุดเบี่ยงจากค่าเฉลี่ยต่างกันเล็กน้อย ให้แผนที่สมองในโหมดจำลองมีความต่างระหว่างจุดเหมือนของจริง
+     // (หลังหู TP9/TP10 Alpha เด่นกว่า หน้าผาก AF7/AF8 Theta/Delta เด่นกว่าจากการกะพริบตา)
+     const channelBias = {
+       'TP9': {'delta': 0.90, 'theta': 0.95, 'alpha': 1.20, 'beta': 0.95, 'gamma': 0.90},
+       'AF7': {'delta': 1.15, 'theta': 1.10, 'alpha': 0.85, 'beta': 1.05, 'gamma': 1.00},
+       'AF8': {'delta': 1.10, 'theta': 1.05, 'alpha': 0.90, 'beta': 1.10, 'gamma': 1.05},
+       'TP10': {'delta': 0.95, 'theta': 0.90, 'alpha': 1.15, 'beta': 0.90, 'gamma': 0.95},
+     };
 
      _simulationTimer = Timer.periodic(const Duration(milliseconds: 500), (t) {
          // Random walk with small steps for realistic fluctuations
@@ -880,6 +911,14 @@ class MuseService extends ChangeNotifier {
          double meditationRatio = normAlpha / (normBeta + normGamma + 0.001);
          double meditation = (meditationRatio * 40 + 35 + (random.nextDouble() - 0.5) * 10).clamp(0.0, 100.0);
 
+         final mean = {'delta': normDelta, 'theta': normTheta, 'alpha': normAlpha, 'beta': normBeta, 'gamma': normGamma};
+         _channelBands = {
+           for (final MapEntry(key: name, value: bias) in channelBias.entries)
+             name: relativeBands({
+               for (final b in bandNames) b: mean[b]! * bias[b]! * (1 + (random.nextDouble() - 0.5) * 0.12),
+             })!,
+         };
+
          _latestData = BrainwaveData(
              alpha: normAlpha,
              beta: normBeta,
@@ -896,6 +935,7 @@ class MuseService extends ChangeNotifier {
   void stopSimulation() {
      _simulationTimer?.cancel();
      _isSimulating = false;
+     _channelBands = {};
      if(_deviceName == null) _isConnected = false;
      _safeNotify();
   }

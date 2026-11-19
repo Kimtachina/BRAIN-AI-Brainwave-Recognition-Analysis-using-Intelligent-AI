@@ -101,7 +101,7 @@ extension _HealthSummarySection on _HomeScreenState {
                         const SizedBox(height: 8),
                         Text(
                           'ทดสอบ: ${_formatDate(_latestTestResult!['test_date'])}',
-                          style: TextStyle(fontSize: 9, color: Colors.grey[500]),
+                          style: TextStyle(fontSize: 9, color: AppColors.inkFaint),
                         ),
                       ],
                     ],
@@ -153,7 +153,7 @@ extension _HealthSummarySection on _HomeScreenState {
                         if (recordedAt != null)
                           Text(
                             'วัดเมื่อ: ${_formatDate(recordedAt)}',
-                            style: TextStyle(fontSize: 9, color: Colors.grey[500]),
+                            style: TextStyle(fontSize: 9, color: AppColors.inkFaint),
                           ),
                         const SizedBox(height: 12),
                         Wrap(
@@ -205,7 +205,7 @@ extension _HealthSummarySection on _HomeScreenState {
                                     child: Container(
                                       padding: const EdgeInsets.all(24),
                                       decoration: BoxDecoration(
-                                        color: Colors.white,
+                                        color: AppColors.surface,
                                         borderRadius: BorderRadius.circular(16),
                                       ),
                                       child: Column(
@@ -301,7 +301,7 @@ extension _HealthSummarySection on _HomeScreenState {
       case 'severe':
         return {'label': 'ความเครียดรุนแรง', 'emoji': '🆘', 'color': const Color(0xFFEC7063)};
       default:
-        return {'label': 'ยังไม่ได้ทดสอบ', 'emoji': '❓', 'color': Colors.grey};
+        return {'label': 'ยังไม่ได้ทดสอบ', 'emoji': '❓', 'color': AppColors.inkFaint};
     }
   }
 

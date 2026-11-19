@@ -200,9 +200,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: buildAppPageBar(context, title: 'ตั้งค่า'),
       body: ListView(
         padding: EdgeInsets.fromLTRB(
-          AppLayout.gutter(context, maxWidth: AppLayout.readingWidth),
+          AppLayout.gutter(context),
           16,
-          AppLayout.gutter(context, maxWidth: AppLayout.readingWidth),
+          AppLayout.gutter(context),
           40,
         ),
         children: [

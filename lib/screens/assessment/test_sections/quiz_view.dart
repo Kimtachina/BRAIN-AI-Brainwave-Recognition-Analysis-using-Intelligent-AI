@@ -26,7 +26,7 @@ extension _QuizView on _TestScreenState {
                 ),
                 Text(
                   ' / ${_phq9Questions.length}',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                  style: TextStyle(fontSize: 14, color: AppColors.inkFaint),
                 ),
                 const Spacer(),
                 Text(
@@ -44,7 +44,7 @@ extension _QuizView on _TestScreenState {
               borderRadius: BorderRadius.circular(6),
               child: LinearProgressIndicator(
                 value: progress,
-                backgroundColor: Colors.grey[200],
+                backgroundColor: AppColors.line,
                 valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                 minHeight: 8,
               ),
@@ -105,7 +105,7 @@ extension _QuizView on _TestScreenState {
                     question['en']!,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[500],
+                      color: AppColors.inkFaint,
                       fontStyle: FontStyle.italic,
                       height: 1.4,
                     ),
@@ -125,7 +125,7 @@ extension _QuizView on _TestScreenState {
                 child: Material(
                   color: isSelected
                     ? AppColors.primary.withValues(alpha: 0.1)
-                    : Colors.white,
+                    : AppColors.surface,
                   borderRadius: BorderRadius.circular(14),
                   child: InkWell(
                     onTap: () => _selectAnswer(index),
@@ -137,7 +137,7 @@ extension _QuizView on _TestScreenState {
                         border: Border.all(
                           color: isSelected
                             ? AppColors.primary
-                            : Colors.grey.shade300,
+                            : AppColors.line,
                           width: isSelected ? 2 : 1,
                         ),
                       ),
@@ -149,7 +149,7 @@ extension _QuizView on _TestScreenState {
                             decoration: BoxDecoration(
                               color: isSelected
                                 ? AppColors.primary
-                                : Colors.grey.shade100,
+                                : AppColors.line,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Center(
@@ -158,7 +158,7 @@ extension _QuizView on _TestScreenState {
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
-                                  color: isSelected ? Colors.white : Colors.grey[600],
+                                  color: isSelected ? Colors.white : AppColors.inkSoft,
                                 ),
                               ),
                             ),

@@ -117,7 +117,7 @@ class _NumberPuzzleScreenState extends State<NumberPuzzleScreen> {
           children: [
             const Text('คุณเรียงตัวเลขครบแล้ว!', style: TextStyle(fontSize: 16)),
             const SizedBox(height: 8),
-            Text('จำนวนการเลื่อน: $moves ครั้ง', style: TextStyle(color: Colors.grey[600])),
+            Text('จำนวนการเลื่อน: $moves ครั้ง', style: TextStyle(color: AppColors.inkSoft)),
           ],
         ),
         actions: [
@@ -133,8 +133,8 @@ class _NumberPuzzleScreenState extends State<NumberPuzzleScreen> {
               Navigator.pop(context);
               setState(() => _initGame());
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            child: const Text('เล่นอีกครั้ง', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
+            child: const Text('เล่นอีกครั้ง', style: TextStyle(color: AppColors.night)),
           ),
         ],
       ),
@@ -183,7 +183,7 @@ class _NumberPuzzleScreenState extends State<NumberPuzzleScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
+                    color: AppColors.line,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: GridView.builder(
@@ -200,7 +200,7 @@ class _NumberPuzzleScreenState extends State<NumberPuzzleScreen> {
                       if (tile == 0) {
                         return Container(
                           decoration: BoxDecoration(
-                            color: Colors.grey[300],
+                            color: AppColors.line,
                             borderRadius: BorderRadius.circular(8),
                           ),
                         );
@@ -235,13 +235,13 @@ class _NumberPuzzleScreenState extends State<NumberPuzzleScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
+                  color: AppColors.line,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('เป้าหมาย: ', style: TextStyle(color: Colors.grey[600])),
+                    Text('เป้าหมาย: ', style: TextStyle(color: AppColors.inkSoft)),
                     const SizedBox(width: 8),
                     SizedBox(
                       width: 80,
@@ -254,7 +254,7 @@ class _NumberPuzzleScreenState extends State<NumberPuzzleScreen> {
                         children: [1, 2, 3, 4, 5, 6, 7, 8, 0].map((n) {
                           return Container(
                             decoration: BoxDecoration(
-                              color: n == 0 ? Colors.grey[300] : Colors.green,
+                              color: n == 0 ? AppColors.line : Colors.green,
                               borderRadius: BorderRadius.circular(3),
                             ),
                             child: Center(
@@ -279,10 +279,10 @@ class _NumberPuzzleScreenState extends State<NumberPuzzleScreen> {
 
               ElevatedButton.icon(
                 onPressed: () => setState(() => _initGame()),
-                icon: const Icon(Icons.refresh, color: Colors.white, size: 20),
-                label: const Text('เริ่มใหม่', style: TextStyle(color: Colors.white)),
+                icon: const Icon(Icons.refresh, color: AppColors.night, size: 20),
+                label: const Text('เริ่มใหม่', style: TextStyle(color: AppColors.night)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),

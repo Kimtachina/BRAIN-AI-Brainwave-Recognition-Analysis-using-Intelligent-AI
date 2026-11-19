@@ -6,6 +6,7 @@ import 'home/home_screen.dart';
 import 'assessment/phq9_tab_screen.dart';
 import 'wellness/recommendation_screen.dart';
 import 'profile/profile_screen.dart';
+import 'behind/behind_screen.dart';
 import 'search/app_search_screen.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_page.dart';
@@ -33,6 +34,7 @@ const _items = [
   _NavItem(Icons.monitor_heart_outlined, Icons.monitor_heart_rounded, 'วันนี้'),
   _NavItem(Icons.checklist_rounded, Icons.checklist_rtl_rounded, 'แบบประเมิน'),
   _NavItem(Icons.forum_outlined, Icons.forum_rounded, 'ผู้ช่วย'),
+  _NavItem(Icons.account_tree_outlined, Icons.account_tree_rounded, 'เบื้องหลัง'),
   _NavItem(Icons.person_outline_rounded, Icons.person_rounded, 'บัญชี'),
 ];
 
@@ -68,6 +70,7 @@ class _MainNavigationState extends State<MainNavigation> {
         HomeScreen(user: _currentUser, onTabSelected: _select, onSearch: _openSearch),
         Phq9TabScreen(user: _currentUser),
         RecommendationScreen(user: _currentUser),
+        BehindScreen(active: _currentIndex == 3, onConnect: () => _select(0)),
         ProfileScreen(
           user: _currentUser,
           onUserUpdated: _onUserUpdated,
@@ -88,7 +91,8 @@ class _MainNavigationState extends State<MainNavigation> {
   }
 
   Widget _buildShell(BuildContext context) {
-    final body = IndexedStack(index: _currentIndex, children: _screens);
+    // พื้นฉากกลางคืนชุดเดียวกับหน้าแรก วางไว้ใต้ทุกแท็บ
+    final body = AppBackground(child: IndexedStack(index: _currentIndex, children: _screens));
 
     if (AppLayout.isWide(context)) {
       return Scaffold(
@@ -97,7 +101,7 @@ class _MainNavigationState extends State<MainNavigation> {
           children: [
             _SideRail(current: _currentIndex, onSelect: _select, onSearch: _openSearch),
             const VerticalDivider(width: 1, thickness: 1, color: AppColors.line),
-            Expanded(child: body),
+            Expanded(child: ShellInset(left: 233, child: body)),
           ],
         ),
       );
@@ -189,7 +193,7 @@ class _SideRail extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 232,
-      color: AppColors.surface,
+      color: AppColors.night,
       padding: const EdgeInsets.fromLTRB(16, 28, 16, 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

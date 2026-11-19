@@ -164,7 +164,7 @@ class _NutritionScreenState extends State<NutritionScreen>
         benefit: 'ลดระดับ cortisol และลดการอักเสบในสมอง',
         detail: 'กรดไขมันโอเมก้า 3 ช่วยปรับสมดุลสารเคมีในสมอง ลดระดับฮอร์โมนความเครียด (cortisol) ได้ถึง 14% เมื่อรับประทานสม่ำเสมอ กระตุ้นการสร้าง serotonin ซึ่งเป็นสารสุขในสมอง ช่วยให้อารมณ์ดีขึ้นและนอนหลับได้ดี',
         portion: 'แนะนำ 2-3 ครั้ง/สัปดาห์',
-        color: const Color(0xFF5B4BC4),
+        color: AppColors.primary,
       ),
       _NutritionItem(
         emoji: '🥑',
@@ -267,7 +267,7 @@ class _NutritionScreenState extends State<NutritionScreen>
         'name': 'ซิงค์ (สังกะสี)',
         'benefit': 'สนับสนุนระบบประสาท ลดอาการวิตกกังวล',
         'source': 'เนื้อสัตว์, ถั่ว, เมล็ดฟักทอง, หอยนางรม',
-        'color': const Color(0xFF5B4BC4),
+        'color': AppColors.primary,
       },
       {
         'emoji': '🟣',
@@ -288,7 +288,7 @@ class _NutritionScreenState extends State<NutritionScreen>
             icon: Icons.science_rounded,
             title: 'วิตามินและแร่ธาตุสำคัญ',
             description: 'เมื่อเครียด ร่างกายใช้วิตามินและแร่ธาตุมากขึ้น ทำให้ขาดสารอาหารที่สำคัญต่อระบบประสาท การเสริมสารอาหารเหล่านี้ช่วยฟื้นฟูสมดุลของสมอง',
-            gradientColors: [const Color(0xFF5B4BC4), const Color(0xFF4636A8)],
+            gradientColors: [AppColors.primary, AppColors.primaryDeep],
           );
         }
         final v = vitamins[index - 1];
@@ -414,7 +414,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                   description,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey[600],
+                    color: AppColors.inkSoft,
                     height: 1.5,
                   ),
                 ),
@@ -483,7 +483,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                           const SizedBox(height: 4),
                           Text(
                             item.benefit,
-                            style: TextStyle(fontSize: 12, color: Colors.grey[600], height: 1.3),
+                            style: TextStyle(fontSize: 12, color: AppColors.inkSoft, height: 1.3),
                           ),
                         ],
                       ),
@@ -493,7 +493,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                       duration: const Duration(milliseconds: 300),
                       child: Icon(
                         Icons.keyboard_arrow_down_rounded,
-                        color: isExpanded ? item.color : Colors.grey[400],
+                        color: isExpanded ? item.color : AppColors.inkFaint,
                       ),
                     ),
                   ],
@@ -508,7 +508,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                       Container(
                         width: double.infinity,
                         height: 1,
-                        color: Colors.grey[200],
+                        color: AppColors.line,
                       ),
                       const SizedBox(height: 14),
 
@@ -532,7 +532,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                                 const SizedBox(height: 4),
                                 Text(
                                   item.detail,
-                                  style: TextStyle(fontSize: 12, color: Colors.grey[700], height: 1.6),
+                                  style: TextStyle(fontSize: 12, color: AppColors.inkSoft, height: 1.6),
                                 ),
                               ],
                             ),
@@ -610,7 +610,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                 const SizedBox(height: 4),
                 Text(
                   benefit,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[700], height: 1.4),
+                  style: TextStyle(fontSize: 12, color: AppColors.inkSoft, height: 1.4),
                 ),
                 const SizedBox(height: 8),
                 Container(
@@ -675,7 +675,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                 const SizedBox(height: 4),
                 Text(
                   benefit,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[700], height: 1.4),
+                  style: TextStyle(fontSize: 12, color: AppColors.inkSoft, height: 1.4),
                 ),
                 if (warning.isNotEmpty) ...[
                   const SizedBox(height: 8),
