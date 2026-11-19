@@ -108,6 +108,14 @@ class ApiService {
     return SupabaseService.getChatHistory(userId);
   }
 
+  /// บันทึกข้อความฝั่งบอทลงประวัติแชท (ใช้กับคำตอบสำรองตอนเรียก AI ไม่สำเร็จ)
+  static Future<Map<String, dynamic>> saveBotMessage({
+    required int userId,
+    required String message,
+  }) {
+    return SupabaseService.sendChatMessage(userId: userId, message: message, isBot: true);
+  }
+
   /// ส่งข้อความหาบอทปัญญาประดิษฐ์ (ChatGPT) พร้อมดึง RAG Context และบันทึกคำตอบอัตโนมัติ
   static Future<Map<String, dynamic>> sendChatGPTMessage({
     required int userId,

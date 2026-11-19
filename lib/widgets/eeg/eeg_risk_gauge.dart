@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../../theme/app_theme.dart';
 
 /// EegRiskGauge เป็น Widget แสดงระดับความเสี่ยงหรือคะแนนแบบครึ่งวงกลม (Gauge)
 /// ใช้แสดงผลระดับดัชนีคลื่นสมองหรือความเครียดสะสมแบบพรีเมียม (0-100)
@@ -13,14 +14,24 @@ class EegRiskGauge extends StatelessWidget {
     required this.accentColor,
   });
 
+  /// ระยะจากขอบล่างถึงแกนเข็ม และเผื่อครึ่งหนึ่งของความหนาเส้นด้านบน
+  static const _bottomInset = 12.0;
+  static const _topInset = 12.0;
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 130,
-      width: double.infinity,
-      child: CustomPaint(
-        painter: _GaugePainter(value.clamp(0, 100), accentColor),
-      ),
+    // ความสูงตามรัศมีที่วาดจริง เกจจึงไม่ล้นทับหัวข้อด้านบนไม่ว่าการ์ดจะกว้างเท่าไร
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final radius = (constraints.maxWidth * 0.40).clamp(60.0, 150.0);
+        return SizedBox(
+          height: radius + _bottomInset + _topInset,
+          width: double.infinity,
+          child: CustomPaint(
+            painter: _GaugePainter(value.clamp(0, 100), accentColor),
+          ),
+        );
+      },
     );
   }
 }
@@ -33,8 +44,8 @@ class _GaugePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height - 12);
-    final radius = size.width * 0.40;
+    final center = Offset(size.width / 2, size.height - EegRiskGauge._bottomInset);
+    final radius = math.min(size.width * 0.40, size.height - EegRiskGauge._bottomInset - EegRiskGauge._topInset);
     const startAngle = math.pi;
     const sweep = math.pi;
 
@@ -47,7 +58,7 @@ class _GaugePainter extends CustomPainter {
       sweep,
       false,
       Paint()
-        ..color = Colors.grey.shade200
+        ..color = AppColors.line
         ..style = PaintingStyle.stroke
         ..strokeWidth = 20
         ..strokeCap = StrokeCap.round,

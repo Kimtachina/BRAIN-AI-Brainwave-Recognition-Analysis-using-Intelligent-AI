@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import '../../theme/app_theme.dart';
 
 // ═══════════════════════════════════════════════════════════════════
 // ตัววาดกราฟคลื่นสมอง EEG เกรดงานวิจัยที่มีตารางกริด สเกลวัด และสีแยกแยะสำหรับแต่ละช่องสัญญาณประสาท
@@ -19,7 +20,7 @@ class EegResearchTracePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final bgPaint = Paint()
-      ..color = const Color(0xFFFCFCFC)
+      ..color = AppColors.paper
       ..style = PaintingStyle.fill;
 
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
@@ -30,17 +31,17 @@ class EegResearchTracePainter extends CustomPainter {
     final double plotWidth = size.width - labelWidth - rightPadding;
 
     final gridPaint = Paint()
-      ..color = const Color(0xFFE8E8E8)
+      ..color = AppColors.line
       ..strokeWidth = 0.4
       ..style = PaintingStyle.stroke;
 
     final gridPaintMajor = Paint()
-      ..color = const Color(0xFFD0D0D0)
+      ..color = AppColors.line
       ..strokeWidth = 0.6
       ..style = PaintingStyle.stroke;
 
     final baselinePaint = Paint()
-      ..color = const Color(0xFFBDBDBD)
+      ..color = AppColors.line
       ..strokeWidth = 0.5
       ..style = PaintingStyle.stroke;
 
@@ -69,13 +70,13 @@ class EegResearchTracePainter extends CustomPainter {
       final name = channelNames[i];
       final yOffset = i * channelHeight;
       final yCenter = yOffset + channelHeight / 2;
-      final chColor = channelColors[name] ?? const Color(0xFF4636A8);
+      final chColor = channelColors[name] ?? AppColors.primaryDeep;
 
       // วาดพื้นหลังสลับสีเพื่อแยกบรรทัดแต่ละแชลแนล (Alternating background)
       if (i % 2 == 1) {
         canvas.drawRect(
           Rect.fromLTWH(0, yOffset, size.width, channelHeight),
-          Paint()..color = const Color(0xFFF7F7FA),
+          Paint()..color = AppColors.paper,
         );
       }
 
@@ -112,7 +113,7 @@ class EegResearchTracePainter extends CustomPainter {
         Offset(0, yOffset + channelHeight),
         Offset(size.width, yOffset + channelHeight),
         Paint()
-          ..color = const Color(0xFFCCCCCC)
+          ..color = AppColors.inkFaint
           ..strokeWidth = 0.8,
       );
 
@@ -121,7 +122,7 @@ class EegResearchTracePainter extends CustomPainter {
         Offset(labelWidth, yOffset),
         Offset(labelWidth, yOffset + channelHeight),
         Paint()
-          ..color = const Color(0xFFCCCCCC)
+          ..color = AppColors.inkFaint
           ..strokeWidth = 0.8,
       );
 
@@ -156,7 +157,7 @@ class EegResearchTracePainter extends CustomPainter {
       final posSpan = TextSpan(
         text: posMap[name] ?? '',
         style: TextStyle(
-          color: Colors.grey.shade400,
+          color: AppColors.inkFaint,
           fontSize: 7,
           fontStyle: FontStyle.italic,
         ),
@@ -180,7 +181,7 @@ class EegResearchTracePainter extends CustomPainter {
         final noDataSpan = TextSpan(
           text: 'Waiting for signal…',
           style: TextStyle(
-            color: Colors.grey.shade400,
+            color: AppColors.inkFaint,
             fontSize: 9,
             fontStyle: FontStyle.italic,
           ),
@@ -245,7 +246,7 @@ class EegResearchTracePainter extends CustomPainter {
       final scaleTop = yCenter - scaleBarHeight / 2;
       final scaleBottom = yCenter + scaleBarHeight / 2;
       final scalePaint = Paint()
-        ..color = Colors.grey.shade400
+        ..color = AppColors.inkFaint
         ..strokeWidth = 0.8;
       canvas.drawLine(Offset(scaleX, scaleTop), Offset(scaleX, scaleBottom), scalePaint);
       canvas.drawLine(Offset(scaleX - 2, scaleTop), Offset(scaleX + 2, scaleTop), scalePaint);
@@ -257,7 +258,7 @@ class EegResearchTracePainter extends CustomPainter {
       const Offset(0, 0),
       Offset(size.width, 0),
       Paint()
-        ..color = const Color(0xFFCCCCCC)
+        ..color = AppColors.inkFaint
         ..strokeWidth = 0.8,
     );
   }
@@ -279,7 +280,7 @@ class EegStatHeader extends StatelessWidget {
         style: TextStyle(
           fontSize: 9,
           fontWeight: FontWeight.w700,
-          color: Colors.grey.shade600,
+          color: AppColors.inkSoft,
         ),
         textAlign: TextAlign.center,
       ),
@@ -299,7 +300,7 @@ class EegStatCell extends StatelessWidget {
         style: const TextStyle(
           fontSize: 9,
           fontFamily: 'Courier',
-          color: Colors.black87,
+          color: AppColors.ink,
         ),
         textAlign: TextAlign.center,
       ),

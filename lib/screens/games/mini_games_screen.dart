@@ -21,7 +21,7 @@ class MiniGamesScreen extends StatelessWidget {
       body: Container(
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context, maxWidth: AppLayout.readingWidth), vertical: 20),
+            padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context), vertical: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

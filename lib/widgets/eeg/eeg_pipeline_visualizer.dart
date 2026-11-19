@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../../theme/app_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/eeg/eeg_preprocessor.dart';
 import '../../services/muse/muse_service.dart';
@@ -12,7 +13,6 @@ class EegPipelineVisualizer extends StatefulWidget {
 
   // สถานะทางโครงสร้างคลาสแบบ Static เพื่อเก็บค่าข้ามการเรนเดอร์ใหม่ของ Parent Widget และการเปลี่ยนหน้า
   static String selectedChannel = 'AF7';
-  static bool isExpanded = true;
 
   const EegPipelineVisualizer({
     super.key,
@@ -125,9 +125,9 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
     return Container(
       margin: const EdgeInsets.only(top: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFBDBDBD), width: 0.8),
+        border: Border.all(color: AppColors.line, width: 0.8),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
@@ -139,27 +139,12 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ส่วนหัวของแบนเนอร์ (เปิดปิดแบบยุบได้ด้วยการคลิก มีเอฟเฟกต์ InkWell)
-          Material(
-            color: const Color(0xFF1E3A8A), // สีน้ำเงินเนวี่ / น้ำเงินเข้มพรีเมียม
-            borderRadius: BorderRadius.only(
-              topLeft: const Radius.circular(13),
-              topRight: const Radius.circular(13),
-              bottomLeft: EegPipelineVisualizer.isExpanded ? Radius.zero : const Radius.circular(13),
-              bottomRight: EegPipelineVisualizer.isExpanded ? Radius.zero : const Radius.circular(13),
+          // ส่วนหัวของแบนเนอร์
+          Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFF1E3A8A), // สีน้ำเงินเนวี่ / น้ำเงินเข้มพรีเมียม
+              borderRadius: BorderRadius.vertical(top: Radius.circular(13)),
             ),
-            child: InkWell(
-              borderRadius: BorderRadius.only(
-                topLeft: const Radius.circular(13),
-                topRight: const Radius.circular(13),
-                bottomLeft: EegPipelineVisualizer.isExpanded ? Radius.zero : const Radius.circular(13),
-                bottomRight: EegPipelineVisualizer.isExpanded ? Radius.zero : const Radius.circular(13),
-              ),
-              onTap: () {
-                setState(() {
-                  EegPipelineVisualizer.isExpanded = !EegPipelineVisualizer.isExpanded;
-                });
-              },
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 child: Row(
@@ -177,17 +162,9 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
                         ),
                       ),
                     ),
-                    // ไอคอนสัญลักษณ์เปิดหรือปิดแท็บพับเก็บ
-                    Icon(
-                      EegPipelineVisualizer.isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
-                      color: Colors.white70,
-                      size: 20,
-                    ),
                     const SizedBox(width: 12),
-                    // ตัวเลือกช่องสัญญาณคลื่นสมอง (ครอบด้วย GestureDetector เพื่อกันปัญหาการขัดแย้งการคลิกกับแถบยุบขยาย)
-                    GestureDetector(
-                      onTap: () {}, // บล็อกไม่ให้เกิดการ Tap Propagation ไปยังตัว Parent
-                      child: Container(
+                    // ตัวเลือกช่องสัญญาณคลื่นสมอง
+                    Container(
                         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.15),
@@ -216,25 +193,19 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
                           ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
-            ),
           ),
 
-          AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            child: EegPipelineVisualizer.isExpanded
-                ? Column(
+          Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // แบนเนอร์อธิบายรายละเอียดภาพรวม
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(12),
-                        color: const Color(0xFFF8FAFC),
+                        color: AppColors.paper,
                         child: Text(
                           'กระบวนการขจัดสัญญาณรบกวน (Noise Artifacts) แบบเรียลไทม์ 3 ขั้นตอนเรียงลำดับ เพื่อเตรียมข้อมูลสำหรับโมเดลปัญญาประดิษฐ์ให้ได้ความแม่นยำระดับห้องวิจัย',
                           style: GoogleFonts.ibmPlexSansThai(
@@ -244,7 +215,7 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
                           ),
                         ),
                       ),
-                      const Divider(height: 1, color: Color(0xFFE4E1EC)),
+                      const Divider(height: 1, color: AppColors.line),
 
                       if (!widget.hasData || rawSignal.isEmpty) ...[
                         Container(
@@ -253,11 +224,11 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.hourglass_empty_rounded, color: Colors.grey.shade400, size: 36),
+                              Icon(Icons.hourglass_empty_rounded, color: AppColors.inkFaint, size: 36),
                               const SizedBox(height: 8),
                               Text(
                                 'กำลังรอข้อมูลสัญญาณดิบ...',
-                                style: GoogleFonts.ibmPlexSansThai(color: Colors.grey.shade500, fontSize: 12),
+                                style: GoogleFonts.ibmPlexSansThai(color: AppColors.inkFaint, fontSize: 12),
                               ),
                             ],
                           ),
@@ -274,7 +245,7 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
                                 formula: 'x[n] = Signal + Offset + Drift + LineNoise',
                                 descTh: 'สัญญาณสมองที่รับเข้ามายังปนเปื้อนด้วยไฟฟ้ากระแสตรง ไฟฟ้าสลับ 50 Hz และคลื่นลอยต่ำที่ไม่เกี่ยวข้อง',
                                 data: rawSignal,
-                                lineColor: Colors.grey.shade600,
+                                lineColor: AppColors.inkSoft,
                                 yMinLabel: '0 µV',
                                 yMaxLabel: '1682 µV',
                                 isZeroCentered: false,
@@ -341,9 +312,7 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
                         ),
                       ],
                     ],
-                  )
-                : const SizedBox(width: double.infinity, height: 0),
-          ),
+                  ),
         ],
       ),
     );
@@ -371,13 +340,13 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
         color: highlight
-            ? (highlightColor?.withValues(alpha: 0.08) ?? const Color(0xFFEFF6FF))
-            : const Color(0xFFF5F4F8),
+            ? (highlightColor?.withValues(alpha: 0.08) ?? AppColors.primarySoft)
+            : AppColors.paper,
         borderRadius: BorderRadius.circular(4),
         border: Border.all(
           color: highlight
-              ? (highlightColor?.withValues(alpha: 0.3) ?? const Color(0xFFBFDBFE))
-              : const Color(0xFFE4E1EC),
+              ? (highlightColor?.withValues(alpha: 0.3) ?? AppColors.primary)
+              : AppColors.line,
           width: 0.5,
         ),
       ),
@@ -388,7 +357,7 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
             '$label: ',
             style: GoogleFonts.ibmPlexSansThai(
               fontSize: 8.5,
-              color: Colors.grey.shade600,
+              color: AppColors.inkSoft,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -401,7 +370,7 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
                 fontSize: 8.5,
                 color: highlight
                     ? (highlightColor ?? const Color(0xFF1D4ED8))
-                    : const Color(0xFF1D1B2E),
+                    : AppColors.ink,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -427,9 +396,9 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFBFBFD),
+        color: AppColors.paper,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade200, width: 0.8),
+        border: Border.all(color: AppColors.line, width: 0.8),
       ),
       padding: const EdgeInsets.all(10),
       child: Column(
@@ -462,7 +431,7 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
                       style: GoogleFonts.ibmPlexSansThai(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1D1B2E),
+                        color: AppColors.ink,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -485,9 +454,9 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFFF5F4F8),
+              color: AppColors.paper,
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: const Color(0xFFE4E1EC), width: 0.5),
+              border: Border.all(color: AppColors.line, width: 0.5),
             ),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -525,11 +494,11 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(yMaxLabel, style: GoogleFonts.ibmPlexMono(fontSize: 7.5, color: Colors.grey.shade500)),
+                  Text(yMaxLabel, style: GoogleFonts.ibmPlexMono(fontSize: 7.5, color: AppColors.inkFaint)),
                   const SizedBox(height: 16),
-                  Text(isZeroCentered ? '0 µV' : 'Mid', style: GoogleFonts.ibmPlexMono(fontSize: 7.5, color: Colors.grey.shade500)),
+                  Text(isZeroCentered ? '0 µV' : 'Mid', style: GoogleFonts.ibmPlexMono(fontSize: 7.5, color: AppColors.inkFaint)),
                   const SizedBox(height: 16),
-                  Text(yMinLabel, style: GoogleFonts.ibmPlexMono(fontSize: 7.5, color: Colors.grey.shade500)),
+                  Text(yMinLabel, style: GoogleFonts.ibmPlexMono(fontSize: 7.5, color: AppColors.inkFaint)),
                 ],
               ),
               const SizedBox(width: 8),
@@ -538,8 +507,8 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
                 child: Container(
                   height: 60,
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: Colors.grey.shade200, width: 0.5),
+                    color: AppColors.surface,
+                    border: Border.all(color: AppColors.line, width: 0.5),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: CustomPaint(
@@ -578,7 +547,7 @@ class EegPipelineStepPainter extends CustomPainter {
 
     // วาดเส้นแกนนอนตรงกลาง (Baseline)
     final baselinePaint = Paint()
-      ..color = Colors.grey.shade200
+      ..color = AppColors.line
       ..strokeWidth = 0.5
       ..style = PaintingStyle.stroke;
     canvas.drawLine(Offset(0, yCenter), Offset(size.width, yCenter), baselinePaint);

@@ -282,7 +282,7 @@ $phq9Str
                     ),
                   )
                 : SingleChildScrollView(
-                    padding: EdgeInsets.fromLTRB(AppLayout.gutter(context, maxWidth: AppLayout.contentWidth), 20, AppLayout.gutter(context, maxWidth: AppLayout.contentWidth), 40),
+                    padding: EdgeInsets.fromLTRB(AppLayout.gutter(context), 20, AppLayout.gutter(context), 40),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -326,7 +326,7 @@ $phq9Str
               ),
             ],
           ),
-          const Divider(height: 24, thickness: 1, color: Color(0xFFE4E1EC)),
+          const Divider(height: 24, thickness: 1, color: AppColors.line),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -395,7 +395,7 @@ $phq9Str
                         show: true,
                         drawVerticalLine: false,
                         getDrawingHorizontalLine: (value) => FlLine(
-                          color: Colors.grey.withValues(alpha: 0.15),
+                          color: AppColors.inkFaint.withValues(alpha: 0.15),
                           strokeWidth: 1,
                         ),
                       ),
@@ -494,7 +494,7 @@ $phq9Str
                 ),
             ],
           ),
-          const Divider(height: 24, thickness: 1, color: Color(0xFFE4E1EC)),
+          const Divider(height: 24, thickness: 1, color: AppColors.line),
           if (_isGeneratingAI)
             const Center(
               child: Padding(
@@ -515,17 +515,17 @@ $phq9Str
                 padding: const EdgeInsets.symmetric(vertical: 30),
                 child: Column(
                   children: [
-                    const Icon(Icons.description_outlined, size: 48, color: Colors.grey),
+                    const Icon(Icons.description_outlined, size: 48, color: AppColors.inkFaint),
                     const SizedBox(height: 12),
                     const Text('ยังไม่มีบทสรุปสำหรับสัปดาห์นี้',
                         style: TextStyle(color: AppColors.inkSoft, fontSize: 14)),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
                       onPressed: _generateAIReport,
-                      icon: const Icon(Icons.auto_awesome, size: 18, color: Colors.white),
-                      label: const Text('วิเคราะห์สุขภาพด้วย AI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      icon: const Icon(Icons.auto_awesome, size: 18, color: AppColors.night),
+                      label: const Text('วิเคราะห์สุขภาพด้วย AI', style: TextStyle(color: AppColors.night, fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),

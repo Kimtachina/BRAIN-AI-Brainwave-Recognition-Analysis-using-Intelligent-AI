@@ -118,7 +118,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 title: const Text('เลือกจากแกลเลอรี่'),
                 subtitle: Text(
                   'เลือกรูปภาพที่มีอยู่แล้ว',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                  style: TextStyle(fontSize: 12, color: AppColors.inkFaint),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -141,7 +141,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 title: const Text('ถ่ายรูปใหม่'),
                 subtitle: Text(
                   'ถ่ายรูปจากกล้อง',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                  style: TextStyle(fontSize: 12, color: AppColors.inkFaint),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -210,10 +210,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
+            colorScheme: const ColorScheme.dark(
               primary: AppColors.primary,
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
+              onPrimary: AppColors.night,
+              surface: AppColors.surface,
+              onSurface: AppColors.ink,
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
@@ -384,7 +385,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         decoration: BoxDecoration(
                           color: AppColors.primary,
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
+                          border: Border.all(color: AppColors.surface, width: 2),
                         ),
                         child: const Icon(
                           Icons.camera_alt,
@@ -481,7 +482,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _updateProfile,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -493,14 +494,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
-                            color: Colors.white,
+                            color: AppColors.night,
                             strokeWidth: 2,
                           ),
                         )
                       : const Text(
                           'บันทึกการเปลี่ยนแปลง',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppColors.night,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -550,7 +551,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          color: Colors.grey[700],
+          color: AppColors.inkSoft,
         ),
       ),
     );
@@ -574,9 +575,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       decoration: InputDecoration(
         counterText: '',
         hintText: hintText,
-        hintStyle: TextStyle(color: Colors.grey[400]),
+        hintStyle: TextStyle(color: AppColors.inkFaint),
         filled: true,
-        fillColor: const Color(0xFFF5F5F5),
+        fillColor: AppColors.surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,

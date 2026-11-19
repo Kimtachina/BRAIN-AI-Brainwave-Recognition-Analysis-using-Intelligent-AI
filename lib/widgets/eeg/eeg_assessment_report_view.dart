@@ -46,7 +46,7 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
     if (c == const Color(0xFF4CAF50) || c == const Color(0xFF43A047) || c == Colors.green) return AppColors.secondary;
     if (c == const Color(0xFFFF9800) || c == const Color(0xFFF57C00) || c == Colors.orange) return AppColors.warning;
     if (c == const Color(0xFFF44336) || c == const Color(0xFFE53935) || c == Colors.red) return AppColors.error;
-    if (c == const Color(0xFF5B4BC4) || c == Colors.blue) return AppColors.primary;
+    if (c == AppColors.primary || c == Colors.blue) return AppColors.primary;
     return c;
   }
 
@@ -87,7 +87,7 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -153,7 +153,7 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
       child: Container(
         color: Colors.transparent,
         child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context, maxWidth: AppLayout.contentWidth, min: 16), vertical: 16),
+          padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context), vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -328,9 +328,9 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.3),
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
+            border: Border.all(color: AppColors.line),
           ),
           child: Row(children: [
             _legendDot(AppColors.secondary, 'ปกติ'),
@@ -456,10 +456,7 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         _sectionTitle(Icons.analytics_rounded, 'วิเคราะห์เชิงลึก'),
         const SizedBox(height: 12),
-        SizedBox(
-          height: 130,
-          child: EegRiskGauge(value: _eegIndex, accentColor: softColor),
-        ),
+        EegRiskGauge(value: _eegIndex, accentColor: softColor),
         const SizedBox(height: 4),
         FittedBox(
           fit: BoxFit.scaleDown,
@@ -524,51 +521,61 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
             child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               const Icon(Icons.map_rounded, color: AppColors.primary, size: 16),
               const SizedBox(width: 6),
-              Text('แผนที่การทำงานของสมอง (Topographic Map)',
-                  style: _h2.copyWith(color: AppColors.ink, fontSize: 12)),
+              Flexible(
+                child: Text('แผนที่การทำงานของสมอง (Topographic Map)',
+                    textAlign: TextAlign.center,
+                    style: _h2.copyWith(color: AppColors.ink, fontSize: 13)),
+              ),
             ]),
           ),
           const SizedBox(height: 14),
-          IntrinsicHeight(
-            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              EegTopographicMap(
-                title: 'Absolute Power (Theta)', 
-                overlayImagePath: 'assets/images/International_10-20_system_for_EEG-MCN.svg.png',
-                sensorValues: {
-                  'AF7': (_localSummary['avgTheta'] as num? ?? 0.0).toDouble(),
-                  'AF8': ((_localSummary['avgTheta'] as num? ?? 0.0).toDouble()) * 0.8,
-                  'TP9': ((_localSummary['avgTheta'] as num? ?? 0.0).toDouble()) * 0.6,
-                  'TP10': ((_localSummary['avgTheta'] as num? ?? 0.0).toDouble()) * 0.7,
-                },
-              ),
-              const SizedBox(width: 8),
-              EegTopographicMap(
-                title: 'Absolute Power (Alpha)', 
-                overlayImagePath: 'assets/images/International_10-20_system_for_EEG-MCN.svg.png',
-                sensorValues: {
-                  'AF7': (_localSummary['avgAlpha'] as num? ?? 0.0).toDouble(),
-                  'AF8': ((_localSummary['avgAlpha'] as num? ?? 0.0).toDouble()) * 1.2,
-                  'TP9': ((_localSummary['avgAlpha'] as num? ?? 0.0).toDouble()) * 1.1,
-                  'TP10': ((_localSummary['avgAlpha'] as num? ?? 0.0).toDouble()) * 0.9,
-                },
-              ),
-              const SizedBox(width: 8),
-              EegTopographicMap(
-                title: 'Z-Score (Theta)', 
-                isZScore: true,
-                overlayImagePath: 'assets/images/International_10-20_system_for_EEG-MCN.svg.png',
-                sensorValues: {
-                  'AF7': (_localSummary['thetaZScore'] as num? ?? 0.0).toDouble(),
-                  'AF8': ((_localSummary['thetaZScore'] as num? ?? 0.0).toDouble()) * 0.5,
-                  'TP9': -0.5,
-                  'TP10': 0.2,
-                },
-              ),
-            ]),
+          _topoMaps(),
+          const SizedBox(height: 12),
+          Text(
+            'จุดสีขาวคือเซนเซอร์ Muse 4 จุดที่วัดจริง (AF7, AF8 หน้าผาก · TP9, TP10 หลังหู) '
+            'ตัวเลขคือสัดส่วนคลื่นย่านนั้นต่อพลังรวมของจุดนั้น สีระหว่างจุดเป็นค่าประมาณจากจุดใกล้เคียง',
+            style: _caption.copyWith(fontSize: 11),
+            textAlign: TextAlign.center,
           ),
         ]),
       ),
     );
+  }
+
+  /// แผนที่ 3 ย่านที่ใช้แปลผล: Alpha (ผ่อนคลาย), Theta (ง่วง/ล้า), Beta (ตื่นตัว/ใช้ความคิด)
+  /// จอกว้างเรียงเป็นแถว จอแคบเรียงลงมาทีละแผนที่
+  Widget _topoMaps() {
+    final channels = EegAssessmentService.channelsFrom(_localSummary);
+    Map<String, double>? bandAt(String band) => channels == null
+        ? null
+        : {for (final e in channels.entries) if (e.value[band] != null) e.key: e.value[band]!};
+    double avg(String key) => ((_localSummary[key] as num?) ?? 0).toDouble() * 100;
+
+    final maps = [
+      EegTopographicMap(title: 'Alpha', subtitle: 'ผ่อนคลาย', values: bandAt('alpha'), average: avg('relAlpha')),
+      EegTopographicMap(title: 'Theta', subtitle: 'ง่วง / ล้า', values: bandAt('theta'), average: avg('relTheta')),
+      EegTopographicMap(title: 'Beta', subtitle: 'ตื่นตัว / ใช้ความคิด', values: bandAt('beta'), average: avg('relBeta')),
+    ];
+
+    return LayoutBuilder(builder: (context, constraints) {
+      if (constraints.maxWidth >= 640) {
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var i = 0; i < maps.length; i++) ...[
+              if (i > 0) const SizedBox(width: 20),
+              Expanded(child: maps[i]),
+            ],
+          ],
+        );
+      }
+      return Column(children: [
+        for (var i = 0; i < maps.length; i++) ...[
+          if (i > 0) const SizedBox(height: 24),
+          ConstrainedBox(constraints: const BoxConstraints(maxWidth: 340), child: maps[i]),
+        ],
+      ]);
+    });
   }
 
   // === Clinical / Observations / Recommendations ===
@@ -668,8 +675,8 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
       Expanded(
         child: ElevatedButton.icon(
           onPressed: () => handlePdfExport(true),
-          icon: const Icon(Icons.picture_as_pdf_rounded, color: Colors.white, size: 18),
-          label: Text('ดาวน์โหลด PDF', style: _body.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
+          icon: const Icon(Icons.picture_as_pdf_rounded, color: AppColors.night, size: 18),
+          label: Text('ดาวน์โหลด PDF', style: _body.copyWith(color: AppColors.night, fontWeight: FontWeight.w600)),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.error,
             padding: const EdgeInsets.symmetric(vertical: 14),
@@ -682,10 +689,10 @@ class EegAssessmentReportViewState extends State<EegAssessmentReportView> {
       Expanded(
         child: ElevatedButton.icon(
           onPressed: () => handlePdfExport(false),
-          icon: const Icon(Icons.print_rounded, color: Colors.white, size: 18),
-          label: Text('พิมพ์รายงาน', style: _body.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
+          icon: const Icon(Icons.print_rounded, color: AppColors.night, size: 18),
+          label: Text('พิมพ์รายงาน', style: _body.copyWith(color: AppColors.night, fontWeight: FontWeight.w600)),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
+            backgroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             elevation: 0,

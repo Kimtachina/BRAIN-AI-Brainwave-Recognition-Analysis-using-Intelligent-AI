@@ -60,7 +60,7 @@ class _EegReportHistoryScreenState extends State<EegReportHistoryScreen> {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -115,16 +115,16 @@ class _EegReportHistoryScreenState extends State<EegReportHistoryScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.description_outlined, size: 64, color: Colors.grey[400]),
+                      Icon(Icons.description_outlined, size: 64, color: AppColors.inkFaint),
                       const SizedBox(height: 16),
                       Text(
                         'ยังไม่มีใบสรุป',
-                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                        style: TextStyle(fontSize: 16, color: AppColors.inkSoft),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'ทำการวัดคลื่นสมอง 1.5 นาทีเพื่อสร้างใบสรุป',
-                        style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+                        style: TextStyle(fontSize: 13, color: AppColors.inkFaint),
                       ),
                     ],
                   ),
@@ -132,7 +132,7 @@ class _EegReportHistoryScreenState extends State<EegReportHistoryScreen> {
               : RefreshIndicator(
                   onRefresh: _load,
                   child: ListView.separated(
-                    padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context, maxWidth: AppLayout.readingWidth, min: 16), vertical: 16),
+                    padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context), vertical: 16),
                     itemCount: _reports.length,
                     separatorBuilder: (_, _) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
@@ -210,7 +210,7 @@ class _EegReportHistoryScreenState extends State<EegReportHistoryScreen> {
                                         'EEG Index: ${eegIndex.toStringAsFixed(0)}/100',
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: Colors.grey[600],
+                                          color: AppColors.inkSoft,
                                         ),
                                       ),
                                       if (recordedAt != null)
@@ -218,7 +218,7 @@ class _EegReportHistoryScreenState extends State<EegReportHistoryScreen> {
                                           EegAssessmentService.formatDate(recordedAt),
                                           style: TextStyle(
                                             fontSize: 11,
-                                            color: Colors.grey[500],
+                                            color: AppColors.inkFaint,
                                           ),
                                         ),
                                     ],
@@ -229,7 +229,7 @@ class _EegReportHistoryScreenState extends State<EegReportHistoryScreen> {
                                   tooltip: 'ดาวน์โหลด PDF',
                                   onPressed: () => _downloadPdf(summary),
                                 ),
-                                const Icon(Icons.chevron_right, color: Colors.grey),
+                                const Icon(Icons.chevron_right, color: AppColors.inkFaint),
                               ],
                             ),
                           ),

@@ -172,6 +172,8 @@ class EegAssessmentService {
     final highBetaZScore = _relativeDeviation(relGamma, 0.08, 0.04); // ~8% ±4%
 
     return {
+      // สัดส่วนแต่ละย่าน (%) แยกตามเซนเซอร์ Muse 4 จุด สำหรับแผนที่สมอง
+      'channels': channelAverages(samples),
       'avgAlpha': avgAlpha,
       'avgBeta': avgBeta,
       'avgTheta': avgTheta,
@@ -206,6 +208,48 @@ class EegAssessmentService {
       'normRef': 'Relative Power + α/β Ratio (Luijcks 2015) + θ/β Ratio (Arns 2013)',
       'recordedAt': DateTime.now().toIso8601String(),
     };
+  }
+
+  /// เซนเซอร์ทั้ง 4 จุดของ Muse
+  static const museChannels = ['TP9', 'AF7', 'AF8', 'TP10'];
+  static const _bands = ['delta', 'theta', 'alpha', 'beta', 'gamma'];
+
+  /// เฉลี่ยสัดส่วนแต่ละย่าน (%) ของแต่ละเซนเซอร์จากคีย์ 'TP9.alpha' ใน samples
+  /// เซนเซอร์ที่ไม่มีข้อมูลเลย (หลุดตลอด) จะไม่อยู่ในผลลัพธ์
+  static Map<String, Map<String, double>> channelAverages(List<Map<String, double>> samples) {
+    final result = <String, Map<String, double>>{};
+    for (final ch in museChannels) {
+      final sums = {for (final b in _bands) b: 0.0};
+      var count = 0;
+      for (final s in samples) {
+        if (!s.containsKey('$ch.alpha')) continue;
+        count++;
+        for (final b in _bands) {
+          sums[b] = sums[b]! + (s['$ch.$b'] ?? 0);
+        }
+      }
+      if (count == 0) continue;
+      final total = sums.values.fold<double>(0, (a, b) => a + b);
+      if (total <= 0) continue;
+      result[ch] = {for (final b in _bands) b: sums[b]! / total * 100};
+    }
+    return result;
+  }
+
+  /// อ่านค่า 'channels' จากผลสรุป (รวมถึงที่โหลดกลับมาจาก JSON) คืน null ถ้ารายงานนี้ไม่มีข้อมูลแยกจุด
+  static Map<String, Map<String, double>>? channelsFrom(Map<String, dynamic> summary) {
+    final raw = summary['channels'];
+    if (raw is! Map || raw.isEmpty) return null;
+    final out = <String, Map<String, double>>{};
+    raw.forEach((ch, bands) {
+      if (bands is Map) {
+        out['$ch'] = {
+          for (final e in bands.entries)
+            if (e.value is num) '${e.key}': (e.value as num).toDouble(),
+        };
+      }
+    });
+    return out.isEmpty ? null : out;
   }
 
   /// ส่งค่าผลสรุปเริ่มต้นกรณีไม่มีตัวอย่างข้อมูลสัญญาณสะสม

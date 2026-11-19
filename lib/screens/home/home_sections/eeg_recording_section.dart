@@ -13,7 +13,7 @@ extension _EegRecordingSection on _HomeScreenState {
       decoration: AppTheme.glassDecoration(
         color: Colors.white,
         opacity: 0.7,
-        borderColor: const Color(0xFF1D1B2E).withValues(alpha: 0.18),
+        borderColor: AppColors.ink.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
@@ -24,10 +24,10 @@ extension _EegRecordingSection on _HomeScreenState {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1D1B2E).withValues(alpha: 0.1),
+                  color: AppColors.ink.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.analytics_rounded, color: Color(0xFF1D1B2E), size: 20),
+                child: const Icon(Icons.analytics_rounded, color: AppColors.ink, size: 20),
               ),
               const SizedBox(width: 10),
               const Expanded(
@@ -78,7 +78,7 @@ extension _EegRecordingSection on _HomeScreenState {
                   color: const Color(0xFF1B2A4A),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF1D1B2E).withValues(alpha: 0.25),
+                      color: AppColors.ink.withValues(alpha: 0.25),
                       blurRadius: 24,
                       spreadRadius: 2,
                     ),
@@ -132,7 +132,7 @@ extension _EegRecordingSection on _HomeScreenState {
                 ),
                 Text(
                   'ความคืบหน้า: ${(progress * 100).toStringAsFixed(0)}%',
-                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1D1B2E)),
+                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.ink),
                 ),
               ],
             ),
@@ -155,10 +155,10 @@ extension _EegRecordingSection on _HomeScreenState {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: _startEegCountdown,
-                icon: const Icon(Icons.play_circle_fill_rounded, color: Colors.white, size: 20),
-                label: const Text('เริ่มการประเมิน qEEG รายบุคคล', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                icon: const Icon(Icons.play_circle_fill_rounded, color: AppColors.night, size: 20),
+                label: const Text('เริ่มการประเมิน qEEG รายบุคคล', style: TextStyle(color: AppColors.night, fontSize: 14, fontWeight: FontWeight.w600)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1D1B2E),
+                  backgroundColor: AppColors.ink,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   elevation: 0,
@@ -170,13 +170,13 @@ extension _EegRecordingSection on _HomeScreenState {
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: _openEegReportHistory,
-                icon: const Icon(Icons.history_edu_rounded, color: Color(0xFF1D1B2E), size: 18),
+                icon: const Icon(Icons.history_edu_rounded, color: AppColors.ink, size: 18),
                 label: const Text(
                   'เปิดดูประวัติและใบประเมินแพทย์ย้อนหลัง',
-                  style: TextStyle(color: Color(0xFF1D1B2E), fontWeight: FontWeight.w600, fontSize: 13),
+                  style: TextStyle(color: AppColors.ink, fontWeight: FontWeight.w600, fontSize: 13),
                 ),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFF1D1B2E), width: 1.5),
+                  side: const BorderSide(color: AppColors.ink, width: 1.5),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
@@ -223,7 +223,7 @@ extension _EegRecordingSection on _HomeScreenState {
                     ),
                     const Text(
                       'แตะเพื่อเปิดใบสรุปฉบับเต็ม',
-                      style: TextStyle(fontSize: 11, color: Colors.grey),
+                      style: TextStyle(fontSize: 11, color: AppColors.inkFaint),
                     ),
                   ],
                 ),

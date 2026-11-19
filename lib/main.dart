@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Smart Brain',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme, // ใช้ชุดรูปแบบธีมสะอาดทางการแพทย์ CGH Hospital
+      theme: AppTheme.darkTheme, // ธีมกลางคืนชุดเดียวกับหน้าแรก
       builder: (context, child) {
         final scale = ResponsiveHelper.getResponsiveTextScale(context, 1.0);
         return MediaQuery(

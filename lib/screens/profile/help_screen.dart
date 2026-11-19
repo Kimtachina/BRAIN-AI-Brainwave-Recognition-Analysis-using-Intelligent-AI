@@ -15,7 +15,7 @@ class HelpScreen extends StatelessWidget {
       backgroundColor: Colors.transparent,
       appBar: buildAppPageBar(context, title: 'ช่วยเหลือ'),
       body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context, maxWidth: AppLayout.readingWidth), vertical: 20),
+        padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context), vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -58,7 +58,7 @@ class HelpScreen extends StatelessWidget {
                     'เราพร้อมดูแลสุขภาพสมองของคุณ',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey[600],
+                      color: AppColors.inkSoft,
                     ),
                   ),
                 ],
@@ -176,9 +176,9 @@ class HelpScreen extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE8E8E8)),
+        border: Border.all(color: AppColors.line),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -216,7 +216,7 @@ class HelpScreen extends StatelessWidget {
                   description,
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.grey[600],
+                    color: AppColors.inkSoft,
                     height: 1.4,
                   ),
                 ),
@@ -241,9 +241,9 @@ class HelpScreen extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE8E8E8)),
+          border: Border.all(color: AppColors.line),
         ),
         child: Row(
           children: [
@@ -265,7 +265,7 @@ class HelpScreen extends StatelessWidget {
                     title,
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.grey[500],
+                      color: AppColors.inkFaint,
                     ),
                   ),
                   Text(
@@ -278,7 +278,7 @@ class HelpScreen extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: Colors.grey[400]),
+            Icon(Icons.chevron_right, color: AppColors.inkFaint),
           ],
         ),
       ),
@@ -294,18 +294,18 @@ class HelpScreen extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: AppColors.line,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.grey[500], size: 22),
+          Icon(icon, color: AppColors.inkFaint, size: 22),
           const SizedBox(width: 12),
           Text(
             title,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[700],
+              color: AppColors.inkSoft,
             ),
           ),
           const Spacer(),
@@ -314,7 +314,7 @@ class HelpScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Colors.grey[600],
+              color: AppColors.inkSoft,
             ),
           ),
         ],

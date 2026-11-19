@@ -14,7 +14,7 @@ extension _TermsAndPrivacy on _RegisterScreenState {
           child: Container(
             height: MediaQuery.of(context).size.height * 0.8,
             decoration: const BoxDecoration(
-              color: Colors.white,
+              color: AppColors.surface,
               borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
             ),
             child: Column(
@@ -25,7 +25,7 @@ extension _TermsAndPrivacy on _RegisterScreenState {
                   width: 40,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: AppColors.line,
                     borderRadius: BorderRadius.circular(2.5),
                   ),
                 ),
@@ -76,7 +76,7 @@ extension _TermsAndPrivacy on _RegisterScreenState {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.surface,
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.05),
@@ -97,8 +97,8 @@ extension _TermsAndPrivacy on _RegisterScreenState {
                           Navigator.pop(context);
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.white,
+                          foregroundColor: AppColors.night,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),

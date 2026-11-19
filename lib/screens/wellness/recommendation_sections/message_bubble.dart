@@ -10,7 +10,7 @@ extension _MessageBubble on _RecommendationScreenState {
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
         constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.82,
+          maxWidth: math.min(MediaQuery.of(context).size.width * 0.82, 720),
         ),
         child: Column(
           crossAxisAlignment: message.isBot ? CrossAxisAlignment.start : CrossAxisAlignment.end,
@@ -94,17 +94,17 @@ extension _MessageBubble on _RecommendationScreenState {
                           MaterialPageRoute(builder: (_) => dest),
                         );
                       },
-                      icon: const Icon(Icons.rocket_launch_rounded, size: 14, color: Colors.white),
+                      icon: const Icon(Icons.rocket_launch_rounded, size: 14, color: AppColors.night),
                       label: Text(
                         'ไปทันที',
                         style: GoogleFonts.ibmPlexSansThai(
-                          color: Colors.white,
+                          color: AppColors.night,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                         elevation: 0,
@@ -139,7 +139,7 @@ extension _MessageBubble on _RecommendationScreenState {
                         decoration: BoxDecoration(
                           color: isSpeaking
                               ? AppColors.secondary.withValues(alpha: 0.15)
-                              : Colors.grey.withValues(alpha: 0.08),
+                              : AppColors.inkFaint.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(10),
                           border: isSpeaking
                               ? Border.all(color: AppColors.secondary.withValues(alpha: 0.4), width: 1)

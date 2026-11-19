@@ -32,7 +32,7 @@ extension _BandPowerSection on _HomeScreenState {
                 decoration: BoxDecoration(
                   color: (_museService.isConnected && _museService.latestData != null)
                       ? AppColors.secondary.withValues(alpha: 0.12)
-                      : Colors.grey.withValues(alpha: 0.12),
+                      : AppColors.inkFaint.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
@@ -41,7 +41,7 @@ extension _BandPowerSection on _HomeScreenState {
                     PulseDot(
                       color: (_museService.isConnected && _museService.latestData != null)
                           ? AppColors.secondary
-                          : Colors.grey,
+                          : AppColors.inkFaint,
                       size: 6,
                     ),
                     const SizedBox(width: 4),
@@ -54,7 +54,7 @@ extension _BandPowerSection on _HomeScreenState {
                         fontWeight: FontWeight.w700,
                         color: (_museService.isConnected && _museService.latestData != null)
                             ? AppColors.secondary
-                            : Colors.grey[600],
+                            : AppColors.inkSoft,
                       ),
                     ),
                   ],
@@ -70,6 +70,8 @@ extension _BandPowerSection on _HomeScreenState {
             style: const TextStyle(fontSize: 13, color: AppColors.inkSoft),
           ),
           const SizedBox(height: 18),
+          BandTrendChart(history: _bandHistory),
+          const SizedBox(height: 14),
 
           // รูปแบบเลย์เอาต์ยืดหยุ่นรองรับการแสดงผลความแรงคลื่นสมอง 5 ย่านความถี่ (Wrap แทนที่จะใช้การเลื่อนแนวนอน)
           LayoutBuilder(
@@ -190,13 +192,6 @@ extension _BandPowerSection on _HomeScreenState {
             EegResearchWaveformCard(
               buffers: _oscilloscopeBuffers,
               isSimulating: _museService.isSimulating,
-              expanded: _HomeScreenState._isResearchWavesExpanded,
-              onToggle: _toggleResearchWaves,
-            ),
-            const SizedBox(height: 18),
-            EegPipelineVisualizer(
-              channels: _oscilloscopeBuffers,
-              hasData: _oscilloscopeBuffers.values.any((b) => b.isNotEmpty),
             ),
           ],
         ],
@@ -213,7 +208,7 @@ extension _BandPowerSection on _HomeScreenState {
     bool isActive, {
     double? width,
   }) {
-    final displayColor = isActive ? color : Colors.grey[400]!;
+    final displayColor = isActive ? color : AppColors.inkFaint;
     return Container(
       width: width ?? 104,
       padding: const EdgeInsets.all(12),
@@ -231,7 +226,7 @@ extension _BandPowerSection on _HomeScreenState {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: isActive ? AppColors.ink : Colors.grey[600],
+              color: isActive ? AppColors.ink : AppColors.inkSoft,
             ),
           ),
           const SizedBox(height: 8),
@@ -278,7 +273,7 @@ extension _BandPowerSection on _HomeScreenState {
             desc,
             style: TextStyle(
               fontSize: 12,
-              color: isActive ? AppColors.inkSoft : Colors.grey[500],
+              color: isActive ? AppColors.inkSoft : AppColors.inkFaint,
               fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,

@@ -149,21 +149,42 @@ class SupabaseService {
       return {'success': false, 'message': 'กรุณาเข้าสู่ระบบใหม่ก่อนเปลี่ยนรหัสผ่าน'};
     }
 
-    if (currentPassword != null) {
-      try {
-        await client.auth.signInWithPassword(email: email, password: currentPassword);
-      } on AuthException {
-        return {'success': false, 'message': 'รหัสผ่านปัจจุบันไม่ถูกต้อง'};
-      }
+    if (currentPassword == null || currentPassword.isEmpty) {
+      return {'success': false, 'message': 'กรุณากรอกรหัสผ่านปัจจุบัน'};
     }
 
     try {
-      await client.auth.updateUser(UserAttributes(password: newPassword));
+      await client.auth.signInWithPassword(email: email, password: currentPassword);
+    } on AuthException {
+      return {'success': false, 'message': 'รหัสผ่านปัจจุบันไม่ถูกต้อง'};
+    }
+
+    try {
+      // ส่งรหัสผ่านปัจจุบันไปด้วย: โปรเจกต์ Supabase เปิดให้ต้องยืนยันรหัสเดิมทุกครั้งที่เปลี่ยนรหัสผ่าน
+      await client.auth.updateUser(UserAttributes(password: newPassword, currentPassword: currentPassword));
       return {'success': true, 'message': 'เปลี่ยนรหัสผ่านสำเร็จ'};
     } on AuthException catch (e) {
-      return {'success': false, 'message': 'ไม่สามารถเปลี่ยนรหัสผ่านได้: ${e.message}'};
+      return {'success': false, 'message': _passwordChangeError(e)};
     } catch (e) {
       return {'success': false, 'message': 'ไม่สามารถเปลี่ยนรหัสผ่านได้'};
+    }
+  }
+
+  /// แปลงข้อผิดพลาดจาก Supabase Auth ตอนเปลี่ยนรหัสผ่านเป็นข้อความภาษาไทยที่บอกว่าต้องแก้อะไร
+  static String _passwordChangeError(AuthException e) {
+    switch (e.code) {
+      case 'current_password_mismatch':
+        return 'รหัสผ่านปัจจุบันไม่ถูกต้อง';
+      case 'current_password_required':
+        return 'กรุณากรอกรหัสผ่านปัจจุบัน';
+      case 'same_password':
+        return 'รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสผ่านเดิม';
+      case 'weak_password':
+        return 'รหัสผ่านใหม่ยังไม่ปลอดภัยพอ ลองใช้รหัสที่ยาวขึ้นและผสมตัวเลขกับตัวอักษร';
+      case 'reauthentication_needed':
+        return 'กรุณาออกจากระบบแล้วเข้าสู่ระบบใหม่ ก่อนเปลี่ยนรหัสผ่าน';
+      default:
+        return 'ไม่สามารถเปลี่ยนรหัสผ่านได้: ${e.message}';
     }
   }
 

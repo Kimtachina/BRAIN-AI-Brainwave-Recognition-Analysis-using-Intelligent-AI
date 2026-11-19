@@ -60,30 +60,9 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
               padding: EdgeInsets.fromLTRB(AppLayout.gutter(context), 20, AppLayout.gutter(context), 10),
               child: Column(
                 children: [
-                  // ส่วนแสดงชื่อแบบทดสอบพร้อมไอคอนประจิตวิทยา
+                  // ส่วนแสดงชื่อแบบทดสอบ
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 8,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.psychology_outlined,
-                          color: AppColors.primary,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
                       const Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,19 +98,12 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
                     child: TabBar(
                       controller: _tabController,
                       indicator: BoxDecoration(
-                        color: AppColors.primary,
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.2),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
                       ),
                       indicatorSize: TabBarIndicatorSize.tab,
                       indicatorPadding: const EdgeInsets.all(3),
-                      labelColor: Colors.white,
+                      labelColor: AppColors.night,
                       unselectedLabelColor: AppColors.inkSoft,
                       labelStyle: const TextStyle(
                         fontSize: 14,
@@ -185,6 +157,19 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
       ),
     ),
   );
+  }
+
+  /// จอกว้างวางสองกล่องคู่กันและสูงเท่ากัน จอแคบเรียงต่อกันลงมา
+  Widget _sideBySide(Widget first, Widget second) {
+    if (!AppLayout.isWide(context)) {
+      return Column(children: [first, const SizedBox(height: 16), second]);
+    }
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [Expanded(child: first), const SizedBox(width: 16), Expanded(child: second)],
+      ),
+    );
   }
 
   Widget _buildTestTab() {
@@ -241,78 +226,78 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
 
           const SizedBox(height: 20),
 
-          // กล่องข้อมูลเกี่ยวกับเวลาและจำนวนข้อสอบในการทำประเมิน
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: AppTheme.glassDecoration(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.info_outline,
-                        color: AppColors.primary, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      'เกี่ยวกับแบบทดสอบ',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
+          // จอกว้าง: กล่องข้อมูลกับเกณฑ์ประเมินวางคู่กัน จอแคบเรียงลงมา
+          _sideBySide(
+            // กล่องข้อมูลเกี่ยวกับเวลาและจำนวนข้อสอบในการทำประเมิน
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: AppTheme.glassDecoration(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.info_outline,
+                          color: AppColors.primary, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'เกี่ยวกับแบบทดสอบ',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoRow(Icons.checklist, 'จำนวนคำถาม: 9 ข้อ'),
+                  _buildInfoRow(Icons.timer_outlined, 'ใช้เวลา: ประมาณ 2-3 นาที'),
+                  _buildInfoRow(Icons.bar_chart, 'คะแนนเต็ม: 27 คะแนน'),
+                  _buildInfoRow(Icons.verified, 'มาตรฐาน: WHO / APA'),
+                  const SizedBox(height: 8),
+                  Text(
+                    'แบบทดสอบนี้ใช้เป็นเครื่องมือคัดกรองเบื้องต้น ไม่สามารถใช้วินิจฉัยโรคได้',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.inkSoft,
+                      fontStyle: FontStyle.italic,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                _buildInfoRow(Icons.checklist, 'จำนวนคำถาม: 9 ข้อ'),
-                _buildInfoRow(Icons.timer_outlined, 'ใช้เวลา: ประมาณ 2-3 นาที'),
-                _buildInfoRow(Icons.bar_chart, 'คะแนนเต็ม: 27 คะแนน'),
-                _buildInfoRow(Icons.verified, 'มาตรฐาน: WHO / APA'),
-                const SizedBox(height: 8),
-                Text(
-                  'แบบทดสอบนี้ใช้เป็นเครื่องมือคัดกรองเบื้องต้น ไม่สามารถใช้วินิจฉัยโรคได้',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                    fontStyle: FontStyle.italic,
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // เกณฑ์ช่วงคะแนนการแปลผลลัพธ์
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: AppTheme.glassDecoration(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'เกณฑ์ประเมินผล',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
+            // เกณฑ์ช่วงคะแนนการแปลผลลัพธ์
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: AppTheme.glassDecoration(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'เกณฑ์ประเมินผล',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                _buildScoreRange('0-4', 'ปกติ', const Color(0xFF4CAF50)),
-                _buildScoreRange(
-                    '5-9', 'ความเครียดเล็กน้อย', const Color(0xFFFFC107)),
-                _buildScoreRange(
-                    '10-14', 'ความเครียดปานกลาง', const Color(0xFFFF9800)),
-                _buildScoreRange(
-                    '15-19', 'ความเครียดค่อนข้างรุนแรง', const Color(0xFFFF5722)),
-                _buildScoreRange('20-27', 'ความเครียดรุนแรง', const Color(0xFFF44336)),
-              ],
+                  const SizedBox(height: 12),
+                  _buildScoreRange('0-4', 'ปกติ', const Color(0xFF4CAF50)),
+                  _buildScoreRange(
+                      '5-9', 'ความเครียดเล็กน้อย', const Color(0xFFFFC107)),
+                  _buildScoreRange(
+                      '10-14', 'ความเครียดปานกลาง', const Color(0xFFFF9800)),
+                  _buildScoreRange(
+                      '15-19', 'ความเครียดค่อนข้างรุนแรง', const Color(0xFFFF5722)),
+                  _buildScoreRange('20-27', 'ความเครียดรุนแรง', const Color(0xFFF44336)),
+                ],
+              ),
             ),
           ),
 
@@ -330,7 +315,7 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
                 ).then((_) => _loadHistory());
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
@@ -340,13 +325,13 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.play_arrow_rounded, color: Colors.white, size: 24),
+                  Icon(Icons.play_arrow_rounded, color: AppColors.night, size: 24),
                   SizedBox(width: 8),
                   Text(
                     'เริ่มทำแบบประเมิน',
                     style: TextStyle(
                       fontSize: 17,
-                      color: Colors.white,
+                      color: AppColors.night,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -373,20 +358,20 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.history_rounded,
-                      size: 64, color: Colors.grey[300]),
+                      size: 64, color: AppColors.line),
                   const SizedBox(height: 16),
                   Text(
                     'ยังไม่มีประวัติการทดสอบ',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey[500],
+                      color: AppColors.inkFaint,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'ทำแบบทดสอบ PHQ-9 เพื่อเริ่มบันทึกประวัติ',
-                    style: TextStyle(fontSize: 13, color: Colors.grey[400]),
+                    style: TextStyle(fontSize: 13, color: AppColors.inkFaint),
                   ),
                 ],
               ),
@@ -498,7 +483,7 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
                         'ทดสอบเมื่อ: ${_formatDate(latest['test_date'])}',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey[600],
+                          color: AppColors.inkSoft,
                         ),
                       ),
                     const SizedBox(height: 4),
@@ -506,7 +491,7 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
                       'จำนวนครั้งที่ทดสอบ: ${_testHistory.length} ครั้ง',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey[600],
+                        color: AppColors.inkSoft,
                       ),
                     ),
                   ],
@@ -557,7 +542,7 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
                   'ผลการทดสอบ: ${display['label']}',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey[600],
+                    color: AppColors.inkSoft,
                   ),
                 ),
               ],
@@ -623,7 +608,7 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
           const SizedBox(width: 8),
           Text(
             label,
-            style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+            style: TextStyle(fontSize: 13, color: AppColors.inkSoft),
           ),
         ],
       ),
@@ -646,7 +631,7 @@ class _Phq9TabScreenState extends State<Phq9TabScreen>
       case 'severe':
         return {'label': 'ความเครียดรุนแรง', 'color': const Color(0xFFF44336)};
       default:
-        return {'label': 'ยังไม่ได้ทดสอบ', 'color': Colors.grey};
+        return {'label': 'ยังไม่ได้ทดสอบ', 'color': AppColors.inkFaint};
     }
   }
 

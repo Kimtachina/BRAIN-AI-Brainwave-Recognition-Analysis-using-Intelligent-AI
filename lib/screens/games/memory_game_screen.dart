@@ -126,8 +126,8 @@ class _MemoryGameScreenState extends State<MemoryGameScreen> {
               Navigator.pop(context);
               setState(() => _initGame());
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            child: const Text('เล่นอีกครั้ง', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
+            child: const Text('เล่นอีกครั้ง', style: TextStyle(color: AppColors.night)),
           ),
         ],
       ),
@@ -149,7 +149,7 @@ class _MemoryGameScreenState extends State<MemoryGameScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('จำนวนการเปิด: $moves', style: TextStyle(fontSize: 16, color: Colors.grey[700])),
+                Text('จำนวนการเปิด: $moves', style: TextStyle(fontSize: 16, color: AppColors.inkSoft)),
                 Text('จับคู่ได้: $matchedPairs/6', style: TextStyle(fontSize: 16, color: AppColors.primary, fontWeight: FontWeight.bold)),
               ],
             ),
@@ -191,10 +191,10 @@ class _MemoryGameScreenState extends State<MemoryGameScreen> {
             ElevatedButton(
               onPressed: () => setState(() => _initGame()),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
               ),
-              child: const Text('เริ่มใหม่', style: TextStyle(color: Colors.white)),
+              child: const Text('เริ่มใหม่', style: TextStyle(color: AppColors.night)),
             ),
           ],
         ),

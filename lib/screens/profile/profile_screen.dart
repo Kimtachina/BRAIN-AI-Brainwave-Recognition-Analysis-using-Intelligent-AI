@@ -86,11 +86,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final name = _user.fullName ?? _user.username;
-    final gutter = AppLayout.gutter(context, maxWidth: AppLayout.readingWidth);
+    final gutter = AppLayout.gutter(context);
     final wide = AppLayout.isWide(context);
 
     return Scaffold(
-      backgroundColor: AppColors.paper,
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         bottom: false,
         child: RefreshIndicator(

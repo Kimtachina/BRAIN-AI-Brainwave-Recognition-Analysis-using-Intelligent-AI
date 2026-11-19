@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import '../../../theme/app_theme.dart';
 
 class MicroWaveChart extends StatefulWidget {
   final Color color;
@@ -71,7 +72,7 @@ class _WaveLinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = isActive ? color : Colors.grey.withValues(alpha: 0.3)
+      ..color = isActive ? color : AppColors.inkFaint.withValues(alpha: 0.3)
       ..strokeWidth = 1.8
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;

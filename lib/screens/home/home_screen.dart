@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'dart:math' as math;
 import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_page.dart';
 import '../../widgets/settings_list.dart';
 import '../../utils/responsive_helper.dart';
 import '../../models/user.dart';
+import '../../services/muse/eeg_live_signal.dart';
 import '../../services/muse/muse_service.dart';
 import '../../services/api_service.dart';
 import '../../services/supabase_service.dart';
@@ -15,9 +15,9 @@ import '../../services/eeg/eeg_pdf_service.dart';
 import '../eeg/eeg_assessment_report_screen.dart';
 import '../eeg/eeg_report_history_screen.dart';
 import '../profile/settings_screen.dart';
-import '../../widgets/eeg/eeg_pipeline_visualizer.dart';
 import '../../widgets/eeg/eeg_research_waveform_card.dart';
 import 'widgets/electrode_placement_map.dart';
+import 'widgets/band_trend_chart.dart';
 import 'widgets/micro_wave_chart.dart';
 import 'widgets/pulse_dot.dart';
 
@@ -40,98 +40,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final MuseService _museService = MuseService();
-  static bool _isResearchWavesExpanded = true;
  
-  // สถานะค่าบัฟเฟอร์สัญญาณของหน้าจอออสซิลโลสโคปแบบเรียลไทม์ (Real-time scrolling oscilloscope state)
-  final Map<String, List<double>> _oscilloscopeBuffers = {
-    'TP9': [],
-    'AF7': [],
-    'AF8': [],
-    'TP10': [],
-  };
-  StreamSubscription? _rawEegSubscription;
-  Timer? _simulationWaveTimer;
+  /// สัญญาณดิบล่าสุดของเซนเซอร์ 4 จุด ใช้ร่วมกับหน้าเบื้องหลัง
+  final EegLiveSignal _liveSignal = EegLiveSignal.instance;
+  Map<String, List<double>> get _oscilloscopeBuffers => _liveSignal.buffers;
 
-  void _updateOscilloscopeSubscription() {
-    final bool shouldBeRunning = _museService.isConnected;
-    
-    if (shouldBeRunning) {
-      if (_museService.isSimulating) {
-        _rawEegSubscription?.cancel();
-        _rawEegSubscription = null;
-        if (_simulationWaveTimer == null || !_simulationWaveTimer!.isActive) {
-          _startSimulationWaves();
-        }
-      } else {
-        _simulationWaveTimer?.cancel();
-        _simulationWaveTimer = null;
-        if (_rawEegSubscription == null) {
-          _startListeningToRawEeg();
-        }
-      }
-    } else {
-      _rawEegSubscription?.cancel();
-      _rawEegSubscription = null;
-      _simulationWaveTimer?.cancel();
-      _simulationWaveTimer = null;
-      _oscilloscopeBuffers.forEach((key, value) => value.clear());
-    }
-  }
-
-  void _startListeningToRawEeg() {
-    _rawEegSubscription?.cancel();
-    _rawEegSubscription = _museService.rawEegStream.listen((channelData) {
-      if (!mounted || !_museService.isConnected || _museService.isSimulating) return;
-      setState(() {
-        channelData.forEach((channel, samples) {
-          _addOscilloscopeSample(channel, samples);
-        });
-      });
-    });
-  }
-
-  void _startSimulationWaves() {
-    _simulationWaveTimer?.cancel();
-    double time = 0;
-    final random = math.Random();
-    _simulationWaveTimer = Timer.periodic(const Duration(milliseconds: 30), (timer) {
-      if (!mounted || !_museService.isConnected || !_museService.isSimulating) {
-        timer.cancel();
-        return;
-      }
-      time += 0.03;
-      setState(() {
-        final tp9Val = 15.0 * math.sin(2 * math.pi * 10 * time) + 4.0 * math.sin(2 * math.pi * 4 * time) + (random.nextDouble() - 0.5) * 6.0;
-        final af7Val = 8.0 * math.sin(2 * math.pi * 20 * time) + 10.0 * math.sin(2 * math.pi * 8 * time) + (random.nextDouble() - 0.5) * 8.0;
-        final af8Val = 7.0 * math.sin(2 * math.pi * 18 * time) + 9.0 * math.sin(2 * math.pi * 9 * time) + (random.nextDouble() - 0.5) * 7.5;
-        final tp10Val = 10.0 * math.sin(2 * math.pi * 6 * time) + 15.0 * math.sin(2 * math.pi * 2 * time) + (random.nextDouble() - 0.5) * 5.0;
-
-        _addSingleOscilloscopeSample('TP9', tp9Val);
-        _addSingleOscilloscopeSample('AF7', af7Val);
-        _addSingleOscilloscopeSample('AF8', af8Val);
-        _addSingleOscilloscopeSample('TP10', tp10Val);
-      });
-    });
-  }
-
-  void _addOscilloscopeSample(String channel, List<double> samples) {
-    final buffer = _oscilloscopeBuffers[channel];
-    if (buffer != null) {
-      buffer.addAll(samples);
-      if (buffer.length > 500) {
-        buffer.removeRange(0, buffer.length - 500);
-      }
-    }
-  }
-
-  void _addSingleOscilloscopeSample(String channel, double value) {
-    final buffer = _oscilloscopeBuffers[channel];
-    if (buffer != null) {
-      buffer.add(value);
-      if (buffer.length > 500) {
-        buffer.removeAt(0);
-      }
-    }
+  void _onLiveSignal() {
+    if (mounted) setState(() {});
   }
 
   bool _isLoading = false;
@@ -159,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
 
     _museService.addListener(_onMuseDataUpdate);
-    _updateOscilloscopeSubscription();
+    _liveSignal.addListener(_onLiveSignal);
     _subscribeRealtime();
   }
 
@@ -259,8 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _testResultSub?.cancel();
     _brainwaveSub?.cancel();
 
-    _rawEegSubscription?.cancel();
-    _simulationWaveTimer?.cancel();
+    _liveSignal.removeListener(_onLiveSignal);
 
     _museService.removeListener(_onMuseDataUpdate);
     _museService.stopSimulation();
@@ -332,6 +246,9 @@ class _HomeScreenState extends State<HomeScreen> {
       'gamma': data.gamma,
       'attention': data.attention,
       'meditation': data.meditation,
+      // สัดส่วนแต่ละย่านแยกตามเซนเซอร์ เช่น 'AF7.alpha' ใช้วาดแผนที่สมองในใบรายงาน
+      for (final MapEntry(key: channel, value: bands) in _museService.channelBands.entries)
+        for (final MapEntry(key: band, value: pct) in bands.entries) '$channel.$band': pct,
     });
   }
 
@@ -406,9 +323,24 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  /// ค่าคลื่นสมองย้อนหลัง 60 วินาที สำหรับกราฟเส้นในการ์ด EEG Bands
+  final List<BrainwaveData> _bandHistory = [];
+
   void _onMuseDataUpdate() {
-    _updateOscilloscopeSubscription();
+    _recordBandHistory();
     if (mounted) setState(() {});
+  }
+
+  void _recordBandHistory() {
+    final data = _museService.isConnected ? _museService.latestData : null;
+    if (data == null) {
+      _bandHistory.clear();
+      return;
+    }
+    if (_bandHistory.isNotEmpty && identical(_bandHistory.last, data)) return;
+    _bandHistory.add(data);
+    final cutoff = data.timestamp.subtract(const Duration(seconds: 61));
+    _bandHistory.removeWhere((d) => d.timestamp.isBefore(cutoff));
   }
 
   Future<void> _scanAndConnect() async {
@@ -444,10 +376,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _disconnectMuse() async {
     await _museService.disconnect();
   }
-
-  /// พับ/ขยายการ์ดกราฟคลื่นดิบ (เรียกจาก band_power_section.dart)
-  void _toggleResearchWaves() =>
-      setState(() => _isResearchWavesExpanded = !_isResearchWavesExpanded);
 
   /// หน้าหลักแบ่งเป็นส่วน ๆ ตามลำดับที่แสดงบนจอ
   /// โค้ดของแต่ละส่วนอยู่ในโฟลเดอร์ home_sections/ (part ของไฟล์นี้)
@@ -489,7 +417,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.paper,
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {

@@ -4,7 +4,7 @@ part of '../test_screen.dart';
 extension _StartView on _TestScreenState {
   Widget _buildStart() {
     return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context, maxWidth: AppLayout.readingWidth), vertical: 20),
+      padding: EdgeInsets.symmetric(horizontal: AppLayout.gutter(context), vertical: 20),
       child: Column(
         children: [
 
@@ -89,14 +89,14 @@ extension _StartView on _TestScreenState {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.info_outline, color: AppColors.primary, size: 20),
+                    const Icon(Icons.info_outline, color: _infoTitleColor, size: 20),
                     const SizedBox(width: 8),
-                    Text(
+                    const Text(
                       'เกี่ยวกับแบบทดสอบ',
                       style: TextStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                        color: _infoTitleColor,
                       ),
                     ),
                   ],
@@ -107,11 +107,11 @@ extension _StartView on _TestScreenState {
                 _buildInfoRow('📊', 'คะแนนเต็ม: 27 คะแนน'),
                 _buildInfoRow('🏥', 'มาตรฐาน: WHO / APA'),
                 const SizedBox(height: 8),
-                Text(
+                const Text(
                   'แบบทดสอบนี้ใช้เป็นเครื่องมือคัดกรองเบื้องต้น ไม่สามารถใช้วินิจฉัยโรคได้',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey[600],
+                    color: _infoNoteColor,
                     fontStyle: FontStyle.italic,
                   ),
                 ),
@@ -125,9 +125,9 @@ extension _StartView on _TestScreenState {
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.grey.shade50,
+              color: AppColors.line,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey.shade200),
+              border: Border.all(color: AppColors.line),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,7 +156,7 @@ extension _StartView on _TestScreenState {
             child: ElevatedButton(
               onPressed: _startTest,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
@@ -167,13 +167,13 @@ extension _StartView on _TestScreenState {
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.play_arrow_rounded, color: Colors.white, size: 24),
+                  Icon(Icons.play_arrow_rounded, color: AppColors.night, size: 24),
                   SizedBox(width: 8),
                   Text(
                     'เริ่มทำแบบประเมิน',
                     style: TextStyle(
                       fontSize: 17,
-                      color: Colors.white,
+                      color: AppColors.night,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -188,6 +188,11 @@ extension _StartView on _TestScreenState {
     );
   }
 
+  // กล่อง "เกี่ยวกับแบบทดสอบ" พื้นฟ้าอ่อน จึงใช้ตัวอักษรสีเข้มให้อ่านชัด
+  static const _infoTitleColor = Color(0xFF4C3FB0);
+  static const _infoTextColor = Color(0xFF1E293B);
+  static const _infoNoteColor = Color(0xFF475569);
+
   Widget _buildInfoRow(String emoji, String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
@@ -195,7 +200,7 @@ extension _StartView on _TestScreenState {
         children: [
           Text(emoji, style: const TextStyle(fontSize: 16)),
           const SizedBox(width: 8),
-          Text(text, style: const TextStyle(fontSize: 14)),
+          Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _infoTextColor)),
         ],
       ),
     );
@@ -228,7 +233,7 @@ extension _StartView on _TestScreenState {
           const SizedBox(width: 8),
           Text(
             label,
-            style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+            style: TextStyle(fontSize: 13, color: AppColors.inkSoft),
           ),
         ],
       ),
