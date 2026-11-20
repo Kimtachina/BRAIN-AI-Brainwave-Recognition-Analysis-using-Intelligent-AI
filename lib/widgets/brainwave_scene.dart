@@ -85,7 +85,7 @@ class _BackdropPainter extends CustomPainter {
 
 /// คำใหญ่ไล่สีด้านหลังเส้นคลื่น ตัวอักษรหมุนรอบแกนนอนทีละตัวพร้อมเบลอตามความเร็ว (blurry text spin)
 /// หมุนตอนเปิดหน้าแล้ววนซ้ำทุก ๆ [period] ระหว่างนั้นตัวอักษรนิ่งและคมชัด
-/// ถ้าผู้ใช้ตั้งเครื่องให้ลดการเคลื่อนไหว จะแสดงนิ่ง ๆ ไม่หมุน
+/// หมุนเสมอแม้เครื่องตั้ง "ลดการเคลื่อนไหว" ไว้ (เจ้าของแอปเลือกเอง)
 class GiantWord extends StatefulWidget {
   final String text;
   final double fontSize;
@@ -99,38 +99,20 @@ class GiantWord extends StatefulWidget {
   State<GiantWord> createState() => _GiantWordState();
 }
 
-class _GiantWordState extends State<GiantWord> with TickerProviderStateMixin {
+class _GiantWordState extends State<GiantWord>
+    with SingleTickerProviderStateMixin {
+  // หน้าแรกเป็นฉากโชว์ เจ้าของแอปเลือกให้หมุนเสมอ แม้เครื่องจะตั้ง "ลดการเคลื่อนไหว" ไว้
   late final AnimationController _spin = AnimationController(
     vsync: this,
     duration: GiantWord.period,
-  );
-
-  /// โหมดลดการเคลื่อนไหว: ไม่หมุน แค่ค่อย ๆ ชัดขึ้นจากเบลอครั้งเดียวตอนเปิดหน้า
-  late final AnimationController _settle = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 900),
-  );
+  )..repeat();
 
   static const _spinMs = 1100; // เวลาที่ตัวอักษรแต่ละตัวหมุนครบรอบ
   static const _staggerMs = 110; // ตัวถัดไปเริ่มช้ากว่าตัวก่อนหน้า
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (AppMotion.reduced(context)) {
-      _spin.stop();
-      _spin.value = 0;
-      if (_settle.value == 0 && !_settle.isAnimating) _settle.forward();
-    } else {
-      _settle.value = 1;
-      if (!_spin.isAnimating) _spin.repeat();
-    }
-  }
-
-  @override
   void dispose() {
     _spin.dispose();
-    _settle.dispose();
     super.dispose();
   }
 
@@ -156,14 +138,10 @@ class _GiantWordState extends State<GiantWord> with TickerProviderStateMixin {
               stops: [0.05, 0.55, 1],
             ).createShader(bounds),
             child: AnimatedBuilder(
-              animation: Listenable.merge([_spin, _settle]),
+              animation: _spin,
               builder: (context, _) {
                 final nowMs = _spin.value * GiantWord.period.inMilliseconds;
-                final settleBlur =
-                    (1 - Curves.easeOutCubic.transform(_settle.value)) *
-                    widget.fontSize *
-                    0.05;
-                final row = Row(
+                return Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     for (final (i, letter) in letters.indexed)
@@ -177,15 +155,6 @@ class _GiantWordState extends State<GiantWord> with TickerProviderStateMixin {
                         (nowMs - i * _staggerMs) / _spinMs,
                       ),
                   ],
-                );
-                if (settleBlur < 0.05) return row;
-                return ImageFiltered(
-                  imageFilter: ui.ImageFilter.blur(
-                    sigmaX: settleBlur,
-                    sigmaY: settleBlur,
-                    tileMode: TileMode.decal,
-                  ),
-                  child: row,
                 );
               },
             ),
@@ -244,13 +213,9 @@ class _BrainwaveFieldState extends State<BrainwaveField>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (AppMotion.reduced(context)) {
-      _flow.stop();
-      _reveal.value = 1;
-    } else {
-      if (!_flow.isAnimating) _flow.repeat();
-      if (_reveal.value == 0 && !_reveal.isAnimating) _reveal.forward();
-    }
+    // หน้าแรกเป็นฉากโชว์ เจ้าของแอปเลือกให้เส้นคลื่นขยับเสมอ แม้เครื่องจะตั้ง "ลดการเคลื่อนไหว" ไว้
+    if (!_flow.isAnimating) _flow.repeat();
+    if (_reveal.value == 0 && !_reveal.isAnimating) _reveal.forward();
   }
 
   @override
