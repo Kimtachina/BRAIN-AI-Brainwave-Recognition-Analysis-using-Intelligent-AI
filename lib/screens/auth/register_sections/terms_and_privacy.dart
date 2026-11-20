@@ -14,7 +14,7 @@ extension _TermsAndPrivacy on _RegisterScreenState {
           child: Container(
             height: MediaQuery.of(context).size.height * 0.8,
             decoration: const BoxDecoration(
-              color: AppColors.surface,
+              color: AppColors.nightSurface,
               borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
             ),
             child: Column(
@@ -25,7 +25,7 @@ extension _TermsAndPrivacy on _RegisterScreenState {
                   width: 40,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: AppColors.line,
+                    color: AppColors.nightLine,
                     borderRadius: BorderRadius.circular(2.5),
                   ),
                 ),
@@ -53,9 +53,9 @@ extension _TermsAndPrivacy on _RegisterScreenState {
                 ),
                 // แท็บเลือกหมวด
                 TabBar(
-                  labelColor: AppColors.primary,
+                  labelColor: AppColors.alphaWave,
                   unselectedLabelColor: AppColors.inkSoft,
-                  indicatorColor: AppColors.primary,
+                  indicatorColor: AppColors.alphaWave,
                   labelStyle: GoogleFonts.ibmPlexSansThai(fontWeight: FontWeight.bold, fontSize: 14),
                   unselectedLabelStyle: GoogleFonts.ibmPlexSansThai(fontWeight: FontWeight.normal, fontSize: 14),
                   tabs: const [
@@ -76,7 +76,7 @@ extension _TermsAndPrivacy on _RegisterScreenState {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: AppColors.nightSurface,
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.05),

@@ -1,41 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// ชุดสี "Night" — ฉากกลางคืนเดียวกับหน้าแรก
-/// พื้นม่วงเกือบดำ ตัวหนังสือขาวอมม่วง สีหลักม่วงตามคลื่น Alpha (ภาวะผ่อนคลาย)
-/// สีรองเขียวอมฟ้าตามคลื่น Theta ใช้กับสถานะดี/ปกติ สีอำพันใช้เตือน
-/// ปุ่มหลักเป็นแคปซูลสีขาวตัวหนังสือเข้ม ไม่มีเงา แยกชั้นด้วยเส้นขอบบางแทน
+/// ชุดสี "Sky" ของหน้าด้านในแอป: ท้องฟ้าสีฟ้าเข้มมีเมฆจาง ๆ แผ่นเนื้อหาเป็นกระจกสีฟ้าเข้ม
+/// ตัวหนังสือขาว สีเด่นเหลืองอุ่นแบบแสงแดด ใช้กับลิงก์ ตัวเลขสำคัญ และสิ่งที่เลือกอยู่
+/// ปุ่มหลักยังเป็นแคปซูลสีขาวตัวหนังสือเข้ม
+///
+/// หน้าแรก เข้าสู่ระบบ และสมัครสมาชิก ยังเป็นฉากกลางคืน (night, nightTop, theta, alphaWave, glow)
 class AppColors {
-  // ฉากกลางคืน: ใช้วาดพื้นหลังและเส้นคลื่น
-  static const Color night = Color(0xFF0B0A14); // ล่างสุดของฉาก ตัวหนังสือบนปุ่มขาว
-  static const Color nightTop = Color(0xFF181530); // บนสุดของฉาก
+  // ฉากกลางคืนของหน้าแรก/เข้าสู่ระบบ และสีตัวหนังสือบนปุ่มขาว
+  static const Color night = Color(0xFF0B0A14);
+  static const Color nightTop = Color(0xFF181530);
+  static const Color nightSurface = Color(0xFF17152A); // ช่องกรอกบนฉากกลางคืน
+  static const Color nightLine = Color(0xFF2C2945);
   static const Color theta = Color(0xFF6FD1C1);
   static const Color alphaWave = Color(0xFFA394F7);
-  static const Color glow = Color(0xFFE9C48A); // แสงอุ่นตรงขอบฟ้า
+  static const Color glow = Color(0xFFE9C48A);
 
-  // สีหลัก: ลิงก์ ตัวเลือกที่เลือกอยู่ ไอคอนเด่น
-  static const Color primary = Color(0xFF8E80F5);
-  static const Color primaryDeep = Color(0xFFB9AEFB); // ข้อความบนพื้นสีหลักอ่อน (บนพื้นมืดจึงสว่างกว่าสีหลัก)
-  static const Color primarySoft = Color(0xFF26214A); // พื้นของสิ่งที่เลือกอยู่
+  // ท้องฟ้า: บนเข้ม ล่างสว่างขึ้นเล็กน้อย (ยังเข้มพอให้ตัวหนังสือขาวอ่านชัด)
+  static const Color skyTop = Color(0xFF184A8F);
+  static const Color skyBottom = Color(0xFF3673BD);
+
+  // สีเด่น: เหลืองแสงแดด
+  static const Color primary = Color(0xFFFFD45C);
+  static const Color primaryDeep = Color(0xFFFFE599); // ข้อความบนพื้นสีเด่นอ่อน
+  static const Color primarySoft = Color(0xFF173F78); // พื้นของสิ่งที่เลือกอยู่ แถบหัวการ์ด
 
   // สีรอง: สถานะปกติ เชื่อมต่อแล้ว สำเร็จ
-  static const Color secondary = Color(0xFF4FBFAE);
-  static const Color secondarySoft = Color(0xFF123330);
+  static const Color secondary = Color(0xFF6EE7B7);
+  static const Color secondarySoft = Color(0xFF1B5872);
 
   // พื้นผิว
-  static const Color paper = Color(0xFF0E0C1A); // พื้นหลังทั้งแอป
-  static const Color surface = Color(0xFF17152A); // แผ่นเนื้อหา
-  static const Color line = Color(0xFF2C2945); // เส้นขอบและเส้นคั่น
+  static const Color paper = Color(0xFF2560A8); // พื้นหลังเมื่อไม่มีฉากท้องฟ้า
+  static const Color surface = Color(0xD91E5299); // แผ่นกระจกสีฟ้าเข้ม (โปร่งเล็กน้อยให้เห็นเมฆ)
+  static const Color line = Color(0xFF4A82C6); // เส้นขอบและเส้นคั่น
 
   // ตัวหนังสือ
-  static const Color ink = Color(0xFFF4F2FA); // หลัก
-  static const Color inkSoft = Color(0xFFB7B2CB); // รอง
-  static const Color inkFaint = Color(0xFF8A85A3); // คำอธิบาย ตัวยึดตำแหน่ง
+  static const Color ink = Color(0xFFFFFFFF);
+  static const Color inkSoft = Color(0xFFDDEAFA);
+  static const Color inkFaint = Color(0xFFB4CCEA);
 
-  // สถานะ
-  static const Color warning = Color(0xFFE9B04F);
-  static const Color error = Color(0xFFE46A6A);
-  static const Color orange = Color(0xFFE8894A);
+  // สถานะ (สว่างพอจะอ่านบนพื้นฟ้า)
+  static const Color warning = Color(0xFFFFB84D);
+  static const Color error = Color(0xFFFF8F8F);
+  static const Color orange = Color(0xFFFFA463);
 
   // ชื่อเดิมที่กราฟคลื่นสดและช่องแชตยังเรียกใช้
   static const Color deepSpaceBlue = surface;
@@ -46,13 +53,13 @@ class AppColors {
 /// เหลือไล่สีไว้เฉพาะจุดที่โค้ดเดิมยังเรียกใช้ ทุกตัวไล่แค่ในโทนเดียวกัน ไม่ใช่ลายประดับ
 class AppGradients {
   static const LinearGradient primary = LinearGradient(
-    colors: [AppColors.primary, Color(0xFF6656D8)],
+    colors: [AppColors.primary, Color(0xFFFFB238)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient memoryGame = LinearGradient(
-    colors: [Color(0xFF4A4566), Color(0xFF26223A)],
+    colors: [Color(0xFF3B6FB6), Color(0xFF1D4787)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -63,11 +70,11 @@ class AppGradients {
     end: Alignment.bottomRight,
   );
 
-  /// พื้นหลังของฉาก ไล่จากม่วงเข้มด้านบนลงไปเกือบดำ
+  /// พื้นท้องฟ้า ไล่จากฟ้าเข้มด้านบนลงมาสว่างขึ้น
   static const LinearGradient glassBackgroundGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [AppColors.nightTop, AppColors.paper],
+    colors: [AppColors.skyTop, AppColors.skyBottom],
   );
 }
 
@@ -146,8 +153,8 @@ class AppTextStyles {
 /// รัศมีมุม: แบ่งตามลำดับชั้น ไม่ใช้ค่าเดียวทุกอย่าง
 class AppRadius {
   static const double control = 10; // ช่องกรอก ปุ่ม
-  static const double card = 14; // แผ่นเนื้อหา
-  static const double sheet = 20; // แผ่นที่เลื่อนขึ้นจากล่าง หน้าต่างกลางจอ
+  static const double card = 18; // แผ่นเนื้อหา (กระจกมุมมนแบบการ์ดพยากรณ์อากาศ)
+  static const double sheet = 24; // แผ่นที่เลื่อนขึ้นจากล่าง หน้าต่างกลางจอ
 }
 
 class AppTheme {
@@ -198,7 +205,7 @@ class AppTheme {
             bodySmall: base.bodySmall?.copyWith(fontSize: 13, height: 1.5, color: AppColors.inkSoft),
           ),
       appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.paper,
+        backgroundColor: AppColors.skyTop,
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
         elevation: 0,

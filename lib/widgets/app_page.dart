@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
-import 'brainwave_scene.dart';
+import 'sky_backdrop.dart';
 
 /// ค่ากลางสำหรับจัดความกว้างของเนื้อหาบนจอกว้าง (เว็บ/แท็บเล็ต)
 class AppLayout {
@@ -38,7 +38,7 @@ class ShellInset extends InheritedWidget {
   bool updateShouldNotify(ShellInset old) => old.left != left;
 }
 
-/// พื้นหลังของทุกหน้า: ฉากกลางคืนเดียวกับหน้าแรก ไล่จากม่วงเข้มลงไปเกือบดำ มีแสงอุ่นจาง ๆ ด้านบน
+/// พื้นหลังของหน้าด้านในแอป: ฉากท้องฟ้า (หน้าแรกและหน้าเข้าสู่ระบบยังเป็นฉากกลางคืน)
 class AppBackground extends StatelessWidget {
   final Widget child;
 
@@ -47,7 +47,7 @@ class AppBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Stack(
         children: [
-          const Positioned.fill(child: HeroBackdrop(horizon: 0)),
+          const Positioned.fill(child: SkyBackdrop()),
           Positioned.fill(child: child),
         ],
       );
@@ -104,7 +104,7 @@ PreferredSizeWidget buildAppPageBar(
   List<Widget>? actions,
 }) {
   return AppBar(
-    backgroundColor: AppColors.paper,
+    backgroundColor: AppColors.skyTop,
     surfaceTintColor: Colors.transparent,
     elevation: 0,
     scrolledUnderElevation: 0,

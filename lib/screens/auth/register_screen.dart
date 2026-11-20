@@ -89,12 +89,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: AppColors.primary,
+              primary: AppColors.alphaWave,
               onPrimary: AppColors.night,
-              surface: AppColors.surface,
+              surface: AppColors.nightSurface,
               onSurface: AppColors.ink,
             ),
-            textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: AppColors.primaryDeep)),
+            textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: AppColors.alphaWave)),
           ),
           child: child!,
         );
@@ -331,13 +331,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   const TextSpan(text: 'ฉันยอมรับ'),
                                   TextSpan(
                                     text: 'เงื่อนไขการใช้งาน',
-                                    style: const TextStyle(color: AppColors.primaryDeep, fontWeight: FontWeight.w600),
+                                    style: const TextStyle(color: AppColors.alphaWave, fontWeight: FontWeight.w600),
                                     recognizer: _termsRecognizer,
                                   ),
                                   const TextSpan(text: 'และ'),
                                   TextSpan(
                                     text: 'นโยบายความเป็นส่วนตัว',
-                                    style: const TextStyle(color: AppColors.primaryDeep, fontWeight: FontWeight.w600),
+                                    style: const TextStyle(color: AppColors.alphaWave, fontWeight: FontWeight.w600),
                                     recognizer: _privacyRecognizer,
                                   ),
                                 ],

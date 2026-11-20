@@ -40,7 +40,7 @@ extension _PasswordStrength on _RegisterScreenState {
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: strengthProgress,
-                    backgroundColor: AppColors.line,
+                    backgroundColor: AppColors.nightLine,
                     color: strengthColor,
                     minHeight: 6,
                   ),

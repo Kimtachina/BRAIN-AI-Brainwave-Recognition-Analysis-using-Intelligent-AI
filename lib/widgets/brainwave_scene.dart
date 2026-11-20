@@ -385,8 +385,42 @@ class AuthBackdrop extends StatelessWidget {
           child: Opacity(opacity: wide ? 0.9 : 0.3, child: const BrainwaveField(horizon: 0.6)),
         ),
         const Positioned.fill(child: HeroShade()),
-        Positioned.fill(child: child),
+        Positioned.fill(child: Theme(data: nightFormTheme(Theme.of(context)), child: child)),
       ],
     );
   }
+}
+
+/// หน้าเข้าสู่ระบบ/สมัครสมาชิกยังเป็นฉากกลางคืน จึงให้ช่องกรอกใช้พื้นกลางคืน ไม่ใช่กระจกฟ้าของหน้าด้านใน
+ThemeData nightFormTheme(ThemeData base) {
+  OutlineInputBorder outline(Color color, [double width = 1]) => OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppRadius.control),
+        borderSide: BorderSide(color: color, width: width),
+      );
+  return base.copyWith(
+    inputDecorationTheme: base.inputDecorationTheme.copyWith(
+      fillColor: AppColors.nightSurface,
+      border: outline(AppColors.nightLine),
+      enabledBorder: outline(AppColors.nightLine),
+      disabledBorder: outline(AppColors.nightLine),
+      focusedBorder: outline(AppColors.alphaWave, 1.6),
+    ),
+    colorScheme: base.colorScheme.copyWith(
+      primary: AppColors.alphaWave,
+      surface: AppColors.nightSurface,
+      outline: AppColors.nightLine,
+    ),
+    dividerColor: AppColors.nightLine,
+    dividerTheme: base.dividerTheme.copyWith(color: AppColors.nightLine),
+    textButtonTheme: TextButtonThemeData(
+      style: (base.textButtonTheme.style ?? const ButtonStyle()).copyWith(
+        foregroundColor: const WidgetStatePropertyAll(Color(0xFFB9AEFB)),
+      ),
+    ),
+    checkboxTheme: base.checkboxTheme.copyWith(
+      fillColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.selected) ? AppColors.alphaWave : Colors.transparent,
+      ),
+    ),
+  );
 }

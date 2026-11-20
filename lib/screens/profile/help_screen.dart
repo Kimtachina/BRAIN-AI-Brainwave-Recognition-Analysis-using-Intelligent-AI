@@ -79,31 +79,31 @@ class HelpScreen extends StatelessWidget {
 
             _buildFeatureCard(
               icon: Icons.quiz_outlined,
-              iconColor: Colors.blue,
+              iconColor: const Color(0xFF9FD3FF),
               title: 'แบบทดสอบ PHQ-9',
               description: 'ทำแบบทดสอบเพื่อประเมินสุขภาพจิตของคุณ ผลลัพธ์จะบันทึกไว้ในประวัติ',
             ),
             _buildFeatureCard(
               icon: Icons.games_outlined,
-              iconColor: Colors.green,
+              iconColor: AppColors.secondary,
               title: 'เกมบริหารสมอง',
               description: 'เล่นเกมฝึกสมอง เช่น เกมจำ, ปริศนาตัวเลข, ลำดับสี เพื่อเสริมสร้างความจำและสมาธิ',
             ),
             _buildFeatureCard(
               icon: Icons.history,
-              iconColor: Colors.orange,
+              iconColor: AppColors.orange,
               title: 'ดูประวัติ',
               description: 'ดูประวัติผลการทดสอบทั้งหมดของคุณ ติดตามความเปลี่ยนแปลงของสุขภาพจิต',
             ),
             _buildFeatureCard(
               icon: Icons.chat_bubble_outline,
-              iconColor: Colors.purple,
+              iconColor: const Color(0xFFE9B8FF),
               title: 'แชทคำแนะนำ AI',
               description: 'พูดคุยกับ AI เพื่อรับคำแนะนำด้านสุขภาพจิต พร้อมระบบ RAG ที่ให้ข้อมูลแม่นยำ',
             ),
             _buildFeatureCard(
               icon: Icons.bluetooth,
-              iconColor: Colors.indigo,
+              iconColor: const Color(0xFFB8C4FF),
               title: 'เชื่อมต่อ Muse S',
               description: 'เชื่อมต่ออุปกรณ์ Muse S เพื่อวัดคลื่นสมอง EEG แบบ real-time',
             ),
@@ -122,14 +122,14 @@ class HelpScreen extends StatelessWidget {
 
             _buildContactCard(
               icon: Icons.phone,
-              iconColor: Colors.green,
+              iconColor: AppColors.secondary,
               title: 'สายด่วนสุขภาพจิต',
               value: '1323',
               onTap: () => _launchUrl('tel:1323'),
             ),
             _buildContactCard(
               icon: Icons.email,
-              iconColor: Colors.blue,
+              iconColor: const Color(0xFF9FD3FF),
               title: 'อีเมล',
               value: 'support@smartbrain.com',
               onTap: () => _launchUrl('mailto:support@smartbrain.com'),
