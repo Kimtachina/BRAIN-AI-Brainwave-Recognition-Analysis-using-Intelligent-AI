@@ -10,6 +10,7 @@ import 'register_screen.dart';
 import 'app_preview_section.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/brainwave_scene.dart';
+import '../../widgets/smooth_scroll.dart';
 
 /// หน้าแรกของแอป: ฉากมืดเต็มจอ คำ "Brain" ใหญ่จมอยู่หลังเส้นคลื่นสมองที่ซ้อนกันเป็นชั้น
 /// หัวเรื่องซ้ายล่าง คำอธิบายกับปุ่มสร้างบัญชีขวาล่าง ปุ่มเข้าสู่ระบบอยู่แถบบน
@@ -25,6 +26,16 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   bool _isCheckingSession = true; // กำลังเช็ก session ที่ค้างอยู่ในเครื่อง
   final _previewKey = GlobalKey();
 
+  /// ล้อเมาส์เลื่อนแบบนุ่ม (ไม่กระโดดทีละขั้น)
+  late final _scroll = SmoothScrollController(
+    reduceMotion: () => AppMotion.reduced(context),
+  );
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
 
   /// เลื่อนลงไปที่ภาพตัวอย่างหน้าจอแอป
   void _showPreview() {
@@ -104,6 +115,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           final gutter = wide ? (w * 0.07).clamp(32.0, 112.0) : 20.0;
 
           return SingleChildScrollView(
+            controller: _scroll,
             child: Column(
               children: [
                 SizedBox(
@@ -191,7 +203,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     ],
                   ),
                 ),
-                AppPreviewSection(key: _previewKey, gutter: gutter, wide: wide),
+                // แยกเป็นชั้นวาดของตัวเอง เลื่อนแล้วไม่ต้องวาดมือถือและเงาใหม่ทุกเฟรม
+                RepaintBoundary(
+                  child: AppPreviewSection(
+                    key: _previewKey,
+                    gutter: gutter,
+                    wide: wide,
+                  ),
+                ),
               ],
             ),
           );
