@@ -105,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _validateEmail(String? value) {
     final email = value?.trim() ?? '';
     if (email.isEmpty) return 'กรุณากรอกอีเมล';
-    if (!PasswordValidator.isValidEmail(email)) return 'รูปแบบอีเมลไม่ถูกต้อง เช่น name@example.com';
+    if (!PasswordValidator.isValidEmail(email)) return 'รูปแบบอีเมลไม่ถูกต้อง เช่น yourname@gmail.com';
     return null;
   }
 
@@ -214,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       _buildLabel('อีเมล'),
                       _buildTextField(
                         controller: _emailController,
-                        hintText: 'name@example.com',
+                        hintText: 'yourname@gmail.com',
                         keyboardType: TextInputType.emailAddress,
                         autofillHints: const [AutofillHints.username, AutofillHints.email],
                         textInputAction: TextInputAction.next,

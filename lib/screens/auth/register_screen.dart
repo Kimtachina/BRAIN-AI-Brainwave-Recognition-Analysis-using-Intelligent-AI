@@ -123,7 +123,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     // ตรวจสอบรูปแบบอีเมล
     if (!PasswordValidator.isValidEmail(_emailController.text.trim())) {
-      _showError('กรุณากรอกอีเมลให้ถูกต้อง เช่น name@example.com');
+      _showError('กรุณากรอกอีเมลให้ถูกต้อง เช่น yourname@gmail.com');
       return;
     }
 
@@ -222,7 +222,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   _buildLabel('อีเมล'),
                   _buildTextField(
                     controller: _emailController,
-                    hintText: 'name@example.com',
+                    hintText: 'yourname@gmail.com',
                     keyboardType: TextInputType.emailAddress,
                   ),
                   const SizedBox(height: 16),
