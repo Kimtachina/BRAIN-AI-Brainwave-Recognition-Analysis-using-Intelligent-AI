@@ -7,8 +7,16 @@ useDefault = true
 # - env/supabase.json: ไฟล์ตั้งค่าเฉพาะเครื่องที่อยู่ใน .gitignore (ไม่เข้า git)
 #   เก็บได้แค่ SUPABASE_URL และ anon key ซึ่ง Supabase ออกแบบให้อยู่ในตัวแอปได้
 #   ห้ามใส่ service_role key หรือ key ลับอื่นในไฟล์นี้ เพราะ gitleaks จะไม่ตรวจไฟล์นี้
-description = "ไฟล์ที่ไม่มีความลับ: Podfile.lock checksums และ env/supabase.json (anon key, gitignored)"
+# - .dart_tool/: แคชของ Dart/Flutter ที่อยู่ใน .gitignore (ไม่เข้า git)
+#   รวมถึงโปรไฟล์ Chrome ที่ `flutter run -d chrome` สร้างไว้ใน .dart_tool/chrome-device/
+#   ซึ่งมี API key ที่ฝังมากับ Chrome เอง (เช่น optimizationguide-pa.googleapis.com) ไม่ใช่ key ของโปรเจกต์
+# - build/: ผลคอมไพล์ของ Flutter ที่อยู่ใน .gitignore (ไม่เข้า git)
+#   ไฟล์ .dill มีค่าคงที่หัว PEM (เช่น BEGIN_EC_PRIVATE_KEY) จากไลบรารีเข้ารหัส ไม่ใช่ key จริง
+#   build/web/main.dart.js มี Supabase anon key ที่ออกแบบให้อยู่ในตัวแอปได้
+description = "ไฟล์ที่ไม่มีความลับ: Podfile.lock checksums, env/supabase.json (anon key), .dart_tool/ และ build/ (ทั้งสามอยู่ใน .gitignore)"
 paths = [
   '''(^|/)Podfile\.lock$''',
   '''(^|/)env/supabase\.json$''',
+  '''(^|/)\.dart_tool/''',
+  '''^build/''',
 ]
