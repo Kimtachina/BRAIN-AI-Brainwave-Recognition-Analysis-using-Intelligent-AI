@@ -56,24 +56,43 @@ class AppPreviewSection extends StatelessWidget {
       color: HeroPalette.text,
     );
 
-    return Container(
-      width: double.infinity,
-      color: HeroPalette.night,
-      padding: EdgeInsets.only(top: wide ? 72 : 48, bottom: wide ? 96 : 56),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: gutter),
-            child: Semantics(
-              header: true,
-              child: Text('ดูหน้าตาแอป', style: titleStyle),
+    // พื้นหลังชุดเดียวกับฉากด้านบน (ม่วงเข้มมีแสงเรือง) ขอบบนไล่จากสีมืดของท้ายฉาก จึงต่อกันเนียนไม่เห็นรอยต่อ
+    return Stack(
+      children: [
+        const Positioned.fill(child: HeroBackdrop(horizon: 0.55)),
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  HeroPalette.night,
+                  HeroPalette.night.withValues(alpha: 0),
+                ],
+                stops: const [0, 0.22],
+              ),
             ),
           ),
-          SizedBox(height: wide ? 40 : 28),
-          wide ? _row(context) : _carousel(context),
-        ],
-      ),
+        ),
+        Padding(
+          padding: EdgeInsets.only(top: wide ? 72 : 48, bottom: wide ? 96 : 56),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: gutter),
+                child: Semantics(
+                  header: true,
+                  child: Text('ดูหน้าตาแอป', style: titleStyle),
+                ),
+              ),
+              SizedBox(height: wide ? 40 : 28),
+              wide ? _row(context) : _carousel(context),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
