@@ -4,3 +4,6 @@ ios/Podfile.lock:generic-api-key:176
 ios/Podfile.lock:generic-api-key:186
 macos/Podfile.lock:generic-api-key:147
 macos/Podfile.lock:generic-api-key:158
+# Supabase anon key (role: anon) ที่เคยเขียนตรงในโค้ดตอน commit แรก ปัจจุบันไม่มีในโค้ดแล้ว
+# anon key ออกแบบให้อยู่ในตัวแอปได้ ไม่ใช่ความลับ (ไม่ใช่ service_role key)
+b0f22546d1fa4c3fcf3ace4d2af74a3e444e63cc:lib/services/supabase_service.dart:jwt:11
