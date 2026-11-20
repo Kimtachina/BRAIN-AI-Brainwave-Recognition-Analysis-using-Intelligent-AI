@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -23,7 +24,9 @@ class HeroBackdrop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ExcludeSemantics(child: CustomPaint(painter: _BackdropPainter(horizon)));
+    return ExcludeSemantics(
+      child: CustomPaint(painter: _BackdropPainter(horizon)),
+    );
   }
 }
 
@@ -50,14 +53,17 @@ class _BackdropPainter extends CustomPainter {
     canvas.drawRect(
       rect,
       Paint()
-        ..shader = RadialGradient(
-          colors: [
-            HeroPalette.glow.withValues(alpha: 0.16),
-            HeroPalette.alpha.withValues(alpha: 0.10),
-            HeroPalette.alpha.withValues(alpha: 0),
-          ],
-          stops: const [0, 0.35, 1],
-        ).createShader(Rect.fromCircle(center: horizonCenter, radius: longSide * 0.55)),
+        ..shader =
+            RadialGradient(
+              colors: [
+                HeroPalette.glow.withValues(alpha: 0.16),
+                HeroPalette.alpha.withValues(alpha: 0.10),
+                HeroPalette.alpha.withValues(alpha: 0),
+              ],
+              stops: const [0, 0.35, 1],
+            ).createShader(
+              Rect.fromCircle(center: horizonCenter, radius: longSide * 0.55),
+            ),
     );
 
     final corner = Offset(size.width * 0.12, size.height * 0.08);
@@ -65,7 +71,10 @@ class _BackdropPainter extends CustomPainter {
       rect,
       Paint()
         ..shader = RadialGradient(
-          colors: [HeroPalette.theta.withValues(alpha: 0.09), HeroPalette.theta.withValues(alpha: 0)],
+          colors: [
+            HeroPalette.theta.withValues(alpha: 0.09),
+            HeroPalette.theta.withValues(alpha: 0),
+          ],
         ).createShader(Rect.fromCircle(center: corner, radius: longSide * 0.5)),
     );
   }
@@ -74,37 +83,136 @@ class _BackdropPainter extends CustomPainter {
   bool shouldRepaint(_BackdropPainter old) => old.horizon != horizon;
 }
 
-/// คำใหญ่โปร่งแสงด้านหลังเส้นคลื่น (แทนคำว่า "Nature" ในภาพต้นแบบ)
-class GiantWord extends StatelessWidget {
+/// คำใหญ่ไล่สีด้านหลังเส้นคลื่น ตัวอักษรหมุนรอบแกนนอนทีละตัวพร้อมเบลอตามความเร็ว (blurry text spin)
+/// หมุนตอนเปิดหน้าแล้ววนซ้ำทุก ๆ [period] ระหว่างนั้นตัวอักษรนิ่งและคมชัด
+/// ถ้าผู้ใช้ตั้งเครื่องให้ลดการเคลื่อนไหว จะแสดงนิ่ง ๆ ไม่หมุน
+class GiantWord extends StatefulWidget {
   final String text;
   final double fontSize;
 
   const GiantWord({super.key, required this.text, required this.fontSize});
 
+  /// รอบของการหมุนหนึ่งชุด (หมุนประมาณ 1.6 วินาทีแรก ที่เหลือหยุดนิ่ง)
+  static const period = Duration(milliseconds: 7000);
+
+  @override
+  State<GiantWord> createState() => _GiantWordState();
+}
+
+class _GiantWordState extends State<GiantWord> with TickerProviderStateMixin {
+  late final AnimationController _spin = AnimationController(
+    vsync: this,
+    duration: GiantWord.period,
+  );
+
+  /// โหมดลดการเคลื่อนไหว: ไม่หมุน แค่ค่อย ๆ ชัดขึ้นจากเบลอครั้งเดียวตอนเปิดหน้า
+  late final AnimationController _settle = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  );
+
+  static const _spinMs = 1100; // เวลาที่ตัวอักษรแต่ละตัวหมุนครบรอบ
+  static const _staggerMs = 110; // ตัวถัดไปเริ่มช้ากว่าตัวก่อนหน้า
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (AppMotion.reduced(context)) {
+      _spin.stop();
+      _spin.value = 0;
+      if (_settle.value == 0 && !_settle.isAnimating) _settle.forward();
+    } else {
+      _settle.value = 1;
+      if (!_spin.isAnimating) _spin.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _spin.dispose();
+    _settle.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final style = GoogleFonts.ibmPlexSansThai(
+      fontSize: widget.fontSize,
+      height: 1,
+      fontWeight: FontWeight.w300,
+      letterSpacing: -widget.fontSize * 0.03,
+      color: Colors.white,
+    );
+    final letters = widget.text.characters.toList();
+
     return ExcludeSemantics(
-      child: Opacity(
-        opacity: 0.82,
-        child: ShaderMask(
-          blendMode: BlendMode.srcIn,
-          shaderCallback: (bounds) => const LinearGradient(
-            colors: [HeroPalette.theta, HeroPalette.alpha, HeroPalette.glow],
-            stops: [0.05, 0.55, 1],
-          ).createShader(bounds),
-          child: Text(
-            text,
-            maxLines: 1,
-            softWrap: false,
-            style: GoogleFonts.ibmPlexSansThai(
-              fontSize: fontSize,
-              height: 1,
-              fontWeight: FontWeight.w300,
-              letterSpacing: -fontSize * 0.03,
-              color: Colors.white,
+      child: RepaintBoundary(
+        child: Opacity(
+          opacity: 0.82,
+          child: ShaderMask(
+            blendMode: BlendMode.srcIn,
+            shaderCallback: (bounds) => const LinearGradient(
+              colors: [HeroPalette.theta, HeroPalette.alpha, HeroPalette.glow],
+              stops: [0.05, 0.55, 1],
+            ).createShader(bounds),
+            child: AnimatedBuilder(
+              animation: Listenable.merge([_spin, _settle]),
+              builder: (context, _) {
+                final nowMs = _spin.value * GiantWord.period.inMilliseconds;
+                final settleBlur =
+                    (1 - Curves.easeOutCubic.transform(_settle.value)) *
+                    widget.fontSize *
+                    0.05;
+                final row = Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (final (i, letter) in letters.indexed)
+                      _spinningLetter(
+                        Text(
+                          letter,
+                          maxLines: 1,
+                          softWrap: false,
+                          style: style,
+                        ),
+                        (nowMs - i * _staggerMs) / _spinMs,
+                      ),
+                  ],
+                );
+                if (settleBlur < 0.05) return row;
+                return ImageFiltered(
+                  imageFilter: ui.ImageFilter.blur(
+                    sigmaX: settleBlur,
+                    sigmaY: settleBlur,
+                    tileMode: TileMode.decal,
+                  ),
+                  child: row,
+                );
+              },
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// [progress] 0 ถึง 1 = กำลังหมุนหนึ่งรอบ นอกช่วงนี้ตัวอักษรนิ่ง
+  Widget _spinningLetter(Widget letter, double progress) {
+    if (progress <= 0 || progress >= 1) return letter;
+    final eased = Curves.easeInOutCubic.transform(progress);
+    // เบลอมากสุดตอนหมุนเร็วสุด (กลางรอบ) แล้วค่อย ๆ คมชัดตอนหยุด เบลอแนวตั้งมากกว่าเพราะหมุนรอบแกนนอน
+    final blur = math.sin(progress * math.pi) * widget.fontSize * 0.06;
+    return Transform(
+      alignment: Alignment.center,
+      transform: Matrix4.identity()
+        ..setEntry(3, 2, 0.0015)
+        ..rotateX(eased * 2 * math.pi),
+      child: ImageFiltered(
+        imageFilter: ui.ImageFilter.blur(
+          sigmaX: blur * 0.25,
+          sigmaY: blur,
+          tileMode: TileMode.decal,
+        ),
+        child: letter,
       ),
     );
   }
@@ -121,9 +229,13 @@ class BrainwaveField extends StatefulWidget {
   State<BrainwaveField> createState() => _BrainwaveFieldState();
 }
 
-class _BrainwaveFieldState extends State<BrainwaveField> with TickerProviderStateMixin {
+class _BrainwaveFieldState extends State<BrainwaveField>
+    with TickerProviderStateMixin {
   // คลื่นไหลช้า ๆ วนครบรอบใน 24 วินาที ความถี่ทุกตัวเป็นจำนวนเต็มรอบ จึงต่อกันได้ไม่สะดุด
-  late final AnimationController _flow = AnimationController(vsync: this, duration: const Duration(seconds: 24));
+  late final AnimationController _flow = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 24),
+  );
   late final AnimationController _reveal = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 1600),
@@ -172,7 +284,11 @@ class _RidgePainter extends CustomPainter {
   final double reveal; // 0..1 ตอนเปิดหน้า เส้นค่อย ๆ ยกตัวขึ้น
   final double horizon;
 
-  _RidgePainter({required this.phase, required this.reveal, required this.horizon});
+  _RidgePainter({
+    required this.phase,
+    required this.reveal,
+    required this.horizon,
+  });
 
   static const int _lines = 26;
   static const int _samples = 150;
@@ -186,7 +302,9 @@ class _RidgePainter extends CustomPainter {
     final s = line * 0.83;
     final delta = math.sin(u * 2 * math.pi * 1.6 - p + s) * 0.35;
     final theta = math.sin(u * 2 * math.pi * 4.4 - p * 2 + s * 1.7) * 0.25;
-    final alpha = math.sin(u * 2 * math.pi * 10.5 - p * 4 + s * 2.3) * (0.08 + 0.35 * _gauss(u, 0.5, 0.16));
+    final alpha =
+        math.sin(u * 2 * math.pi * 10.5 - p * 4 + s * 2.3) *
+        (0.08 + 0.35 * _gauss(u, 0.5, 0.16));
     final beta = math.sin(u * 2 * math.pi * 23 - p * 7 + s * 3.1) * 0.06;
     return delta + theta + alpha + beta;
   }
@@ -206,7 +324,10 @@ class _RidgePainter extends CustomPainter {
       final base = top + (bottom - top) * math.pow(z, 1.65);
       final span = halfSpan * (0.55 + 0.75 * z);
       // เส้นกลาง ๆ สูงที่สุด เส้นหน้าสุดเตี้ยลง พื้นใต้หัวเรื่องจึงไม่รก
-      final amp = ampMax * (0.15 + 0.85 * math.pow(z, 1.2)) * (1 - 0.55 * math.pow(z, 4));
+      final amp =
+          ampMax *
+          (0.15 + 0.85 * math.pow(z, 1.2)) *
+          (1 - 0.55 * math.pow(z, 4));
       final left = cx - span;
       final right = cx + span;
 
@@ -214,7 +335,10 @@ class _RidgePainter extends CustomPainter {
       for (var j = 0; j <= _samples; j++) {
         final u = j / _samples;
         // สองลูกนูนซ้ายขวา เหมือนสมองสองซีก
-        final env = math.min(1.0, 0.85 * (_gauss(u, 0.39, 0.13) + _gauss(u, 0.61, 0.13)));
+        final env = math.min(
+          1.0,
+          0.85 * (_gauss(u, 0.39, 0.13) + _gauss(u, 0.61, 0.13)),
+        );
         final lift = env * 0.9 + 0.1;
         final y = base - amp * (lift + _signal(u, i) * (0.18 + 0.32 * env));
         final x = left + (right - left) * u;
@@ -279,7 +403,8 @@ class _RidgePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_RidgePainter old) => old.phase != phase || old.reveal != reveal || old.horizon != horizon;
+  bool shouldRepaint(_RidgePainter old) =>
+      old.phase != phase || old.reveal != reveal || old.horizon != horizon;
 }
 
 /// เงามืดบนและล่างให้ตัวหนังสืออ่านง่ายเมื่อวางบนเส้นคลื่น
@@ -315,7 +440,12 @@ class PillAction extends StatelessWidget {
   final VoidCallback onPressed;
   final bool compact;
 
-  const PillAction({super.key, required this.label, required this.onPressed, this.compact = false});
+  const PillAction({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.compact = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -358,7 +488,11 @@ class PillAction extends StatelessWidget {
               child: InkWell(
                 customBorder: const CircleBorder(),
                 onTap: onPressed,
-                child: Icon(Icons.north_east_rounded, size: compact ? 16 : 18, color: AppColors.night),
+                child: Icon(
+                  Icons.north_east_rounded,
+                  size: compact ? 16 : 18,
+                  color: AppColors.night,
+                ),
               ),
             ),
           ),
@@ -382,10 +516,15 @@ class AuthBackdrop extends StatelessWidget {
       children: [
         const Positioned.fill(child: HeroBackdrop(horizon: 0.62)),
         Positioned.fill(
-          child: Opacity(opacity: wide ? 0.9 : 0.3, child: const BrainwaveField(horizon: 0.6)),
+          child: Opacity(
+            opacity: wide ? 0.9 : 0.3,
+            child: const BrainwaveField(horizon: 0.6),
+          ),
         ),
         const Positioned.fill(child: HeroShade()),
-        Positioned.fill(child: Theme(data: nightFormTheme(Theme.of(context)), child: child)),
+        Positioned.fill(
+          child: Theme(data: nightFormTheme(Theme.of(context)), child: child),
+        ),
       ],
     );
   }
@@ -393,7 +532,8 @@ class AuthBackdrop extends StatelessWidget {
 
 /// หน้าเข้าสู่ระบบ/สมัครสมาชิกยังเป็นฉากกลางคืน จึงให้ช่องกรอกใช้พื้นกลางคืน ไม่ใช่กระจกฟ้าของหน้าด้านใน
 ThemeData nightFormTheme(ThemeData base) {
-  OutlineInputBorder outline(Color color, [double width = 1]) => OutlineInputBorder(
+  OutlineInputBorder outline(Color color, [double width = 1]) =>
+      OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.control),
         borderSide: BorderSide(color: color, width: width),
       );
@@ -419,7 +559,9 @@ ThemeData nightFormTheme(ThemeData base) {
     ),
     checkboxTheme: base.checkboxTheme.copyWith(
       fillColor: WidgetStateProperty.resolveWith(
-        (states) => states.contains(WidgetState.selected) ? AppColors.alphaWave : Colors.transparent,
+        (states) => states.contains(WidgetState.selected)
+            ? AppColors.alphaWave
+            : Colors.transparent,
       ),
     ),
   );
