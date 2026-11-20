@@ -26,10 +26,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   bool _isCheckingSession = true; // กำลังเช็ก session ที่ค้างอยู่ในเครื่อง
   final _previewKey = GlobalKey();
 
-  /// ล้อเมาส์เลื่อนแบบนุ่ม (ไม่กระโดดทีละขั้น)
-  late final _scroll = SmoothScrollController(
-    reduceMotion: () => AppMotion.reduced(context),
-  );
+  /// ล้อเมาส์เลื่อนแบบนุ่ม (ไม่กระโดดทีละขั้น) หน้าแรกเลื่อนนุ่มเสมอ แม้เครื่องตั้งลดการเคลื่อนไหว (เจ้าของแอปเลือกเอง)
+  final _scroll = SmoothScrollController();
 
   @override
   void dispose() {
@@ -43,9 +41,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     if (target == null) return;
     Scrollable.ensureVisible(
       target,
-      duration: AppMotion.reduced(context)
-          ? Duration.zero
-          : const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 600),
       curve: AppMotion.easeInOut,
     );
   }
