@@ -210,7 +210,7 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
                           'กระบวนการขจัดสัญญาณรบกวน (Noise Artifacts) แบบเรียลไทม์ 3 ขั้นตอนเรียงลำดับ เพื่อเตรียมข้อมูลสำหรับโมเดลปัญญาประดิษฐ์ให้ได้ความแม่นยำระดับห้องวิจัย',
                           style: GoogleFonts.ibmPlexSansThai(
                             fontSize: 11,
-                            color: const Color(0xFF475569),
+                            color: AppColors.inkSoft,
                             height: 1.4,
                           ),
                         ),
@@ -263,7 +263,7 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
                                 formula: 'y₁[n] = x[n] - (a * n + b)   [โดย a, b คำนวณจาก Least-squares]',
                                 descTh: 'กำจัดค่าเฉลี่ยขั้วแรงดันไฟฟ้าของฮาร์ดแวร์เพื่อปรับให้สมดุลสัญญาณแกว่งรอบแกน 0 µV',
                                 data: step1Signal,
-                                lineColor: Colors.orange.shade800,
+                                lineColor: AppColors.orange,
                                 yMinLabel: '-400 µV',
                                 yMaxLabel: '+400 µV',
                                 isZeroCentered: true,
@@ -281,7 +281,7 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
                                 formula: 'y₂[n] = Σ(b_k * y₁[n-k]) - Σ(a_k * y₂[n-k])   [4th-Order Zero-phase]',
                                 descTh: 'กรองเอาเฉพาะคลื่นสมองหลัก (Delta ถึง Gamma) และกรองคลื่นเดินช้าจากการขยับตัว หรือการกระพริบตาบางส่วนออก',
                                 data: step2Signal,
-                                lineColor: Colors.blue.shade700,
+                                lineColor: const Color(0xFF9FD3FF),
                                 yMinLabel: '-100 µV',
                                 yMaxLabel: '+100 µV',
                                 isZeroCentered: true,
@@ -299,7 +299,7 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
                                 formula: 'y₃[n] = a₀(y₂[n] - 2cos(ω₀)y₂[n-1] + y₂[n-2]) - b₁y₃[n-1] - b₂y₃[n-2]',
                                 descTh: 'ตัดสัญญาณไฟฟ้าสลับจากอาคารช่วงความถี่ ${notchFreq.toInt()} Hz ออกได้อย่างสมบูรณ์แบบ ได้เป็นสัญญาณคลื่นสมองที่สะอาดระดับแพทย์',
                                 data: step3Signal,
-                                lineColor: const Color(0xFF047857),
+                                lineColor: AppColors.secondary,
                                 yMinLabel: '-50 µV',
                                 yMaxLabel: '+50 µV',
                                 isZeroCentered: true,
@@ -369,7 +369,7 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
               style: GoogleFonts.ibmPlexMono(
                 fontSize: 8.5,
                 color: highlight
-                    ? (highlightColor ?? const Color(0xFF1D4ED8))
+                    ? (highlightColor ?? AppColors.primary)
                     : AppColors.ink,
                 fontWeight: FontWeight.w700,
               ),
@@ -439,7 +439,7 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
                       descTh,
                       style: GoogleFonts.ibmPlexSansThai(
                         fontSize: 10,
-                        color: const Color(0xFF475569),
+                        color: AppColors.inkSoft,
                       ),
                     ),
                   ],
@@ -465,7 +465,7 @@ class _EegPipelineVisualizerState extends State<EegPipelineVisualizer> {
                 style: GoogleFonts.ibmPlexMono(
                   fontSize: 8.5,
                   fontWeight: FontWeight.w600,
-                  color: Colors.indigo.shade900,
+                  color: AppColors.primaryDeep,
                 ),
               ),
             ),

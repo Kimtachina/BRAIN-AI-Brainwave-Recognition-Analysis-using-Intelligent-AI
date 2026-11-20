@@ -118,7 +118,7 @@ extension _MuseConnectionSection on _HomeScreenState {
                       label: 'ความแรงสัญญาณ BT',
                       value: _museService.isSimulating ? 'ดีเยี่ยม (จำลอง)' : 'เสถียร (RSSI)',
                       icon: Icons.signal_cellular_alt_rounded,
-                      color: Colors.blue,
+                      color: const Color(0xFF9FD3FF),
                     ),
                     _buildConnectionMetricItem(
                       label: 'อัตราข้อมูลวิเคราะห์',

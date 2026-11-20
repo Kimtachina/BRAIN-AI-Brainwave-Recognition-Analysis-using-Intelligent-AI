@@ -69,9 +69,10 @@ class EegResearchWaveformCard extends StatelessWidget {
 
     const channelColors = {
       'TP9': AppColors.primaryDeep,
-      'AF7': Color(0xFF2E7D32),
-      'AF8': Color(0xFFE65100),
-      'TP10': Color(0xFF6A1B9A),
+      // สีสว่างพอจะเห็นชัดบนพื้นฟ้าเข้ม
+      'AF7': Color(0xFF86EFAC),
+      'AF8': Color(0xFFFFB074),
+      'TP10': Color(0xFFE9B8FF),
     };
 
     return Container(
